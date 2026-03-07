@@ -76,7 +76,11 @@
 
   /* 정렬 + 부가필터 */
   .extra-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
-  .sort-label { color: #555; font-size: 12px; flex-shrink: 0; min-width: 28px; }
+  .sort-label {
+    color: #555; font-size: 12px; flex-shrink: 0;
+    writing-mode: vertical-rl; text-orientation: mixed;
+    letter-spacing: 2px; text-align: center;
+  }
   .sort-group { display: flex; gap: 6px; }
   .sort-btn {
     background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px;
@@ -346,7 +350,7 @@
     </svg>
     <div>
       <h1 onclick="location.reload()" style="cursor:pointer">Tesla 무료충전소(데스티네이션)</h1>
-      <div class="subtitle">대한민국 전국 무료충전 인프라 (2026.03.07)</div>
+      <div class="subtitle">대한민국 전국 무료충전 인프라 (3.8.자)</div>
     </div>
   </div>
   <div class="header-count" id="headerCount">전체 83개</div>
