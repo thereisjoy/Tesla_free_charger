@@ -119,18 +119,6 @@
   .ac-item mark { background: none; color: #e31937; font-weight: 600; }
   .ac-section-header { padding: 6px 16px; font-size: 11px; color: #444; background: #151515; letter-spacing: 0.5px; }
 
-  /* 검색 히스토리 태그 */
-  .history-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 0; }
-  .history-label { color: #444; font-size: 11px; }
-  .history-tag {
-    background: #181818; border: 1px solid #2a2a2a; border-radius: 12px;
-    padding: 3px 10px; font-size: 12px; color: #666; cursor: pointer;
-    transition: all 0.15s; display: flex; align-items: center; gap: 5px;
-  }
-  .history-tag:hover { border-color: #e31937; color: #e31937; }
-  .history-tag .del { color: #444; font-size: 10px; }
-  .history-tag:hover .del { color: #e31937; }
-
   /* 통계 바 */
   .stats-bar {
     padding: 10px 40px;
@@ -370,12 +358,6 @@
     <div class="autocomplete-box" id="acBox"></div>
   </div>
 
-  <!-- 최근 검색어 -->
-  <div class="history-row" id="historyRow" style="display:none">
-    <span class="history-label">최근:</span>
-    <div id="historyTags"></div>
-  </div>
-
   <!-- 지역 필터 (데스크톱) -->
   <div class="filter-row">
     <span class="filter-label">지역</span>
@@ -565,8 +547,6 @@ let state = {
   phoneOnly: false,
   acFocusIdx: -1,
 };
-let searchHistory = JSON.parse(localStorage.getItem('tsla_hist') || '[]');
-
 // ─── 헬퍼 ───────────────────────────────────────
 function highlight(text, q) {
   if (!q) return text;
@@ -728,7 +708,6 @@ searchInput.addEventListener('keydown', e => {
       items[state.acFocusIdx].click();
     } else {
       closeAc();
-      if (state.query.trim()) saveHistory(state.query.trim());
     }
   } else if (e.key === 'Escape') {
     closeAc();
@@ -790,9 +769,10 @@ function updateAutocomplete() {
       const name = item.dataset.name;
       searchInput.value = name;
       state.query = name;
+      state.regions = new Set();
+      syncFilterBtns();
       clearBtn.style.display = 'flex';
       closeAc();
-      saveHistory(name);
       render();
     });
   });
@@ -804,42 +784,6 @@ function closeAc() {
   acBox.style.display = 'none';
   state.acFocusIdx = -1;
 }
-
-// ─── 최근 검색어 ──────────────────────────────────
-function saveHistory(q) {
-  searchHistory = [q, ...searchHistory.filter(h => h !== q)].slice(0, 6);
-  localStorage.setItem('tsla_hist', JSON.stringify(searchHistory));
-  renderHistory();
-}
-
-function renderHistory() {
-  const row = document.getElementById('historyRow');
-  const container = document.getElementById('historyTags');
-  if (!searchHistory.length) { row.style.display = 'none'; return; }
-  row.style.display = 'flex';
-  container.innerHTML = searchHistory.map((h, i) => `
-    <span class="history-tag" data-i="${i}">
-      ${h}
-      <span class="del" data-del="${i}">✕</span>
-    </span>
-  `).join('');
-  container.querySelectorAll('.history-tag').forEach(tag => {
-    tag.addEventListener('click', e => {
-      if (e.target.dataset.del !== undefined) {
-        const idx = parseInt(e.target.dataset.del);
-        searchHistory.splice(idx, 1);
-        localStorage.setItem('tsla_hist', JSON.stringify(searchHistory));
-        renderHistory();
-        return;
-      }
-      searchInput.value = tag.childNodes[0].textContent.trim();
-      state.query = searchInput.value;
-      clearBtn.style.display = 'flex';
-      render();
-    });
-  });
-}
-renderHistory();
 
 // ─── 정렬 함수 ───────────────────────────────────
 function getSorted(list) {
