@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tesla 충전소 목록 - 대한민국</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; background: #0a0a0a; color: #e5e5e5; min-height: 100vh; }
+
+  header {
+    background: linear-gradient(135deg, #1a1a1a 0%, #111 100%);
+    border-bottom: 1px solid #e31937;
+    padding: 24px 40px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .header-left { display: flex; align-items: center; gap: 16px; }
+  .tesla-logo { fill: #e31937; }
+  header h1 { font-size: 20px; font-weight: 700; letter-spacing: -0.5px; }
+  header .subtitle { color: #666; font-size: 13px; margin-top: 3px; }
+  .header-count { background: #e31937; color: #fff; border-radius: 20px; padding: 4px 14px; font-size: 13px; font-weight: 700; }
+
+  /* ── 컨트롤 영역 ── */
+  .controls {
+    background: #111;
+    padding: 16px 40px;
+    border-bottom: 1px solid #222;
+    position: sticky; top: 0; z-index: 100;
+    display: flex; flex-direction: column; gap: 12px;
+  }
+
+  /* 검색창 래퍼 */
+  .search-wrapper {
+    position: relative; display: flex; align-items: center; gap: 8px;
+  }
+  .search-icon {
+    position: absolute; left: 14px; top: 50%; transform: translateY(-50%);
+    color: #555; pointer-events: none; font-size: 15px;
+  }
+  .search-box {
+    flex: 1;
+    background: #1a1a1a; border: 1.5px solid #2a2a2a; border-radius: 10px;
+    padding: 11px 100px 11px 40px; color: #e5e5e5; font-size: 14px;
+    outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  }
+  .search-box:focus { border-color: #e31937; box-shadow: 0 0 0 3px rgba(227,25,55,0.1); }
+  .search-box::placeholder { color: #444; }
+
+  .search-actions { position: absolute; right: 12px; display: flex; align-items: center; gap: 6px; }
+  .clear-btn {
+    background: #2a2a2a; border: none; color: #888; cursor: pointer;
+    border-radius: 50%; width: 22px; height: 22px; font-size: 13px;
+    display: none; align-items: center; justify-content: center;
+    transition: background 0.15s; line-height: 1;
+  }
+  .clear-btn:hover { background: #e31937; color: #fff; }
+  .kbd-hint { color: #444; font-size: 11px; background: #1e1e1e; border: 1px solid #333; border-radius: 4px; padding: 2px 5px; }
+
+  /* 필터 행 */
+  .filter-row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .filter-label { color: #555; font-size: 12px; white-space: nowrap; }
+
+  .filter-group { display: flex; gap: 6px; flex-wrap: wrap; flex: 1; }
+  .filter-btn {
+    background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 20px;
+    padding: 6px 13px; color: #777; font-size: 12px; cursor: pointer;
+    transition: all 0.18s; white-space: nowrap; display: flex; align-items: center; gap: 5px;
+  }
+  .filter-btn:hover { border-color: #e31937; color: #fff; }
+  .filter-btn.active { background: #e31937; border-color: #e31937; color: #fff; font-weight: 600; }
+  .filter-btn .cnt {
+    background: rgba(255,255,255,0.15); border-radius: 10px;
+    padding: 1px 6px; font-size: 11px; line-height: 1.4;
+  }
+  .filter-btn.active .cnt { background: rgba(0,0,0,0.25); }
+
+  /* 정렬 + 부가필터 */
+  .extra-row { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .sort-label { color: #555; font-size: 12px; }
+  .sort-group { display: flex; gap: 6px; }
+  .sort-btn {
+    background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px;
+    padding: 5px 11px; color: #666; font-size: 12px; cursor: pointer;
+    transition: all 0.15s; display: flex; align-items: center; gap: 4px;
+  }
+  .sort-btn:hover { color: #ccc; border-color: #444; }
+  .sort-btn.active { border-color: #555; color: #ccc; background: #222; }
+  .sort-arrow { font-size: 10px; }
+
+  .tag-filter { display: flex; gap: 6px; margin-left: auto; }
+  .tag-btn {
+    background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px;
+    padding: 5px 11px; color: #666; font-size: 12px; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .tag-btn:hover { border-color: #555; color: #bbb; }
+  .tag-btn.active { background: #1d2e1a; border-color: #4caf50; color: #4caf50; }
+
+  /* 자동완성 드롭다운 */
+  .autocomplete-box {
+    position: absolute; top: calc(100% + 4px); left: 0; right: 0;
+    background: #1a1a1a; border: 1px solid #333; border-radius: 10px;
+    z-index: 200; overflow: hidden; display: none;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  }
+  .ac-item {
+    padding: 10px 16px; font-size: 13px; color: #ccc; cursor: pointer;
+    display: flex; align-items: center; gap: 10px;
+    border-bottom: 1px solid #222; transition: background 0.1s;
+  }
+  .ac-item:last-child { border-bottom: none; }
+  .ac-item:hover, .ac-item.focused { background: #222; }
+  .ac-item .ac-icon { color: #555; font-size: 12px; width: 16px; text-align: center; }
+  .ac-item .ac-region { color: #555; font-size: 11px; margin-left: auto; padding-left: 8px; }
+  .ac-item mark { background: none; color: #e31937; font-weight: 600; }
+  .ac-section-header { padding: 6px 16px; font-size: 11px; color: #444; background: #151515; letter-spacing: 0.5px; }
+
+  /* 검색 히스토리 태그 */
+  .history-row { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 0; }
+  .history-label { color: #444; font-size: 11px; }
+  .history-tag {
+    background: #181818; border: 1px solid #2a2a2a; border-radius: 12px;
+    padding: 3px 10px; font-size: 12px; color: #666; cursor: pointer;
+    transition: all 0.15s; display: flex; align-items: center; gap: 5px;
+  }
+  .history-tag:hover { border-color: #e31937; color: #e31937; }
+  .history-tag .del { color: #444; font-size: 10px; }
+  .history-tag:hover .del { color: #e31937; }
+
+  /* 통계 바 */
+  .stats-bar {
+    padding: 10px 40px;
+    background: #0e0e0e; border-bottom: 1px solid #181818;
+    display: flex; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  .stats-bar .stat { font-size: 13px; color: #555; }
+  .stats-bar .stat strong { color: #e31937; }
+  .stats-bar .stat-divider { width: 1px; height: 14px; background: #2a2a2a; }
+
+  /* 테이블 */
+  .table-wrap { padding: 20px 40px 40px; overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; min-width: 680px; }
+  thead tr { background: #141414; }
+  th {
+    padding: 11px 14px; text-align: left; font-size: 12px;
+    color: #555; font-weight: 600; letter-spacing: 0.5px;
+    border-bottom: 2px solid #e31937; user-select: none;
+    cursor: pointer; white-space: nowrap;
+  }
+  th:hover { color: #aaa; }
+  th .th-inner { display: flex; align-items: center; gap: 5px; }
+  th .sort-ind { font-size: 10px; color: #e31937; }
+
+  tbody tr {
+    border-bottom: 1px solid #161616;
+    transition: background 0.12s;
+    cursor: default;
+  }
+  tbody tr:hover { background: #141414; }
+  td { padding: 13px 14px; font-size: 14px; vertical-align: top; }
+
+  .row-num { color: #444; font-size: 12px; }
+  .name { font-weight: 600; color: #fff; line-height: 1.4; }
+  .name mark { background: rgba(227,25,55,0.2); color: #ff6b7a; border-radius: 2px; padding: 0 1px; }
+
+  .region-badge {
+    display: inline-block;
+    background: #1a1a1a; border: 1px solid #2a2a2a;
+    border-radius: 4px; padding: 2px 8px;
+    font-size: 12px; color: #888; white-space: nowrap; cursor: pointer;
+    transition: all 0.15s;
+  }
+  .region-badge:hover { border-color: #e31937; color: #e31937; }
+
+  .address { color: #aaa; line-height: 1.5; }
+  .address mark { background: rgba(227,25,55,0.15); color: #ff8c96; border-radius: 2px; padding: 0 1px; }
+  .address .detail { color: #666; font-size: 12px; margin-top: 3px; }
+  .phone-link { color: #6ba3e8; font-size: 13px; text-decoration: none; white-space: nowrap; }
+  .phone-link:hover { color: #90bcf5; text-decoration: underline; }
+  .no-data { color: #333; font-size: 13px; }
+
+  /* 지도 버튼 */
+  .map-btns { display: flex; flex-direction: column; gap: 5px; }
+  .map-btn {
+    display: inline-flex; align-items: center; gap: 5px;
+    padding: 5px 10px; border-radius: 6px; font-size: 12px;
+    text-decoration: none; white-space: nowrap; font-weight: 500;
+    transition: opacity 0.15s, transform 0.12s;
+    border: none; cursor: pointer;
+  }
+  .map-btn:hover { opacity: 0.85; transform: translateY(-1px); }
+  .map-btn.naver { background: #03C75A; color: #fff; }
+  .map-btn.kakao { background: #FEE500; color: #3A1D1D; }
+  .map-btn img { width: 14px; height: 14px; border-radius: 2px; }
+
+  /* 전체 지도 패널 */
+  .map-panel {
+    margin: 0 40px 24px;
+    background: #111; border: 1px solid #222; border-radius: 12px;
+    overflow: hidden;
+  }
+  .map-panel-header {
+    padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
+    border-bottom: 1px solid #1e1e1e;
+  }
+  .map-panel-title { font-size: 14px; font-weight: 600; color: #ccc; display: flex; align-items: center; gap: 8px; }
+  .map-panel-actions { display: flex; gap: 8px; }
+  .map-open-btn {
+    padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 600;
+    text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+    transition: opacity 0.15s;
+  }
+  .map-open-btn:hover { opacity: 0.85; }
+  .map-open-btn.naver { background: #03C75A; color: #fff; }
+  .map-open-btn.kakao { background: #FEE500; color: #3A1D1D; }
+  .map-panel-body { padding: 16px 20px; display: flex; gap: 12px; flex-wrap: wrap; }
+  .map-tip { font-size: 12px; color: #555; line-height: 1.6; }
+  .map-tip strong { color: #888; }
+
+  .no-results {
+    text-align: center; padding: 60px 20px; color: #444; font-size: 15px; display: none;
+  }
+  .no-results svg { display: block; margin: 0 auto 16px; }
+  .no-results .suggest { margin-top: 10px; font-size: 13px; color: #555; }
+
+  /* 맨 위로 버튼 */
+  .scroll-top {
+    position: fixed; bottom: 30px; right: 30px;
+    background: #e31937; color: #fff; border: none; border-radius: 50%;
+    width: 44px; height: 44px; font-size: 18px; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(227,25,55,0.4);
+    transition: opacity 0.2s, transform 0.2s;
+    opacity: 0; pointer-events: none; display: flex; align-items: center; justify-content: center;
+  }
+  .scroll-top.show { opacity: 1; pointer-events: all; }
+  .scroll-top:hover { transform: translateY(-2px); }
+
+  /* 반응형 */
+  @media (max-width: 700px) {
+    header, .controls, .stats-bar, .table-wrap { padding-left: 16px; padding-right: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-left">
+    <svg class="tesla-logo" width="30" height="30" viewBox="0 0 342 342">
+      <path d="M0 57.9C56.5 32.2 115.4 19.2 171 19.2c55.6 0 114.5 13 171 38.7l-12.5 30.2c-10.3-4.8-20.8-9-31.5-12.8 5.1 22.9 7.7 56 7.7 95.8v18.3h-38.3v-18.3c0-42.5-3.3-77.8-9.3-101.3-22.1-5.6-44.9-8.5-87.1-8.5-42.2 0-65 2.9-87.1 8.5-6 23.5-9.3 58.8-9.3 101.3v18.3H46.3v-18.3c0-39.8 2.6-72.9 7.7-95.8-10.7 3.8-21.2 8-31.5 12.8L0 57.9zM152.2 342V187.6h37.6V342h-37.6z"/>
+    </svg>
+    <div>
+      <h1>Tesla 충전소 목록</h1>
+      <div class="subtitle">대한민국 전국 충전 인프라</div>
+    </div>
+  </div>
+  <div class="header-count" id="headerCount">전체 83개</div>
+</header>
+
+<div class="controls">
+  <!-- 검색창 -->
+  <div class="search-wrapper" id="searchWrapper">
+    <span class="search-icon">🔍</span>
+    <input type="text" class="search-box" id="searchInput"
+      placeholder="충전소명, 주소, 지역 검색... (/ 키로 포커스)"
+      autocomplete="off" spellcheck="false">
+    <div class="search-actions">
+      <button class="clear-btn" id="clearBtn" title="지우기">✕</button>
+      <span class="kbd-hint">/</span>
+    </div>
+    <div class="autocomplete-box" id="acBox"></div>
+  </div>
+
+  <!-- 최근 검색어 -->
+  <div class="history-row" id="historyRow" style="display:none">
+    <span class="history-label">최근:</span>
+    <div id="historyTags"></div>
+  </div>
+
+  <!-- 지역 필터 -->
+  <div class="filter-row">
+    <span class="filter-label">지역</span>
+    <div class="filter-group" id="filterGroup"></div>
+  </div>
+
+  <!-- 정렬 + 부가 필터 -->
+  <div class="extra-row">
+    <span class="sort-label">정렬</span>
+    <div class="sort-group">
+      <button class="sort-btn active" data-sort="default" title="기본 순서">
+        <span>기본</span>
+      </button>
+      <button class="sort-btn" data-sort="name-asc" title="이름 오름차순">
+        <span>이름</span><span class="sort-arrow">↑</span>
+      </button>
+      <button class="sort-btn" data-sort="name-desc" title="이름 내림차순">
+        <span>이름</span><span class="sort-arrow">↓</span>
+      </button>
+      <button class="sort-btn" data-sort="region" title="지역순">
+        <span>지역</span>
+      </button>
+    </div>
+    <div class="tag-filter">
+      <button class="tag-btn" id="hasPhoneBtn" title="전화번호 있는 곳만">📞 전화번호 있음</button>
+    </div>
+  </div>
+</div>
+
+<!-- 통계 바 -->
+<div class="stats-bar">
+  <div class="stat">표시 <strong id="visibleCount">0</strong>개</div>
+  <div class="stat-divider"></div>
+  <div class="stat">전체 <strong>83</strong>개</div>
+  <div class="stat-divider"></div>
+  <div class="stat" id="statPhone"></div>
+  <div class="stat-divider"></div>
+  <div class="stat" id="statRegion"></div>
+</div>
+
+<!-- 지도 패널 -->
+<div class="map-panel" id="mapPanel">
+  <div class="map-panel-header">
+    <div class="map-panel-title">
+      🗺️ 전체 지도에서 보기
+      <span style="color:#444;font-size:12px;font-weight:400" id="mapPanelCount"></span>
+    </div>
+    <div class="map-panel-actions">
+      <a class="map-open-btn naver" id="naverBulkBtn" href="#" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
+        네이버 지도
+      </a>
+      <a class="map-open-btn kakao" id="kakaoBulkBtn" href="#" target="_blank">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.477 3 2 6.477 2 10.545c0 2.549 1.522 4.793 3.838 6.185-.16.615-.613 2.22-.703 2.563-.11.43.158.425.328.307.135-.092 2.143-1.44 3.01-2.02.482.067.979.103 1.527.103 5.523 0 10-3.477 10-7.545C22 6.477 17.523 3 12 3z"/></svg>
+        카카오맵
+      </a>
+    </div>
+  </div>
+  <div class="map-panel-body">
+    <div class="map-tip">
+      <strong>네이버 지도</strong> — 현재 필터된 첫 번째 충전소를 네이버 지도에서 검색합니다.<br>
+      여러 곳을 보려면 각 행의 <strong>N</strong> 버튼을 클릭하세요.
+    </div>
+    <div class="map-tip" style="border-left:1px solid #222;padding-left:12px">
+      <strong>카카오맵</strong> — 충전소명으로 카카오맵에서 검색합니다.<br>
+      카카오맵 앱에서 <strong>즐겨찾기 → 내 장소 추가</strong>로 저장할 수 있어요.
+    </div>
+  </div>
+</div>
+
+<div class="table-wrap">
+  <table id="mainTable">
+    <thead>
+      <tr>
+        <th style="width:36px"><div class="th-inner">#</div></th>
+        <th style="width:230px" data-col="name"><div class="th-inner">충전소명 <span class="sort-ind" id="ind-name"></span></div></th>
+        <th style="width:80px" data-col="region"><div class="th-inner">지역 <span class="sort-ind" id="ind-region"></span></div></th>
+        <th data-col="address"><div class="th-inner">주소</div></th>
+        <th style="width:130px" data-col="phone"><div class="th-inner">전화번호</div></th>
+        <th style="width:110px"><div class="th-inner">지도</div></th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+  <div class="no-results" id="noResults">
+    <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#333" stroke-width="1.5">
+      <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+    </svg>
+    검색 결과가 없습니다.
+    <div class="suggest" id="noResultSuggest"></div>
+  </div>
+</div>
+
+<button class="scroll-top" id="scrollTop" title="맨 위로">↑</button>
+
+<script>
+const stations = [
+  // 서울
+  { name: "강남 N 타워", region: "서울", address: "강남구 테헤란로 129", detail: "", phone: "02-6250-5150" },
+  { name: "그랜드 워커힐 서울", region: "서울", address: "광진구 워커힐로 177", detail: "", phone: "02-455-5000" },
+  { name: "더 플라자 호텔", region: "서울", address: "중구 소공로 119", detail: "", phone: "02-771-2200" },
+  { name: "라이즈 오토그래프콜렉션 호텔", region: "서울", address: "마포구 양화로 130", detail: "", phone: "02-330-7700" },
+  { name: "마리오 아울렛", region: "서울", address: "구로구 디지털로9길 23", detail: "", phone: "02-2109-7000" },
+  { name: "메이필드 호텔", region: "서울", address: "강서구 방화대로 94", detail: "", phone: "02-2660-9000" },
+  { name: "서울 강남 - 센터필드", region: "서울", address: "강남구 테헤란로 231", detail: "센터필드 B5F", phone: "080-617-1399" },
+  { name: "서울 강북 - 안토", region: "서울", address: "강북구 삼양로 689", detail: "파라스파라 RF/1F", phone: "02-3408-5000" },
+  { name: "서울 서초 - 쌍용플래티넘", region: "서울", address: "서초구 서초중앙로 18", detail: "쌍용플래티넘 B2F", phone: "02-588-1586" },
+  { name: "서울 성수 - D Tower", region: "서울", address: "성동구 왕십리로 83-21", detail: "서울포레스트D타워 B5F", phone: "" },
+  { name: "서울 수유 - 에피소드 수유", region: "서울", address: "강북구 도봉로 315", detail: "에피소드 수유 838 B4F", phone: "" },
+  { name: "서울 왕십리 (5층)", region: "서울", address: "성동구 왕십리광장로 17", detail: "비트플렉스 5F", phone: "02-2200-1000" },
+  { name: "서울 청량리 (M5F층)", region: "서울", address: "동대문구 왕산로 214", detail: "롯데백화점 청량리점 M5F", phone: "" },
+  { name: "소설호텔", region: "서울", address: "서초구 반포대로14길 53", detail: "", phone: "02-507-0505" },
+  { name: "스테이폴리오 - 모여집", region: "서울", address: "서대문구 연희로31길 30-4", detail: "", phone: "1670-4123" },
+  { name: "임피리얼 팰리스 부티크 호텔 이태원", region: "서울", address: "용산구 이태원로 221", detail: "", phone: "02-3702-8000" },
+  { name: "포시즌스 호텔 서울", region: "서울", address: "종로구 새문안로 97", detail: "", phone: "02-6388-5000" },
+  { name: "사운즈 한남", region: "서울", address: "용산구 대사관로 35", detail: "", phone: "02-511-7443" },
+  { name: "Geonmokplaza", region: "서울", address: "서초구 시흥대로27길 22", detail: "", phone: "" },
+  // 경기
+  { name: "수원 광교 - 법조타운", region: "경기", address: "수원시 법조로149번길 269", detail: "광교 법원 주차장 3F", phone: "" },
+  { name: "수원 광교 - 롯데아울렛", region: "경기", address: "수원시 도청로 10", detail: "롯데아울렛 광교점 지하4층 A3 기둥 인근", phone: "" },
+  { name: "광명 - AK플라자", region: "경기", address: "광명시 양지로 19", detail: "광명 유플래닛 B5F", phone: "" },
+  { name: "군포 - AK플라자 (지하2층, 14구역)", region: "경기", address: "군포시 엘에스로 143", detail: "AK PLAZA 금정점 B2", phone: "" },
+  { name: "그리드위즈 연구동", region: "경기", address: "성남시 분당구 하오개로344번길 2", detail: "", phone: "031-698-3387" },
+  { name: "김포 구래", region: "경기", address: "김포시 김포한강4로 487", detail: "카림애비뉴 김포 B1F", phone: "" },
+  { name: "디테라스", region: "경기", address: "성남시 분당구 판교로319번길 13", detail: "", phone: "031-609-7999" },
+  { name: "렉스필드 CC", region: "경기", address: "여주시 산북면 광여로 1115", detail: "", phone: "031-880-0300" },
+  { name: "부천 (지하4층 E3)", region: "경기", address: "부천시 길주로 300", detail: "", phone: "" },
+  { name: "안양 평촌 (주차비 있음, 7층)", region: "경기", address: "안양시 관평로170번길 33", detail: "CGV 평촌 7F", phone: "" },
+  { name: "여주 - 신세계프리미엄아울렛", region: "경기", address: "여주시 명품로 360", detail: "여주프리미엄아울렛", phone: "1644-4001" },
+  { name: "용인 기흥 - 롯데프리미엄아울렛", region: "경기", address: "용인시 신고매로 124", detail: "롯데프리미엄아울렛 기흥점 B3F", phone: "" },
+  { name: "의왕 - 롯데프리미엄아울렛", region: "경기", address: "의왕시 바라산로 1", detail: "롯데프리미엄아울렛 의왕점 B1F (09:30~21:30)", phone: "1577-0001" },
+  { name: "카페인W", region: "경기", address: "김포시 양촌읍 김포한강4로 292-1", detail: "", phone: "070-7722-3330" },
+  { name: "파주 - 뮌스터담", region: "경기", address: "파주시 운정로 113-175", detail: "", phone: "" },
+  { name: "성남 판교 - 카카오아지트", region: "경기", address: "성남시 분당구 판교역로 166", detail: "카카오 판교 아지트 B2F", phone: "" },
+  { name: "성남 판교 - 테크원", region: "경기", address: "성남시 분당구 백현동 534", detail: "", phone: "" },
+  { name: "포춘테일", region: "경기", address: "포천시 동교로 15-14", detail: "", phone: "" },
+  { name: "화성 동탄 - 롯데백화점", region: "경기", address: "화성시 동탄역로 160", detail: "롯데백화점 동탄 B4F", phone: "1577-0001" },
+  // 인천
+  { name: "그랜드 하얏트 인천 웨스트타워", region: "인천", address: "중구 영종해안남로321번길 190", detail: "", phone: "032-745-1234" },
+  { name: "그랜드 하얏트 인천 이스트타워", region: "인천", address: "중구 영종해안남로321번길 208", detail: "", phone: "032-745-1234" },
+  { name: "인천 미추홀 - 앨리웨이", region: "인천", address: "미추홀구 숙골로88번길 12", detail: "앨리웨이 인천 B4F", phone: "" },
+  { name: "인천 영종 - 그랜드하얏트 West", region: "인천", address: "중구 영종해안남로321번길 208", detail: "", phone: "" },
+  { name: "인천 영종 - 그랜드하얏트 East", region: "인천", address: "중구 영종해안남로321번길 208", detail: "", phone: "" },
+  { name: "인천 청라 - 스퀘어7", region: "인천", address: "서구 청라루비로 76", detail: "스퀘어7", phone: "" },
+  { name: "이비스스타일앰베서더호텔 에어포트", region: "인천", address: "중구 제2공항대로 340", detail: "", phone: "" },
+  { name: "아이나비 프리미엄 스토어 인천점", region: "인천", address: "인천", detail: "", phone: "" },
+  // 대구
+  { name: "대구백화점 프라자점", region: "대구", address: "중구 명덕로 333", detail: "", phone: "053-426-1234" },
+  // 대전
+  { name: "대전 서구 - 롯데백화점", region: "대전", address: "서구 계룡로 598", detail: "롯데백화점 대전 B4F", phone: "" },
+  // 광주
+  { name: "제일볼링센터", region: "광주", address: "북구 서방로 83", detail: "", phone: "" },
+  { name: "럭셔리몰임팩트광주명품백화점", region: "광주", address: "서구 상무대로 509", detail: "", phone: "062-946-3333" },
+  // 부산
+  { name: "부산 기장 - 롯데프리미엄아울렛", region: "부산", address: "기장군 기장해안로 147", detail: "롯데프리미엄아울렛 동부산점", phone: "" },
+  { name: "한화리조트 해운대 티볼리", region: "부산", address: "해운대구 마린시티3로 52", detail: "", phone: "051-749-5500" },
+  { name: "코리아 골프 연습장", region: "부산", address: "사하구 장림번영로103번길 35", detail: "", phone: "051-264-6378" },
+  // 울산
+  { name: "간절곶 까르마레 펜션", region: "울산", address: "울주군 서생면 불안길 32-11", detail: "", phone: "052-242-5600" },
+  // 세종
+  { name: "세종 어진 - AK플라자 (지하2층, 14구역)", region: "세종", address: "다솜1로 20", detail: "KT&G 세종타워C B2F", phone: "" },
+  // 강원
+  { name: "라임 비치 펜션", region: "강원", address: "강릉시 해안로 651-17", detail: "", phone: "010-2603-5436" },
+  { name: "보키하우스", region: "강원", address: "고성군 죽왕면 자작도선사길 110", detail: "", phone: "033-631-0303" },
+  { name: "삼척 원더풀", region: "강원", address: "삼척시 동해대로 3852", detail: "", phone: "033-575-5189" },
+  { name: "양양 - 설해원", region: "강원", address: "양양군 공항로 230", detail: "설해원 리조트", phone: "" },
+  { name: "춘천 - ENTA 2022", region: "강원", address: "춘천시 후석로 120", detail: "엔타2022 지하2층", phone: "" },
+  { name: "TrueLamerHotel (Sokcho)", region: "강원", address: "속초시 동해대로 4201", detail: "", phone: "" },
+  { name: "한화리조트 설악 쏘라노", region: "강원", address: "속초시 미시령로2983번길 111", detail: "", phone: "033-630-5500" },
+  // 충북
+  { name: "이븐데일 컨트리클럽", region: "충북", address: "청주시 상당구 대신2길 31", detail: "", phone: "043-288-1000" },
+  { name: "충주 - 모다아울렛", region: "충북", address: "충주시 중원대로 3683", detail: "", phone: "" },
+  { name: "충주 - 홈마트", region: "충북", address: "충주시 기업도시로 26", detail: "", phone: "043-846-7796" },
+  // 충남
+  { name: "부여 - 롯데프리미엄아울렛", region: "충남", address: "부여군 백제문로 387", detail: "롯데아울렛 부여", phone: "041-435-2500" },
+  { name: "스테이폴리오 - 제로플레이스", region: "충남", address: "서산시 일락골길 367-19", detail: "", phone: "0504-0904-2004" },
+  // 경북
+  { name: "그린 빌딩", region: "경북", address: "고령군 왕릉로 114", detail: "", phone: "054-956-7007" },
+  { name: "포항", region: "경북", address: "포항시 북구 흥해읍 동해대로 878", detail: "포항오토파크", phone: "" },
+  // 경남
+  { name: "사랑채 한방오리", region: "경남", address: "김해시 분성로307번길 16", detail: "", phone: "055-325-5292" },
+  // 전북
+  { name: "전주 - 효자몰 (주차비 있음, 지하2층)", region: "전북", address: "전주시 용머리로 45", detail: "몰오브효자 B2F", phone: "" },
+  { name: "한일렌트카", region: "전북", address: "전주시 쑥고개로 301-15", detail: "", phone: "063-255-8166" },
+  // 전남
+  { name: "포레스트 96", region: "전남", address: "화순군 화순읍", detail: "", phone: "061-375-2404" },
+  // 제주
+  { name: "더 클라우드 호텔", region: "제주", address: "서귀포시 성산읍 한도로 269-37", detail: "", phone: "064-783-8366" },
+  { name: "모노리스제주파크", region: "제주", address: "제주시 애월읍 어음리 산 131-3", detail: "", phone: "070-4900-2230" },
+  { name: "씨에스 호텔 & 리조트", region: "제주", address: "서귀포시 중문관광로 198", detail: "", phone: "064-735-3000" },
+  { name: "스테이폴리오 - 송당아진", region: "제주", address: "제주시 송당5길 46-78", detail: "", phone: "0504-0904-2420" },
+  { name: "스테이폴리오 - 빈티지제주", region: "제주", address: "제주시 주전길 98-1", detail: "", phone: "0504-0904-2034" },
+  { name: "스테이폴리오 - 월령선인장", region: "제주", address: "제주시 월령1길 10", detail: "", phone: "0504-0904-2049" },
+];
+
+// ─── 상태 ───────────────────────────────────────
+let state = {
+  query: '',
+  region: '전체',
+  sort: 'default',
+  phoneOnly: false,
+  acFocusIdx: -1,
+};
+let searchHistory = JSON.parse(localStorage.getItem('tsla_hist') || '[]');
+
+// ─── 헬퍼 ───────────────────────────────────────
+function highlight(text, q) {
+  if (!q) return text;
+  const escaped = q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+  return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>');
+}
+
+function regionCount(r) {
+  return stations.filter(s => s.region === r).length;
+}
+
+// ─── 지역 필터 버튼 생성 ──────────────────────────
+const regionOrder = ['전체','서울','경기','인천','부산','대구','대전','광주','울산','세종','강원','충북','충남','경북','경남','전북','전남','제주'];
+const existingRegions = ['전체', ...new Set(stations.map(s => s.region))];
+const orderedRegions = regionOrder.filter(r => existingRegions.includes(r));
+
+const filterGroup = document.getElementById('filterGroup');
+orderedRegions.forEach(r => {
+  const btn = document.createElement('button');
+  btn.className = 'filter-btn' + (r === '전체' ? ' active' : '');
+  btn.dataset.region = r;
+  const cnt = r === '전체' ? stations.length : regionCount(r);
+  btn.innerHTML = `${r} <span class="cnt">${cnt}</span>`;
+  btn.addEventListener('click', () => {
+    state.region = r;
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  });
+  filterGroup.appendChild(btn);
+});
+
+// ─── 정렬 버튼 ───────────────────────────────────
+document.querySelectorAll('.sort-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    state.sort = btn.dataset.sort;
+    document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    render();
+  });
+});
+
+// ─── 전화번호 필터 ───────────────────────────────
+document.getElementById('hasPhoneBtn').addEventListener('click', function() {
+  state.phoneOnly = !state.phoneOnly;
+  this.classList.toggle('active', state.phoneOnly);
+  render();
+});
+
+// ─── 검색창 ─────────────────────────────────────
+const searchInput = document.getElementById('searchInput');
+const clearBtn = document.getElementById('clearBtn');
+const acBox = document.getElementById('acBox');
+
+searchInput.addEventListener('input', () => {
+  state.query = searchInput.value;
+  clearBtn.style.display = state.query ? 'flex' : 'none';
+  updateAutocomplete();
+  render();
+});
+
+searchInput.addEventListener('keydown', e => {
+  const items = acBox.querySelectorAll('.ac-item');
+  if (e.key === 'ArrowDown') {
+    e.preventDefault();
+    state.acFocusIdx = Math.min(state.acFocusIdx + 1, items.length - 1);
+    updateAcFocus(items);
+  } else if (e.key === 'ArrowUp') {
+    e.preventDefault();
+    state.acFocusIdx = Math.max(state.acFocusIdx - 1, -1);
+    updateAcFocus(items);
+  } else if (e.key === 'Enter') {
+    if (state.acFocusIdx >= 0 && items[state.acFocusIdx]) {
+      items[state.acFocusIdx].click();
+    } else {
+      closeAc();
+      if (state.query.trim()) saveHistory(state.query.trim());
+    }
+  } else if (e.key === 'Escape') {
+    closeAc();
+    searchInput.blur();
+  }
+});
+
+searchInput.addEventListener('focus', () => updateAutocomplete());
+searchInput.addEventListener('blur', () => setTimeout(closeAc, 150));
+
+function updateAcFocus(items) {
+  items.forEach((item, i) => item.classList.toggle('focused', i === state.acFocusIdx));
+}
+
+clearBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  state.query = '';
+  clearBtn.style.display = 'none';
+  closeAc();
+  searchInput.focus();
+  render();
+});
+
+// / 키 포커스
+document.addEventListener('keydown', e => {
+  if (e.key === '/' && document.activeElement !== searchInput) {
+    e.preventDefault();
+    searchInput.focus();
+    searchInput.select();
+  }
+});
+
+// ─── 자동완성 ────────────────────────────────────
+function updateAutocomplete() {
+  const q = state.query.trim().toLowerCase();
+  state.acFocusIdx = -1;
+  if (!q) { closeAc(); return; }
+
+  const matched = stations.filter(s =>
+    s.name.toLowerCase().includes(q) || s.address.toLowerCase().includes(q)
+  ).slice(0, 7);
+
+  if (!matched.length) { closeAc(); return; }
+
+  acBox.innerHTML = '<div class="ac-section-header">충전소 검색결과</div>' +
+    matched.map((s, i) => `
+      <div class="ac-item" data-idx="${i}" data-name="${s.name}" data-region="${s.region}">
+        <span class="ac-icon">⚡</span>
+        <div>
+          <div>${highlight(s.name, q)}</div>
+          <div style="font-size:11px;color:#555;margin-top:2px">${highlight(s.address, q)}</div>
+        </div>
+        <span class="ac-region">${s.region}</span>
+      </div>
+    `).join('');
+
+  acBox.querySelectorAll('.ac-item').forEach(item => {
+    item.addEventListener('mousedown', () => {
+      const name = item.dataset.name;
+      searchInput.value = name;
+      state.query = name;
+      clearBtn.style.display = 'flex';
+      closeAc();
+      saveHistory(name);
+      render();
+    });
+  });
+
+  acBox.style.display = 'block';
+}
+
+function closeAc() {
+  acBox.style.display = 'none';
+  state.acFocusIdx = -1;
+}
+
+// ─── 최근 검색어 ──────────────────────────────────
+function saveHistory(q) {
+  searchHistory = [q, ...searchHistory.filter(h => h !== q)].slice(0, 6);
+  localStorage.setItem('tsla_hist', JSON.stringify(searchHistory));
+  renderHistory();
+}
+
+function renderHistory() {
+  const row = document.getElementById('historyRow');
+  const container = document.getElementById('historyTags');
+  if (!searchHistory.length) { row.style.display = 'none'; return; }
+  row.style.display = 'flex';
+  container.innerHTML = searchHistory.map((h, i) => `
+    <span class="history-tag" data-i="${i}">
+      ${h}
+      <span class="del" data-del="${i}">✕</span>
+    </span>
+  `).join('');
+  container.querySelectorAll('.history-tag').forEach(tag => {
+    tag.addEventListener('click', e => {
+      if (e.target.dataset.del !== undefined) {
+        const idx = parseInt(e.target.dataset.del);
+        searchHistory.splice(idx, 1);
+        localStorage.setItem('tsla_hist', JSON.stringify(searchHistory));
+        renderHistory();
+        return;
+      }
+      searchInput.value = tag.childNodes[0].textContent.trim();
+      state.query = searchInput.value;
+      clearBtn.style.display = 'flex';
+      render();
+    });
+  });
+}
+renderHistory();
+
+// ─── 정렬 함수 ───────────────────────────────────
+function getSorted(list) {
+  const copy = [...list];
+  if (state.sort === 'name-asc') return copy.sort((a,b) => a.name.localeCompare(b.name, 'ko'));
+  if (state.sort === 'name-desc') return copy.sort((a,b) => b.name.localeCompare(a.name, 'ko'));
+  if (state.sort === 'region') return copy.sort((a,b) => a.region.localeCompare(b.region, 'ko') || a.name.localeCompare(b.name, 'ko'));
+  return copy; // default
+}
+
+// ─── 메인 렌더 ───────────────────────────────────
+function render() {
+  const q = state.query.trim().toLowerCase();
+  const tbody = document.getElementById('tableBody');
+  tbody.innerHTML = '';
+
+  let filtered = stations.filter(s => {
+    const matchRegion = state.region === '전체' || s.region === state.region;
+    const matchPhone = !state.phoneOnly || !!s.phone;
+    const matchQ = !q ||
+      s.name.toLowerCase().includes(q) ||
+      s.address.toLowerCase().includes(q) ||
+      s.detail.toLowerCase().includes(q) ||
+      s.region.toLowerCase().includes(q) ||
+      s.phone.includes(q);
+    return matchRegion && matchPhone && matchQ;
+  });
+
+  const sorted = getSorted(filtered);
+
+  sorted.forEach((s, i) => {
+    const naverQuery = encodeURIComponent(`${s.name} ${s.address}`.trim());
+    const kakaoQuery = encodeURIComponent(s.name);
+    const naverUrl = `https://map.naver.com/v5/search/${naverQuery}`;
+    const kakaoUrl = `https://map.kakao.com/?q=${kakaoQuery}`;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td class="row-num">${i + 1}</td>
+      <td><div class="name">${highlight(s.name, q)}</div></td>
+      <td><span class="region-badge" data-region="${s.region}">${s.region}</span></td>
+      <td class="address">
+        ${highlight(s.address, q)}
+        ${s.detail ? `<div class="detail">${highlight(s.detail, q)}</div>` : ''}
+      </td>
+      <td>${s.phone
+        ? `<a class="phone-link" href="tel:${s.phone}">📞 ${s.phone}</a>`
+        : '<span class="no-data">—</span>'}</td>
+      <td>
+        <div class="map-btns">
+          <a class="map-btn naver" href="${naverUrl}" target="_blank" rel="noopener">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
+            네이버
+          </a>
+          <a class="map-btn kakao" href="${kakaoUrl}" target="_blank" rel="noopener">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.477 3 2 6.477 2 10.545c0 2.549 1.522 4.793 3.838 6.185-.16.615-.613 2.22-.703 2.563-.11.43.158.425.328.307.135-.092 2.143-1.44 3.01-2.02.482.067.979.103 1.527.103 5.523 0 10-3.477 10-7.545C22 6.477 17.523 3 12 3z"/></svg>
+            카카오
+          </a>
+        </div>
+      </td>
+    `;
+    tbody.appendChild(tr);
+  });
+
+  // 지도 패널 전체 버튼 업데이트 (필터된 첫 번째 결과 기준)
+  if (sorted.length > 0) {
+    const first = sorted[0];
+    const nq = encodeURIComponent(`${first.name} ${first.address}`.trim());
+    const kq = encodeURIComponent(first.name);
+    document.getElementById('naverBulkBtn').href = `https://map.naver.com/v5/search/${nq}`;
+    document.getElementById('kakaoBulkBtn').href = `https://map.kakao.com/?q=${kq}`;
+    document.getElementById('mapPanelCount').textContent = `(${sorted.length}개 표시 중)`;
+  }
+
+  // 지역 배지 클릭 → 지역 필터 적용
+  tbody.querySelectorAll('.region-badge').forEach(badge => {
+    badge.addEventListener('click', () => {
+      const r = badge.dataset.region;
+      state.region = r;
+      document.querySelectorAll('.filter-btn').forEach(b => {
+        b.classList.toggle('active', b.dataset.region === r);
+      });
+      render();
+    });
+  });
+
+  // 통계 업데이트
+  const visible = sorted.length;
+  const withPhone = sorted.filter(s => s.phone).length;
+  const regionSet = new Set(sorted.map(s => s.region));
+
+  document.getElementById('visibleCount').textContent = visible;
+  document.getElementById('headerCount').textContent = `${visible}개`;
+  document.getElementById('statPhone').innerHTML = `전화번호 있음 <strong>${withPhone}</strong>개`;
+  document.getElementById('statRegion').innerHTML = `<strong>${regionSet.size}</strong>개 지역`;
+
+  // 결과 없음
+  const noEl = document.getElementById('noResults');
+  noEl.style.display = visible === 0 ? 'block' : 'none';
+  if (visible === 0 && q) {
+    document.getElementById('noResultSuggest').textContent =
+      `"${state.query}" 에 대한 결과가 없습니다. 다른 키워드를 시도해보세요.`;
+  }
+
+  // 테이블 컬럼 헤더 정렬 표시 초기화
+  ['name','region','address','phone'].forEach(col => {
+    const el = document.getElementById(`ind-${col}`);
+    if (el) el.textContent = '';
+  });
+}
+
+// ─── 테이블 헤더 클릭 정렬 ────────────────────────
+document.querySelectorAll('th[data-col]').forEach(th => {
+  th.addEventListener('click', () => {
+    const col = th.dataset.col;
+    if (col === 'name') {
+      if (state.sort === 'name-asc') state.sort = 'name-desc';
+      else state.sort = 'name-asc';
+    } else if (col === 'region') {
+      state.sort = 'region';
+    } else return;
+    document.querySelectorAll('.sort-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.sort === state.sort);
+    });
+    render();
+    // 표시
+    const ind = document.getElementById(`ind-${col}`);
+    if (ind) ind.textContent = state.sort.endsWith('asc') ? '▲' : '▼';
+  });
+});
+
+// ─── 스크롤 탑 버튼 ──────────────────────────────
+const scrollTopBtn = document.getElementById('scrollTop');
+window.addEventListener('scroll', () => {
+  scrollTopBtn.classList.toggle('show', window.scrollY > 300);
+});
+scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
+
+// 초기 렌더
+render();
+</script>
+</body>
+</html>
