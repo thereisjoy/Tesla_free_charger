@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tesla Charger Analytics - Admin Dashboard</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'Apple SD Gothic Neo','Malgun Gothic',sans-serif; background: #060608; color: #e0e0e0; min-height: 100vh; }
+
+  /* ── 헤더 ── */
+  .topbar {
+    background: #0c0c10; border-bottom: 1px solid #1a1a22;
+    padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .topbar-left { display: flex; align-items: center; gap: 12px; }
+  .topbar h1 { font-size: 17px; font-weight: 700; }
+  .topbar h1 span { color: #e31937; }
+  .topbar .badge { background: #e31937; color: #fff; border-radius: 12px; padding: 2px 10px; font-size: 11px; font-weight: 600; }
+  .topbar-right { display: flex; gap: 10px; align-items: center; }
+  .date-range {
+    background: #12121a; border: 1px solid #222; border-radius: 8px;
+    padding: 7px 12px; color: #aaa; font-size: 13px; cursor: pointer;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .refresh-btn {
+    background: #1a1a24; border: 1px solid #2a2a34; border-radius: 8px;
+    padding: 7px 12px; color: #888; font-size: 13px; cursor: pointer; transition: all 0.15s;
+  }
+  .refresh-btn:hover { border-color: #e31937; color: #e31937; }
+
+  /* ── 설정 모달 ── */
+  .setup-overlay {
+    position: fixed; inset: 0; background: rgba(0,0,0,0.85); z-index: 999;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .setup-box {
+    background: #12121a; border: 1px solid #2a2a34; border-radius: 16px;
+    padding: 36px; max-width: 560px; width: 90%;
+  }
+  .setup-box h2 { font-size: 18px; margin-bottom: 8px; }
+  .setup-box h2 span { color: #e31937; }
+  .setup-box p { color: #666; font-size: 13px; line-height: 1.7; margin-bottom: 20px; }
+  .setup-box ol { color: #888; font-size: 13px; line-height: 2; margin: 0 0 20px 20px; }
+  .setup-box a { color: #6ba3e8; }
+  .setup-input {
+    width: 100%; background: #0a0a12; border: 1px solid #2a2a34; border-radius: 8px;
+    padding: 12px; color: #ccc; font-size: 13px; font-family: monospace;
+    min-height: 120px; resize: vertical; outline: none;
+  }
+  .setup-input:focus { border-color: #e31937; }
+  .setup-input::placeholder { color: #333; }
+  .setup-actions { display: flex; gap: 10px; margin-top: 16px; }
+  .setup-btn {
+    padding: 10px 20px; border-radius: 8px; font-size: 14px; font-weight: 600; cursor: pointer; border: none;
+    transition: opacity 0.15s;
+  }
+  .setup-btn:hover { opacity: 0.85; }
+  .setup-btn.primary { background: #e31937; color: #fff; }
+  .setup-btn.secondary { background: #1e1e28; color: #888; border: 1px solid #2a2a34; }
+  .setup-error { color: #e31937; font-size: 12px; margin-top: 8px; display: none; }
+
+  /* ── 레이아웃 ── */
+  .container { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+
+  /* ── KPI 카드 ── */
+  .kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px; margin-bottom: 24px;
+  }
+  .kpi-card {
+    background: #0c0c12; border: 1px solid #1a1a22; border-radius: 12px;
+    padding: 18px 20px; position: relative; overflow: hidden;
+  }
+  .kpi-card .label { font-size: 12px; color: #555; margin-bottom: 6px; }
+  .kpi-card .value { font-size: 28px; font-weight: 800; line-height: 1; }
+  .kpi-card .sub { font-size: 12px; color: #444; margin-top: 6px; }
+  .kpi-card.highlight { border-color: #e31937; }
+  .kpi-card.highlight .value { color: #e31937; }
+
+  /* ── 수익화 스코어 ── */
+  .monetization-panel {
+    background: linear-gradient(135deg, #120a14 0%, #0c0c14 100%);
+    border: 1px solid #2a1a2e; border-radius: 14px;
+    padding: 24px; margin-bottom: 24px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px;
+  }
+  .mon-item .mon-label { font-size: 12px; color: #666; margin-bottom: 6px; }
+  .mon-item .mon-value { font-size: 32px; font-weight: 800; color: #e31937; }
+  .mon-item .mon-sub { font-size: 12px; color: #555; margin-top: 4px; }
+
+  /* ── 차트 섹션 ── */
+  .chart-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;
+  }
+  .chart-box {
+    background: #0c0c12; border: 1px solid #1a1a22; border-radius: 12px;
+    padding: 20px;
+  }
+  .chart-box.full { grid-column: 1 / -1; }
+  .chart-title { font-size: 14px; font-weight: 600; color: #888; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .chart-title .tip { font-size: 11px; color: #444; font-weight: 400; }
+  canvas { max-height: 260px; }
+
+  /* ── 테이블 섹션 ── */
+  .table-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;
+  }
+  .table-box {
+    background: #0c0c12; border: 1px solid #1a1a22; border-radius: 12px;
+    padding: 20px;
+  }
+  .table-box h3 { font-size: 14px; color: #888; margin-bottom: 12px; }
+  .mini-table { width: 100%; border-collapse: collapse; }
+  .mini-table th { font-size: 11px; color: #444; text-align: left; padding: 6px 10px; border-bottom: 1px solid #1a1a22; }
+  .mini-table td { font-size: 13px; padding: 8px 10px; border-bottom: 1px solid #111; }
+  .mini-table tr:hover { background: #111118; }
+  .bar-cell { display: flex; align-items: center; gap: 8px; }
+  .bar-fill { height: 6px; border-radius: 3px; background: #e31937; min-width: 2px; }
+  .rank-badge { background: #1a1a24; border-radius: 4px; padding: 1px 7px; font-size: 11px; color: #666; }
+
+  /* ── 히트맵 ── */
+  .heatmap-grid { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; }
+  .heat-cell { aspect-ratio: 1; border-radius: 3px; position: relative; cursor: default; }
+  .heat-cell:hover::after {
+    content: attr(data-tip); position: absolute; bottom: 110%; left: 50%; transform: translateX(-50%);
+    background: #222; color: #ccc; padding: 3px 8px; border-radius: 4px; font-size: 10px; white-space: nowrap; z-index: 10;
+  }
+  .heat-row-label { font-size: 10px; color: #444; display: flex; align-items: center; padding-right: 6px; }
+  .heat-hour-labels { display: grid; grid-template-columns: repeat(24, 1fr); gap: 2px; margin-top: 4px; }
+  .heat-hour-labels span { font-size: 9px; color: #333; text-align: center; }
+
+  .nodata-msg { text-align: center; padding: 40px; color: #333; font-size: 14px; }
+
+  @media (max-width: 800px) {
+    .container { padding: 16px; }
+    .monetization-panel { grid-template-columns: 1fr; }
+    .chart-grid, .table-grid { grid-template-columns: 1fr; }
+    .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+</style>
+</head>
+<body>
+
+<!-- ── 설정 모달 ── -->
+<div class="setup-overlay" id="setupOverlay" style="display:none">
+  <div class="setup-box">
+    <h2>🔧 Firebase <span>연동 설정</span></h2>
+    <p>방문자 데이터를 수집·조회하려면 Firebase Realtime Database가 필요합니다.<br>
+    아래 단계를 따라 무료로 설정하세요 (2~3분 소요).</p>
+    <ol>
+      <li><a href="https://console.firebase.google.com" target="_blank">Firebase 콘솔</a> 접속 → <b>프로젝트 추가</b></li>
+      <li>프로젝트명: <b>tesla-charger-analytics</b> (아무거나 가능)</li>
+      <li>Google Analytics는 사용안함 선택 → 프로젝트 만들기</li>
+      <li>좌측메뉴 <b>빌드 → Realtime Database → 데이터베이스 만들기</b></li>
+      <li>위치: <b>미국</b> 선택 → <b>테스트 모드에서 시작</b> → 사용 설정</li>
+      <li>상단에 표시되는 URL을 아래에 붙여넣기<br>
+      <code style="color:#e31937">https://프로젝트명-default-rtdb.firebaseio.com</code></li>
+    </ol>
+    <textarea class="setup-input" id="setupInput" placeholder="https://your-project-default-rtdb.firebaseio.com"></textarea>
+    <div class="setup-error" id="setupError">올바른 Firebase Realtime Database URL을 입력해주세요.</div>
+    <div class="setup-actions">
+      <button class="setup-btn primary" id="setupSave">연결하기</button>
+      <button class="setup-btn secondary" id="setupDemo">데모 데이터로 보기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ── 상단바 ── -->
+<div class="topbar">
+  <div class="topbar-left">
+    <h1>⚡ Tesla Charger <span>Analytics</span></h1>
+    <span class="badge" id="statusBadge">OFFLINE</span>
+  </div>
+  <div class="topbar-right">
+    <div class="date-range" id="dateRange">📅 최근 7일</div>
+    <button class="refresh-btn" id="refreshBtn">🔄 새로고침</button>
+  </div>
+</div>
+
+<div class="container">
+  <!-- ── KPI 카드 ── -->
+  <div class="kpi-grid">
+    <div class="kpi-card highlight"><div class="label">총 방문자 (UV)</div><div class="value" id="kUV">—</div><div class="sub" id="kUVsub"></div></div>
+    <div class="kpi-card"><div class="label">총 페이지뷰 (PV)</div><div class="value" id="kPV">—</div><div class="sub" id="kPVsub"></div></div>
+    <div class="kpi-card"><div class="label">평균 체류시간</div><div class="value" id="kDur">—</div><div class="sub">초</div></div>
+    <div class="kpi-card"><div class="label">재방문율</div><div class="value" id="kReturn">—</div><div class="sub">%</div></div>
+    <div class="kpi-card"><div class="label">모바일 비율</div><div class="value" id="kMobile">—</div><div class="sub">%</div></div>
+    <div class="kpi-card"><div class="label">지도 클릭</div><div class="value" id="kMapClk">—</div><div class="sub">네이버 + 카카오</div></div>
+    <div class="kpi-card"><div class="label">검색 사용율</div><div class="value" id="kSearch">—</div><div class="sub">%</div></div>
+    <div class="kpi-card"><div class="label">평균 인터랙션</div><div class="value" id="kEvt">—</div><div class="sub">회/세션</div></div>
+  </div>
+
+  <!-- ── 수익화 지표 ── -->
+  <div class="monetization-panel">
+    <div class="mon-item">
+      <div class="mon-label">💰 예상 월간 광고 수익 (CPM ₩2,500 기준)</div>
+      <div class="mon-value" id="mRevenue">—</div>
+      <div class="mon-sub" id="mRevSub">일 방문자 × 30일 × CPM</div>
+    </div>
+    <div class="mon-item">
+      <div class="mon-label">🎯 오디언스 가치 점수</div>
+      <div class="mon-value" id="mScore">—</div>
+      <div class="mon-sub">참여도·재방문·디바이스 기반</div>
+    </div>
+    <div class="mon-item">
+      <div class="mon-label">📈 제휴 잠재력</div>
+      <div class="mon-value" id="mPartner">—</div>
+      <div class="mon-sub">지도 클릭 → 주변 업체 연결 기회</div>
+    </div>
+  </div>
+
+  <!-- ── 차트 ── -->
+  <div class="chart-grid">
+    <div class="chart-box full">
+      <div class="chart-title">📊 일별 방문 추이 <span class="tip">— 광고 최적 시기 파악</span></div>
+      <canvas id="chartDaily"></canvas>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">📱 디바이스 분포 <span class="tip">— 광고 포맷 결정</span></div>
+      <canvas id="chartDevice"></canvas>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">🌍 지역별 방문자 <span class="tip">— 로컬 광고 타겟팅</span></div>
+      <canvas id="chartRegion"></canvas>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">🌐 브라우저 분포</div>
+      <canvas id="chartBrowser"></canvas>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">💻 OS 분포</div>
+      <canvas id="chartOS"></canvas>
+    </div>
+  </div>
+
+  <!-- ── 시간대별 히트맵 ── -->
+  <div class="chart-box full" style="margin-bottom:24px">
+    <div class="chart-title">🕐 시간대별 트래픽 히트맵 <span class="tip">— 광고 스케줄링 최적 시간</span></div>
+    <div id="heatmapContainer"></div>
+  </div>
+
+  <!-- ── 테이블 ── -->
+  <div class="table-grid">
+    <div class="table-box">
+      <h3>🏆 인기 검색어 TOP 10 <span class="tip" style="font-weight:400;color:#444;font-size:11px">— 수요 분석</span></h3>
+      <table class="mini-table" id="tblSearch">
+        <thead><tr><th>#</th><th>검색어</th><th>횟수</th><th>비율</th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="table-box">
+      <h3>📍 인기 충전소 (지도 클릭) TOP 10 <span class="tip" style="font-weight:400;color:#444;font-size:11px">— 제휴 후보</span></h3>
+      <table class="mini-table" id="tblStation">
+        <thead><tr><th>#</th><th>충전소</th><th>클릭</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="table-box">
+      <h3>🔗 유입 경로 (Referrer)</h3>
+      <table class="mini-table" id="tblRef">
+        <thead><tr><th>#</th><th>출처</th><th>방문</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+    <div class="table-box">
+      <h3>🌏 국가/도시별 방문자</h3>
+      <table class="mini-table" id="tblGeo">
+        <thead><tr><th>#</th><th>위치</th><th>방문</th><th></th></tr></thead>
+        <tbody></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// ═══════════════════════════════════════
+// CONFIG
+// ═══════════════════════════════════════
+let DB_URL = localStorage.getItem('tsla_db_url') || '';
+let allHits = [];
+let demoMode = false;
+
+// ── 설정 모달 ──
+function checkSetup() {
+  if (DB_URL && !DB_URL.includes('HERE')) {
+    document.getElementById('setupOverlay').style.display = 'none';
+    document.getElementById('statusBadge').textContent = 'LIVE';
+    document.getElementById('statusBadge').style.background = '#4caf50';
+    loadData();
+  } else {
+    document.getElementById('setupOverlay').style.display = 'flex';
+  }
+}
+
+document.getElementById('setupSave').addEventListener('click', () => {
+  const url = document.getElementById('setupInput').value.trim();
+  if (!url.includes('firebaseio.com')) {
+    document.getElementById('setupError').style.display = 'block';
+    return;
+  }
+  DB_URL = url.replace(/\/+$/, '');
+  localStorage.setItem('tsla_db_url', DB_URL);
+  checkSetup();
+});
+
+document.getElementById('setupDemo').addEventListener('click', () => {
+  demoMode = true;
+  document.getElementById('setupOverlay').style.display = 'none';
+  document.getElementById('statusBadge').textContent = 'DEMO';
+  document.getElementById('statusBadge').style.background = '#ff9800';
+  allHits = generateDemoData();
+  renderAll();
+});
+
+document.getElementById('refreshBtn').addEventListener('click', () => {
+  if (demoMode) { allHits = generateDemoData(); renderAll(); }
+  else loadData();
+});
+
+// ── 날짜 범위 ──
+let dayRange = 7;
+document.getElementById('dateRange').addEventListener('click', function() {
+  const opts = [7, 14, 30, 90];
+  const i = (opts.indexOf(dayRange) + 1) % opts.length;
+  dayRange = opts[i];
+  this.textContent = `📅 최근 ${dayRange}일`;
+  renderAll();
+});
+
+// ═══════════════════════════════════════
+// DATA LOADING
+// ═══════════════════════════════════════
+async function loadData() {
+  try {
+    const res = await fetch(DB_URL + '/hits.json');
+    const data = await res.json();
+    if (!data) { allHits = []; renderAll(); return; }
+    allHits = Object.values(data);
+    renderAll();
+  } catch(e) {
+    console.error('Load error:', e);
+  }
+}
+
+function getFiltered() {
+  const cutoff = Date.now() - dayRange * 86400000;
+  return allHits.filter(h => (h.tsUnix || new Date(h.ts).getTime()) > cutoff);
+}
+
+// ═══════════════════════════════════════
+// DEMO DATA GENERATOR
+// ═══════════════════════════════════════
+function generateDemoData() {
+  const devices = ['mobile','mobile','mobile','desktop','desktop','tablet'];
+  const browsers = ['Chrome','Chrome','Chrome','Safari','Safari','Edge','Firefox'];
+  const oss = ['Windows','Windows','macOS','Android','Android','iOS','iOS'];
+  const refs = ['direct','direct','https://google.com','https://naver.com','https://naver.com','https://is.gd/TeslaFreecharginginKOR','https://cafe.naver.com',''];
+  const cities = ['서울','서울','서울','성남','수원','인천','부산','대전','제주','강릉','대구'];
+  const searches = ['판교','강남','제주','롯데','해운대','AK플라자','호텔','워커힐','설악','광교'];
+  const stations = ['서울 강남 - 센터필드','한화리조트 해운대 티볼리','포시즌스 호텔 서울','성남 판교 - 카카오아지트','더 클라우드 호텔','의왕 - 롯데프리미엄아울렛','수원 광교 - 롯데아울렛'];
+  const hits = [];
+  const now = Date.now();
+  for (let i = 0; i < 850; i++) {
+    const age = Math.random() * 30 * 86400000;
+    const t = now - age;
+    const d = new Date(t);
+    const evts = [];
+    if (Math.random()>0.5) evts.push({type:'search', detail: searches[Math.floor(Math.random()*searches.length)]});
+    if (Math.random()>0.4) evts.push({type:'map_naver', detail: stations[Math.floor(Math.random()*stations.length)]});
+    if (Math.random()>0.6) evts.push({type:'map_kakao', detail: stations[Math.floor(Math.random()*stations.length)]});
+    if (Math.random()>0.5) evts.push({type:'filter', detail: ['서울','경기','제주','인천','부산'][Math.floor(Math.random()*5)]});
+    hits.push({
+      vid: 'v_demo_' + Math.floor(Math.random()*300),
+      ts: d.toISOString(), tsUnix: t,
+      ref: refs[Math.floor(Math.random()*refs.length)],
+      device: devices[Math.floor(Math.random()*devices.length)],
+      browser: browsers[Math.floor(Math.random()*browsers.length)],
+      os: oss[Math.floor(Math.random()*oss.length)],
+      lang: 'ko',
+      isReturn: Math.random() > 0.55,
+      country: '대한민국', cc: 'KR',
+      city: cities[Math.floor(Math.random()*cities.length)],
+      dur: Math.floor(Math.random()*300 + 10),
+      events: evts, evtCnt: evts.length, final: Math.random()>0.3
+    });
+  }
+  return hits;
+}
+
+// ═══════════════════════════════════════
+// RENDER ALL
+// ═══════════════════════════════════════
+function renderAll() {
+  const hits = getFiltered();
+  renderKPIs(hits);
+  renderMonetization(hits);
+  renderCharts(hits);
+  renderTables(hits);
+  renderHeatmap(hits);
+}
+
+// ── KPIs ──
+function renderKPIs(hits) {
+  const uvSet = new Set(hits.map(h => h.vid));
+  const uv = uvSet.size;
+  const pv = hits.length;
+  const durs = hits.filter(h => h.dur > 0).map(h => h.dur);
+  const avgDur = durs.length ? Math.round(durs.reduce((a,b)=>a+b,0) / durs.length) : 0;
+  const returnRate = hits.length ? Math.round(hits.filter(h=>h.isReturn).length / hits.length * 100) : 0;
+  const mobileRate = hits.length ? Math.round(hits.filter(h=>h.device==='mobile').length / hits.length * 100) : 0;
+  const allEvts = hits.flatMap(h => h.events || []);
+  const mapClicks = allEvts.filter(e => e.type?.startsWith('map_')).length;
+  const searchSessions = new Set(hits.filter(h => (h.events||[]).some(e => e.type==='search')).map(h=>h.vid)).size;
+  const searchRate = uv ? Math.round(searchSessions / uv * 100) : 0;
+  const avgEvt = uv ? (allEvts.length / uv).toFixed(1) : 0;
+
+  document.getElementById('kUV').textContent = uv.toLocaleString();
+  document.getElementById('kUVsub').textContent = `일평균 ${Math.round(uv/dayRange)}명`;
+  document.getElementById('kPV').textContent = pv.toLocaleString();
+  document.getElementById('kPVsub').textContent = `UV당 ${uv?(pv/uv).toFixed(1):'0'}회`;
+  document.getElementById('kDur').textContent = avgDur;
+  document.getElementById('kReturn').textContent = returnRate;
+  document.getElementById('kMobile').textContent = mobileRate;
+  document.getElementById('kMapClk').textContent = mapClicks.toLocaleString();
+  document.getElementById('kSearch').textContent = searchRate;
+  document.getElementById('kEvt').textContent = avgEvt;
+}
+
+// ── 수익화 ──
+function renderMonetization(hits) {
+  const uvSet = new Set(hits.map(h => h.vid));
+  const dailyUV = Math.round(uvSet.size / dayRange);
+  const monthlyPV = Math.round(hits.length / dayRange * 30);
+  const cpm = 2500;
+  const estRevenue = Math.round(monthlyPV / 1000 * cpm);
+
+  const allEvts = hits.flatMap(h => h.events || []);
+  const mapClicks = allEvts.filter(e => e.type?.startsWith('map_')).length;
+  const engRate = hits.length ? (allEvts.length / hits.length) : 0;
+  const returnRate = hits.length ? hits.filter(h=>h.isReturn).length / hits.length : 0;
+  const score = Math.min(100, Math.round((engRate * 20 + returnRate * 40 + (dailyUV > 50 ? 20 : dailyUV / 50 * 20) + 20)));
+
+  const dailyMapClk = Math.round(mapClicks / dayRange);
+  let partnerGrade = 'C';
+  if (dailyMapClk >= 50) partnerGrade = 'S';
+  else if (dailyMapClk >= 20) partnerGrade = 'A';
+  else if (dailyMapClk >= 5) partnerGrade = 'B';
+
+  document.getElementById('mRevenue').textContent = '₩' + estRevenue.toLocaleString();
+  document.getElementById('mRevSub').textContent = `일 ${dailyUV}명 × 30일 × CPM ₩${cpm.toLocaleString()}`;
+  document.getElementById('mScore').textContent = score + '/100';
+  document.getElementById('mPartner').textContent = partnerGrade + '등급';
+}
+
+// ── 차트 ──
+let charts = {};
+function renderCharts(hits) {
+  Object.values(charts).forEach(c => c.destroy());
+  charts = {};
+
+  const defaultOpts = {
+    responsive: true, maintainAspectRatio: false,
+    plugins: { legend: { labels: { color: '#666', font: { size: 11 } } } },
+    scales: { x: { ticks: { color: '#444', font: { size: 10 } }, grid: { color: '#1a1a22' } },
+              y: { ticks: { color: '#444', font: { size: 10 } }, grid: { color: '#1a1a22' } } }
+  };
+
+  // 일별 추이
+  const dailyMap = {};
+  hits.forEach(h => {
+    const d = h.ts?.slice(0,10);
+    if (d) dailyMap[d] = (dailyMap[d]||0) + 1;
+  });
+  const days = Object.keys(dailyMap).sort();
+  charts.daily = new Chart(document.getElementById('chartDaily'), {
+    type: 'line',
+    data: {
+      labels: days.map(d => d.slice(5)),
+      datasets: [{ label: 'PV', data: days.map(d => dailyMap[d]),
+        borderColor: '#e31937', backgroundColor: 'rgba(227,25,55,0.1)',
+        fill: true, tension: 0.3, pointRadius: 2 }]
+    },
+    options: { ...defaultOpts, plugins: { ...defaultOpts.plugins, legend: { display: false } } }
+  });
+
+  // 디바이스
+  const devMap = {};
+  hits.forEach(h => { devMap[h.device] = (devMap[h.device]||0)+1; });
+  charts.device = new Chart(document.getElementById('chartDevice'), {
+    type: 'doughnut',
+    data: { labels: Object.keys(devMap), datasets: [{
+      data: Object.values(devMap),
+      backgroundColor: ['#e31937','#3b82f6','#f59e0b'],
+    }]},
+    options: { responsive: true, plugins: { legend: { labels: { color: '#666' } } } }
+  });
+
+  // 지역
+  const regionMap = {};
+  hits.forEach(h => { const c = h.city || h.region || '미상'; regionMap[c] = (regionMap[c]||0)+1; });
+  const regionSorted = Object.entries(regionMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  charts.region = new Chart(document.getElementById('chartRegion'), {
+    type: 'bar',
+    data: { labels: regionSorted.map(r=>r[0]), datasets: [{
+      label: '방문', data: regionSorted.map(r=>r[1]),
+      backgroundColor: '#e31937', borderRadius: 4,
+    }]},
+    options: { ...defaultOpts, indexAxis: 'y', plugins: { legend: { display: false } } }
+  });
+
+  // 브라우저
+  const brMap = {};
+  hits.forEach(h => { brMap[h.browser||'Other'] = (brMap[h.browser||'Other']||0)+1; });
+  charts.browser = new Chart(document.getElementById('chartBrowser'), {
+    type: 'doughnut',
+    data: { labels: Object.keys(brMap), datasets: [{
+      data: Object.values(brMap),
+      backgroundColor: ['#4caf50','#3b82f6','#f59e0b','#e31937','#8b5cf6'],
+    }]},
+    options: { responsive: true, plugins: { legend: { labels: { color: '#666' } } } }
+  });
+
+  // OS
+  const osMap = {};
+  hits.forEach(h => { osMap[h.os||'Other'] = (osMap[h.os||'Other']||0)+1; });
+  charts.os = new Chart(document.getElementById('chartOS'), {
+    type: 'doughnut',
+    data: { labels: Object.keys(osMap), datasets: [{
+      data: Object.values(osMap),
+      backgroundColor: ['#3b82f6','#e31937','#4caf50','#f59e0b','#8b5cf6','#666'],
+    }]},
+    options: { responsive: true, plugins: { legend: { labels: { color: '#666' } } } }
+  });
+}
+
+// ── 테이블 ──
+function renderTables(hits) {
+  const allEvts = hits.flatMap(h => h.events || []);
+
+  // 검색어 TOP
+  const searchMap = {};
+  allEvts.filter(e=>e.type==='search').forEach(e => { searchMap[e.detail] = (searchMap[e.detail]||0)+1; });
+  const searchSorted = Object.entries(searchMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const searchTotal = searchSorted.reduce((a,b)=>a+b[1],0)||1;
+  fillTable('tblSearch', searchSorted, searchTotal, true);
+
+  // 인기 충전소
+  const stMap = {};
+  allEvts.filter(e=>e.type?.startsWith('map_')).forEach(e => { if(e.detail) stMap[e.detail]=(stMap[e.detail]||0)+1; });
+  const stSorted = Object.entries(stMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const stTotal = stSorted.reduce((a,b)=>a+b[1],0)||1;
+  fillTable('tblStation', stSorted, stTotal);
+
+  // 유입 경로
+  const refMap = {};
+  hits.forEach(h => {
+    let r = h.ref || 'direct';
+    try { r = r === 'direct' ? 'direct' : new URL(r).hostname; } catch(e){}
+    refMap[r] = (refMap[r]||0)+1;
+  });
+  const refSorted = Object.entries(refMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const refTotal = refSorted.reduce((a,b)=>a+b[1],0)||1;
+  fillTable('tblRef', refSorted, refTotal);
+
+  // 지역
+  const geoMap = {};
+  hits.forEach(h => {
+    const loc = [h.country, h.city].filter(Boolean).join(' / ') || '미상';
+    geoMap[loc] = (geoMap[loc]||0)+1;
+  });
+  const geoSorted = Object.entries(geoMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const geoTotal = geoSorted.reduce((a,b)=>a+b[1],0)||1;
+  fillTable('tblGeo', geoSorted, geoTotal);
+}
+
+function fillTable(id, data, total, showPct) {
+  const tbody = document.querySelector(`#${id} tbody`);
+  if (!data.length) { tbody.innerHTML = '<tr><td colspan="4" style="color:#333;text-align:center;padding:20px">데이터 없음</td></tr>'; return; }
+  const maxVal = data[0]?.[1] || 1;
+  tbody.innerHTML = data.map(([name, cnt], i) => `
+    <tr>
+      <td><span class="rank-badge">${i+1}</span></td>
+      <td style="max-width:180px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${name}</td>
+      <td>${cnt}</td>
+      <td><div class="bar-cell"><div class="bar-fill" style="width:${cnt/maxVal*80}px"></div>
+        <span style="color:#444;font-size:11px">${showPct ? Math.round(cnt/total*100)+'%' : ''}</span>
+      </div></td>
+    </tr>
+  `).join('');
+}
+
+// ── 히트맵 ──
+function renderHeatmap(hits) {
+  const container = document.getElementById('heatmapContainer');
+  const dayLabels = ['일','월','화','수','목','금','토'];
+  const grid = Array.from({length:7}, ()=>Array(24).fill(0));
+
+  hits.forEach(h => {
+    const d = new Date(h.tsUnix || new Date(h.ts).getTime());
+    grid[d.getDay()][d.getHours()]++;
+  });
+
+  const maxVal = Math.max(1, ...grid.flat());
+  let html = '';
+
+  for (let day = 0; day < 7; day++) {
+    html += `<div style="display:grid;grid-template-columns:30px repeat(24,1fr);gap:2px;margin-bottom:2px">`;
+    html += `<div class="heat-row-label">${dayLabels[day]}</div>`;
+    for (let hr = 0; hr < 24; hr++) {
+      const v = grid[day][hr];
+      const intensity = v / maxVal;
+      const r = Math.round(227 * intensity);
+      const g = Math.round(25 * intensity);
+      const b = Math.round(55 * intensity);
+      const bg = v ? `rgb(${r},${g},${b})` : '#0e0e14';
+      html += `<div class="heat-cell" style="background:${bg}" data-tip="${dayLabels[day]} ${hr}시: ${v}건"></div>`;
+    }
+    html += `</div>`;
+  }
+
+  html += `<div style="display:grid;grid-template-columns:30px repeat(24,1fr);gap:2px;margin-top:4px">`;
+  html += `<div></div>`;
+  for (let h = 0; h < 24; h++) html += `<span style="font-size:9px;color:#333;text-align:center">${h}</span>`;
+  html += `</div>`;
+
+  container.innerHTML = html;
+}
+
+// ── 초기화 ──
+checkSetup();
+</script>
+</body>
+</html>

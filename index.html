@@ -808,6 +808,93 @@ scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior:
 
 // 초기 렌더
 render();
+
+// ═══════════════════════════════════════════════════
+// ─── ANALYTICS TRACKING (Silent) ─────────────────
+// ═══════════════════════════════════════════════════
+(function(){
+  const DB_URL = 'FIREBASE_DB_URL_HERE'; // Firebase Realtime DB URL
+
+  function getVid() {
+    let v = localStorage.getItem('tsla_vid');
+    if (!v) { v = 'v_' + Date.now() + '_' + Math.random().toString(36).slice(2,8); localStorage.setItem('tsla_vid', v); }
+    return v;
+  }
+  function getDevice() {
+    const ua = navigator.userAgent;
+    if (/Mobi|Android/i.test(ua)) return 'mobile';
+    if (/Tablet|iPad/i.test(ua)) return 'tablet';
+    return 'desktop';
+  }
+  function getBrowser() {
+    const ua = navigator.userAgent;
+    if (ua.includes('Edg/')) return 'Edge';
+    if (ua.includes('Chrome')) return 'Chrome';
+    if (ua.includes('Firefox')) return 'Firefox';
+    if (ua.includes('Safari')) return 'Safari';
+    return 'Other';
+  }
+  function getOS() {
+    const ua = navigator.userAgent;
+    if (ua.includes('Windows')) return 'Windows';
+    if (ua.includes('Mac OS')) return 'macOS';
+    if (ua.includes('Android')) return 'Android';
+    if (/iPhone|iPad/.test(ua)) return 'iOS';
+    if (ua.includes('Linux')) return 'Linux';
+    return 'Other';
+  }
+  function getUTM(k) { return new URLSearchParams(location.search).get(k) || ''; }
+
+  const interactions = [];
+  function trackEvt(type, detail) { interactions.push({ t: Date.now(), type, detail }); }
+
+  const si = document.getElementById('searchInput');
+  let _sd;
+  if (si) si.addEventListener('input', function() {
+    clearTimeout(_sd);
+    _sd = setTimeout(() => { if (this.value.trim()) trackEvt('search', this.value.trim()); }, 1000);
+  });
+  document.addEventListener('click', function(e) {
+    const fb = e.target.closest('.filter-btn');
+    if (fb) trackEvt('filter', fb.dataset.region || fb.textContent.trim());
+    const mb = e.target.closest('.map-btn');
+    if (mb) {
+      const n = mb.closest('tr')?.querySelector('.name')?.textContent || '';
+      trackEvt(mb.classList.contains('naver') ? 'map_naver' : 'map_kakao', n);
+    }
+    const sb = e.target.closest('.sort-btn');
+    if (sb) trackEvt('sort', sb.dataset.sort);
+  });
+
+  const T0 = Date.now();
+  async function sendHit(final) {
+    if (DB_URL.includes('HERE')) return;
+    let geo = {};
+    try { const r = await fetch('https://ipapi.co/json/'); if (r.ok) geo = await r.json(); } catch(e) {}
+    const d = {
+      vid: getVid(), ts: new Date().toISOString(), tsUnix: Date.now(),
+      ref: document.referrer || 'direct', device: getDevice(),
+      browser: getBrowser(), os: getOS(), lang: navigator.language,
+      scrW: screen.width, scrH: screen.height, winW: innerWidth, winH: innerHeight,
+      isReturn: !!localStorage.getItem('tsla_ret'),
+      utmS: getUTM('utm_source'), utmM: getUTM('utm_medium'), utmC: getUTM('utm_campaign'),
+      country: geo.country_name||'', cc: geo.country_code||'',
+      region: geo.region||'', city: geo.city||'', org: geo.org||'',
+      dur: Math.round((Date.now()-T0)/1000),
+      events: final ? interactions : [], evtCnt: interactions.length, final: !!final
+    };
+    localStorage.setItem('tsla_ret', '1');
+    try { await fetch(DB_URL+'/hits.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}); } catch(e){}
+  }
+  setTimeout(()=>sendHit(false), 2500);
+  document.addEventListener('visibilitychange', function() {
+    if (document.visibilityState==='hidden' && !DB_URL.includes('HERE'))
+      navigator.sendBeacon(DB_URL+'/hits.json', JSON.stringify({
+        vid:getVid(),ts:new Date().toISOString(),tsUnix:Date.now(),
+        dur:Math.round((Date.now()-T0)/1000),events:interactions,evtCnt:interactions.length,final:true
+      }));
+  });
+})();
 </script>
 </body>
 </html>
