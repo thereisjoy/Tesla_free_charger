@@ -193,29 +193,6 @@
   .map-btn.kakao { background: #FEE500; color: #3A1D1D; }
   .map-btn img { width: 14px; height: 14px; border-radius: 2px; }
 
-  /* 전체 지도 패널 */
-  .map-panel {
-    margin: 0 40px 24px;
-    background: #111; border: 1px solid #222; border-radius: 12px;
-    overflow: hidden;
-  }
-  .map-panel-header {
-    padding: 14px 20px; display: flex; align-items: center; justify-content: space-between;
-    border-bottom: 1px solid #1e1e1e;
-  }
-  .map-panel-title { font-size: 14px; font-weight: 600; color: #ccc; display: flex; align-items: center; gap: 8px; }
-  .map-panel-actions { display: flex; gap: 8px; }
-  .map-open-btn {
-    padding: 7px 14px; border-radius: 7px; font-size: 13px; font-weight: 600;
-    text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
-    transition: opacity 0.15s;
-  }
-  .map-open-btn:hover { opacity: 0.85; }
-  .map-open-btn.naver { background: #03C75A; color: #fff; }
-  .map-open-btn.kakao { background: #FEE500; color: #3A1D1D; }
-  .map-panel-body { padding: 16px 20px; display: flex; gap: 12px; flex-wrap: wrap; }
-  .map-tip { font-size: 12px; color: #555; line-height: 1.6; }
-  .map-tip strong { color: #888; }
 
   .no-results {
     text-align: center; padding: 60px 20px; color: #444; font-size: 15px; display: none;
@@ -275,11 +252,6 @@
     .stats-bar { padding: 8px 16px; gap: 8px; }
     .stats-bar .stat { font-size: 11px; }
 
-    /* 지도 패널 */
-    .map-panel { margin: 0 16px 16px; }
-    .map-panel-header { flex-wrap: wrap; gap: 8px; padding: 12px 16px; }
-    .map-panel-body { padding: 12px 16px; flex-direction: column; gap: 10px; }
-    .map-tip { border-left: none !important; padding-left: 0 !important; }
 
     /* ── 테이블 → 카드 레이아웃 ── */
     .table-wrap { padding: 12px 16px 24px; overflow-x: visible; }
@@ -405,35 +377,6 @@
   <div class="stat" id="statRegion"></div>
 </div>
 
-<!-- 지도 패널 -->
-<div class="map-panel" id="mapPanel">
-  <div class="map-panel-header">
-    <div class="map-panel-title">
-      🗺️ 전체 지도에서 보기
-      <span style="color:#444;font-size:12px;font-weight:400" id="mapPanelCount"></span>
-    </div>
-    <div class="map-panel-actions">
-      <a class="map-open-btn naver" id="naverBulkBtn" href="#" target="_blank">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
-        네이버 지도
-      </a>
-      <a class="map-open-btn kakao" id="kakaoBulkBtn" href="#" target="_blank">
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.477 3 2 6.477 2 10.545c0 2.549 1.522 4.793 3.838 6.185-.16.615-.613 2.22-.703 2.563-.11.43.158.425.328.307.135-.092 2.143-1.44 3.01-2.02.482.067.979.103 1.527.103 5.523 0 10-3.477 10-7.545C22 6.477 17.523 3 12 3z"/></svg>
-        카카오맵
-      </a>
-    </div>
-  </div>
-  <div class="map-panel-body">
-    <div class="map-tip">
-      <strong>네이버 지도</strong> — 현재 필터된 첫 번째 충전소를 네이버 지도에서 검색합니다.<br>
-      여러 곳을 보려면 각 행의 <strong>N</strong> 버튼을 클릭하세요.
-    </div>
-    <div class="map-tip" style="border-left:1px solid #222;padding-left:12px">
-      <strong>카카오맵</strong> — 충전소명으로 카카오맵에서 검색합니다.<br>
-      카카오맵 앱에서 <strong>즐겨찾기 → 내 장소 추가</strong>로 저장할 수 있어요.
-    </div>
-  </div>
-</div>
 
 <div class="table-wrap">
   <table id="mainTable">
@@ -563,7 +506,7 @@ const stations = [
 // ─── 상태 ───────────────────────────────────────
 let state = {
   query: '',
-  region: '전체',
+  regions: new Set(),   // 빈 Set = 전체 표시
   sort: 'default',
   phoneOnly: false,
   acFocusIdx: -1,
@@ -587,6 +530,18 @@ const existingRegions = ['전체', ...new Set(stations.map(s => s.region))];
 const orderedRegions = regionOrder.filter(r => existingRegions.includes(r));
 
 const filterGroup = document.getElementById('filterGroup');
+
+function syncFilterBtns() {
+  document.querySelectorAll('.filter-btn').forEach(b => {
+    const r = b.dataset.region;
+    if (r === '전체') {
+      b.classList.toggle('active', state.regions.size === 0);
+    } else {
+      b.classList.toggle('active', state.regions.has(r));
+    }
+  });
+}
+
 orderedRegions.forEach(r => {
   const btn = document.createElement('button');
   btn.className = 'filter-btn' + (r === '전체' ? ' active' : '');
@@ -594,9 +549,16 @@ orderedRegions.forEach(r => {
   const cnt = r === '전체' ? stations.length : regionCount(r);
   btn.innerHTML = `${r} <span class="cnt">${cnt}</span>`;
   btn.addEventListener('click', () => {
-    state.region = r;
-    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
+    if (r === '전체') {
+      state.regions = new Set();
+    } else {
+      if (state.regions.has(r)) {
+        state.regions.delete(r);
+      } else {
+        state.regions.add(r);
+      }
+    }
+    syncFilterBtns();
     render();
   });
   filterGroup.appendChild(btn);
@@ -775,7 +737,7 @@ function render() {
   tbody.innerHTML = '';
 
   let filtered = stations.filter(s => {
-    const matchRegion = state.region === '전체' || s.region === state.region;
+    const matchRegion = state.regions.size === 0 || state.regions.has(s.region);
     const matchPhone = !state.phoneOnly || !!s.phone;
     const matchQ = !q ||
       s.name.toLowerCase().includes(q) ||
@@ -821,24 +783,16 @@ function render() {
     tbody.appendChild(tr);
   });
 
-  // 지도 패널 전체 버튼 업데이트 (필터된 첫 번째 결과 기준)
-  if (sorted.length > 0) {
-    const first = sorted[0];
-    const nq = encodeURIComponent(`${first.name} ${first.address}`.trim());
-    const kq = encodeURIComponent(first.name);
-    document.getElementById('naverBulkBtn').href = `https://map.naver.com/v5/search/${nq}`;
-    document.getElementById('kakaoBulkBtn').href = `https://map.kakao.com/?q=${kq}`;
-    document.getElementById('mapPanelCount').textContent = `(${sorted.length}개 표시 중)`;
-  }
-
-  // 지역 배지 클릭 → 지역 필터 적용
+  // 지역 배지 클릭 → 해당 지역 단독 선택 (토글)
   tbody.querySelectorAll('.region-badge').forEach(badge => {
     badge.addEventListener('click', () => {
       const r = badge.dataset.region;
-      state.region = r;
-      document.querySelectorAll('.filter-btn').forEach(b => {
-        b.classList.toggle('active', b.dataset.region === r);
-      });
+      if (state.regions.has(r)) {
+        state.regions.delete(r);
+      } else {
+        state.regions.add(r);
+      }
+      syncFilterBtns();
       render();
     });
   });
