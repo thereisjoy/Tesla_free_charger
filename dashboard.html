@@ -278,7 +278,8 @@
 // ═══════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════
-let DB_URL = localStorage.getItem('tsla_db_url') || '';
+const HARDCODED_DB = 'https://tesla-charger-analytics-default-rtdb.firebaseio.com';
+let DB_URL = localStorage.getItem('tsla_db_url') || HARDCODED_DB;
 let allHits = [];
 let demoMode = false;
 
