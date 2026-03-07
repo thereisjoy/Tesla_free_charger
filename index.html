@@ -218,13 +218,13 @@
   .mob-region-top { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
   .mob-region-toggle {
-    display: flex; align-items: center; gap: 6px; flex-shrink: 0;
-    background: #1a1a1a; border: 1.5px solid #2a2a2a; border-radius: 8px;
-    padding: 8px 13px; color: #aaa; font-size: 14px; font-weight: 500;
+    display: flex; align-items: center; gap: 4px; flex-shrink: 0;
+    background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px;
+    padding: 5px 11px; color: #666; font-size: 12px;
     cursor: pointer; -webkit-tap-highlight-color: transparent;
     transition: border-color 0.15s, color 0.15s;
   }
-  .mob-region-toggle.has-sel { border-color: #e31937; color: #fff; }
+  .mob-region-toggle.has-sel { border-color: #555; color: #ccc; background: #222; }
   .mob-region-arrow { font-size: 10px; transition: transform 0.2s; display: inline-block; }
   .mob-region-toggle.open .mob-region-arrow { transform: rotate(180deg); }
 
@@ -243,15 +243,15 @@
   .mob-region-expand { display: none; padding-top: 10px; }
   .mob-region-expand.open { display: block; }
   .mob-region-grid {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 7px;
+    display: grid; grid-template-columns: repeat(6, 1fr); gap: 5px;
   }
   .mob-region-grid .filter-btn {
     justify-content: center; text-align: center;
-    padding: 11px 4px; font-size: 13px; border-radius: 9px;
-    flex-direction: column; gap: 2px; min-height: 50px;
+    padding: 8px 2px; font-size: 11px; border-radius: 7px;
+    flex-direction: column; gap: 1px; min-height: 40px;
     -webkit-tap-highlight-color: transparent;
   }
-  .mob-region-grid .filter-btn .cnt { font-size: 10px; }
+  .mob-region-grid .filter-btn .cnt { font-size: 9px; }
 
   /* ─── 모바일 반응형 ─────────────────────────────────── */
   @media (max-width: 768px) {
@@ -345,7 +345,7 @@
       <path d="M0 57.9C56.5 32.2 115.4 19.2 171 19.2c55.6 0 114.5 13 171 38.7l-12.5 30.2c-10.3-4.8-20.8-9-31.5-12.8 5.1 22.9 7.7 56 7.7 95.8v18.3h-38.3v-18.3c0-42.5-3.3-77.8-9.3-101.3-22.1-5.6-44.9-8.5-87.1-8.5-42.2 0-65 2.9-87.1 8.5-6 23.5-9.3 58.8-9.3 101.3v18.3H46.3v-18.3c0-39.8 2.6-72.9 7.7-95.8-10.7 3.8-21.2 8-31.5 12.8L0 57.9zM152.2 342V187.6h37.6V342h-37.6z"/>
     </svg>
     <div>
-      <h1>Tesla 충전소 목록</h1>
+      <h1 onclick="location.reload()" style="cursor:pointer">Tesla 무료충전소(데스티네이션) 목록</h1>
       <div class="subtitle">대한민국 전국 충전 인프라</div>
     </div>
   </div>
@@ -381,8 +381,9 @@
   <!-- 모바일 전용: 지역 인라인 확장 -->
   <div class="mob-region-section" id="mobRegionSection">
     <div class="mob-region-top">
+      <span class="sort-label">지역</span>
       <button class="mob-region-toggle" id="mobRegionToggle">
-        지역 <span class="mob-region-arrow" id="mobRegionArrow">▾</span>
+        <span id="mobRegionLabel">전체</span><span class="mob-region-arrow" id="mobRegionArrow">▾</span>
       </button>
       <div class="mob-selected-chips" id="mobSelectedChips"></div>
     </div>
@@ -582,12 +583,22 @@ const filterGroup      = document.getElementById('filterGroup');
 const mobRegionGrid    = document.getElementById('mobRegionGrid');
 const mobRegionToggle  = document.getElementById('mobRegionToggle');
 const mobRegionExpand  = document.getElementById('mobRegionExpand');
+const mobRegionLabel   = document.getElementById('mobRegionLabel');
+const mobRegionSection = document.getElementById('mobRegionSection');
 const mobSelectedChips = document.getElementById('mobSelectedChips');
 
 // ─── 모바일 선택 칩 업데이트 ─────────────────────
 function updateMobChips() {
   const cnt = state.regions.size;
   mobRegionToggle.classList.toggle('has-sel', cnt > 0);
+  // 버튼 레이블: 전체 or 선택한 지역명(1개) or N개 선택
+  if (cnt === 0) {
+    mobRegionLabel.textContent = '전체';
+  } else if (cnt === 1) {
+    mobRegionLabel.textContent = [...state.regions][0];
+  } else {
+    mobRegionLabel.textContent = cnt + '개 선택';
+  }
   mobSelectedChips.innerHTML = [...state.regions].map(r =>
     `<span class="mob-chip" data-r="${r}">${r}<span class="mob-chip-x">×</span></span>`
   ).join('');
@@ -643,10 +654,24 @@ orderedRegions.forEach(r => {
 });
 
 // ─── 모바일 지역 토글 버튼 ──────────────────────
-mobRegionToggle.addEventListener('click', () => {
+function closeMobRegion() {
+  mobRegionExpand.classList.remove('open');
+  mobRegionToggle.classList.remove('open');
+}
+
+mobRegionToggle.addEventListener('click', (e) => {
+  e.stopPropagation();
   const isOpen = mobRegionExpand.classList.toggle('open');
   mobRegionToggle.classList.toggle('open', isOpen);
 });
+
+// 외부 클릭/탭 시 자동 접힘
+document.addEventListener('click', (e) => {
+  if (!mobRegionSection.contains(e.target)) closeMobRegion();
+});
+document.addEventListener('touchstart', (e) => {
+  if (!mobRegionSection.contains(e.target)) closeMobRegion();
+}, { passive: true });
 
 // ─── 정렬 버튼 ───────────────────────────────────
 document.querySelectorAll('.sort-btn').forEach(btn => {
