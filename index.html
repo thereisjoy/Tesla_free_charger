@@ -333,7 +333,7 @@
 
 <header>
   <div class="header-left">
-    <svg class="tesla-logo" viewBox="8 -4 262 262" xmlns="http://www.w3.org/2000/svg">
+    <svg class="tesla-logo" viewBox="8 -4 262 262" xmlns="http://www.w3.org/2000/svg" onclick="location.reload()" style="cursor:pointer">
       <g fill="#e82127">
         <path d="M139.35 252.502l35.476-199.519c33.815 0 44.481 3.708 46.021 18.843 0 0 22.684-8.458 34.125-25.636-44.646-20.688-89.505-21.621-89.505-21.621l-26.176 31.882.059-.004-26.176-31.883s-44.86.934-89.5 21.622c11.431 17.178 34.124 25.636 34.124 25.636C59.347 56.686 70 52.978 103.588 52.954l35.762 199.548"/>
         <path d="M139.336 15.36c36.09-.276 77.399 5.583 119.687 24.014 5.652-10.173 7.105-14.669 7.105-14.669C219.901 6.416 176.61.157 139.331 0 102.054.157 58.765 6.417 12.544 24.705c0 0 2.062 5.538 7.1 14.669 42.28-18.431 83.596-24.29 119.687-24.014h.005"/>
@@ -344,7 +344,7 @@
       <div class="subtitle">대한민국 전국 무료충전 인프라 (3.8.자)</div>
     </div>
   </div>
-  <div class="header-count" id="headerCount">전체 83개</div>
+  <div class="header-count" id="headerCount">전체 0개</div>
 </header>
 
 <div class="controls">
@@ -352,7 +352,7 @@
   <div class="search-wrapper" id="searchWrapper">
     <span class="search-icon">🔍</span>
     <input type="text" class="search-box" id="searchInput"
-      placeholder="충전소명, 주소, 지역 검색... (/ 키로 포커스)"
+      placeholder="충전소명, 주소, 지역 검색..."
       autocomplete="off" spellcheck="false">
     <div class="search-actions">
       <button class="clear-btn" id="clearBtn" title="지우기">✕</button>
@@ -409,7 +409,7 @@
 <div class="stats-bar">
   <div class="stat">표시 <strong id="visibleCount">0</strong>개</div>
   <div class="stat-divider"></div>
-  <div class="stat">전체 <strong>83</strong>개</div>
+  <div class="stat">전체 <strong id="totalCount">0</strong>개</div>
   <div class="stat-divider"></div>
   <div class="stat" id="statPhone"></div>
   <div class="stat-divider"></div>
@@ -917,6 +917,8 @@ window.addEventListener('scroll', () => {
 scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
 // 초기 렌더
+document.getElementById('headerCount').textContent = '전체 ' + stations.length + '개';
+document.getElementById('totalCount').textContent = stations.length;
 render();
 
 // ═══════════════════════════════════════════════════
