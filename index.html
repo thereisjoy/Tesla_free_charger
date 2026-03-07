@@ -212,63 +212,72 @@
   .scroll-top.show { opacity: 1; pointer-events: all; }
   .scroll-top:hover { transform: translateY(-2px); }
 
-  /* ─── 모바일 지역 드로어 버튼 (데스크톱에서 숨김) ── */
-  .region-drawer-btn { display: none; }
+  /* ─── 모바일 지역 드롭다운 (데스크톱 숨김) ── */
+  .region-dd-wrap { display: none; position: relative; flex-shrink: 0; }
 
-  /* ─── 바텀시트 공통 ─────────────────────────────────── */
-  .region-overlay {
-    display: none; position: fixed; inset: 0;
-    background: rgba(0,0,0,0.65); z-index: 400;
-    backdrop-filter: blur(2px);
+  /* 드롭다운 트리거 버튼 */
+  .region-dd-btn {
+    display: flex; align-items: center; gap: 6px;
+    background: #1a1a1a; border: 1.5px solid #2a2a2a; border-radius: 10px;
+    padding: 8px 13px; color: #aaa; font-size: 14px; font-weight: 500;
+    cursor: pointer; transition: all 0.15s; white-space: nowrap;
+    -webkit-tap-highlight-color: transparent;
   }
-  .region-overlay.open { display: block; }
-  .region-drawer {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    background: #141414; border-radius: 20px 20px 0 0;
-    border-top: 1px solid #2a2a2a;
-    z-index: 401; padding: 0 20px 32px;
-    transform: translateY(100%);
-    transition: transform 0.28s cubic-bezier(0.32,0.72,0,1);
-    max-height: 80vh; overflow-y: auto;
+  .region-dd-btn.open,
+  .region-dd-btn:active  { border-color: #e31937; color: #fff; background: #1f1010; }
+  .region-dd-btn.has-sel { border-color: #e31937; color: #fff; background: rgba(227,25,55,0.13); }
+  .region-dd-badge {
+    background: #e31937; color: #fff; border-radius: 10px;
+    padding: 1px 7px; font-size: 11px; font-weight: 700;
+    display: none; line-height: 1.5;
   }
-  .region-drawer.open { transform: translateY(0); }
-  .region-drawer-handle {
-    width: 36px; height: 4px; background: #333; border-radius: 2px;
-    margin: 12px auto 0;
+  .region-dd-btn.has-sel .region-dd-badge { display: inline-block; }
+  .region-dd-arrow { font-size: 10px; color: #555; transition: transform 0.18s; }
+  .region-dd-btn.open .region-dd-arrow { transform: rotate(180deg); color: #e31937; }
+
+  /* 드롭다운 패널 */
+  .region-dd-panel {
+    display: none;
+    position: absolute; top: calc(100% + 6px); left: 0;
+    width: 268px;               /* iPhone 17 393pt 기준 — 여백 확보 */
+    background: #161616; border: 1px solid #2a2a2a; border-radius: 14px;
+    padding: 10px 10px 12px;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.7);
+    z-index: 300;
+    animation: ddFadeIn 0.15s ease;
   }
-  .region-drawer-header {
+  .region-dd-panel.open { display: block; }
+  @keyframes ddFadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  /* 패널 상단 헤더 */
+  .region-dd-header {
     display: flex; align-items: center; justify-content: space-between;
-    padding: 16px 0 12px;
-    border-bottom: 1px solid #1e1e1e;
+    padding: 4px 4px 8px;
+    border-bottom: 1px solid #222; margin-bottom: 8px;
   }
-  .region-drawer-title { font-size: 15px; font-weight: 700; color: #eee; }
-  .region-drawer-title span { color: #e31937; font-size: 13px; margin-left: 6px; }
-  .region-drawer-reset {
-    background: none; border: 1px solid #333; border-radius: 6px;
-    color: #666; font-size: 12px; padding: 5px 10px; cursor: pointer;
-    transition: all 0.15s;
+  .region-dd-label { font-size: 12px; color: #555; }
+  .region-dd-clear {
+    font-size: 12px; color: #444; background: none; border: none;
+    cursor: pointer; padding: 2px 6px; border-radius: 4px;
+    transition: color 0.15s;
   }
-  .region-drawer-reset:hover { border-color: #e31937; color: #e31937; }
-  .region-drawer-grid {
-    display: grid; grid-template-columns: repeat(3, 1fr);
-    gap: 10px; padding: 16px 0;
+  .region-dd-clear:hover, .region-dd-clear:active { color: #e31937; }
+
+  /* 지역 칩 그리드 — 3열 */
+  .region-dd-grid {
+    display: grid; grid-template-columns: repeat(3, 1fr); gap: 7px;
   }
-  .region-drawer-grid .filter-btn {
+  .region-dd-grid .filter-btn {
     justify-content: center; text-align: center;
-    padding: 12px 6px; font-size: 13px;
-    border-radius: 10px; flex-direction: column; gap: 3px;
+    padding: 10px 4px; font-size: 13px; border-radius: 9px;
+    flex-direction: column; gap: 2px;
+    min-height: 52px;           /* 44pt 이상 탭 타겟 (iPhone HIG) */
+    -webkit-tap-highlight-color: transparent;
   }
-  .region-drawer-grid .filter-btn .cnt {
-    font-size: 11px;
-  }
-  .region-drawer-done {
-    width: 100%; padding: 14px;
-    background: #e31937; border: none; border-radius: 12px;
-    color: #fff; font-size: 15px; font-weight: 700;
-    cursor: pointer; transition: opacity 0.15s;
-    margin-top: 4px;
-  }
-  .region-drawer-done:hover { opacity: 0.9; }
+  .region-dd-grid .filter-btn .cnt { font-size: 11px; }
 
   /* ─── 모바일 반응형 ─────────────────────────────────── */
   @media (max-width: 768px) {
@@ -286,22 +295,9 @@
     .search-box { padding: 10px 46px 10px 36px; }
     .kbd-hint { display: none; }
 
-    /* 데스크톱 필터 행 숨기고 드로어 버튼 표시 */
+    /* 데스크톱 필터 행 숨기고 드롭다운 표시 */
     .filter-row { display: none; }
-    .region-drawer-btn {
-      display: flex; align-items: center; gap: 5px; flex-shrink: 0;
-      background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 8px;
-      padding: 7px 12px; color: #aaa; font-size: 13px; cursor: pointer;
-      transition: all 0.15s; white-space: nowrap;
-    }
-    .region-drawer-btn:hover { border-color: #e31937; color: #fff; }
-    .region-drawer-btn.has-selection { border-color: #e31937; color: #fff; background: rgba(227,25,55,0.12); }
-    .region-drawer-badge {
-      background: #e31937; color: #fff; border-radius: 10px;
-      padding: 1px 6px; font-size: 11px; font-weight: 700;
-      display: none;
-    }
-    .region-drawer-btn.has-selection .region-drawer-badge { display: inline; }
+    .region-dd-wrap { display: block; }
 
     /* 정렬 행 — 가로 스크롤 */
     .extra-row {
@@ -409,10 +405,21 @@
 
   <!-- 정렬 + 부가 필터 -->
   <div class="extra-row">
-    <!-- 모바일 전용: 지역 선택 바텀시트 버튼 -->
-    <button class="region-drawer-btn" id="regionDrawerBtn">
-      🗺 지역<span class="region-drawer-badge" id="regionDrawerBadge"></span>
-    </button>
+    <!-- 모바일 전용: 지역 드롭다운 -->
+    <div class="region-dd-wrap" id="regionDdWrap">
+      <button class="region-dd-btn" id="regionDdBtn">
+        🗺 지역
+        <span class="region-dd-badge" id="regionDdBadge"></span>
+        <span class="region-dd-arrow">▾</span>
+      </button>
+      <div class="region-dd-panel" id="regionDdPanel">
+        <div class="region-dd-header">
+          <span class="region-dd-label" id="regionDdLabel">전체 표시 중</span>
+          <button class="region-dd-clear" id="regionDdClear">초기화</button>
+        </div>
+        <div class="region-dd-grid" id="regionDdGrid"></div>
+      </div>
+    </div>
     <span class="sort-label">정렬</span>
     <div class="sort-group">
       <button class="sort-btn active" data-sort="default" title="기본 순서">
@@ -434,17 +441,6 @@
   </div>
 </div>
 
-<!-- 모바일 지역 바텀시트 -->
-<div class="region-overlay" id="regionOverlay"></div>
-<div class="region-drawer" id="regionDrawer">
-  <div class="region-drawer-handle"></div>
-  <div class="region-drawer-header">
-    <span class="region-drawer-title">지역 선택 <span id="drawerSelCount"></span></span>
-    <button class="region-drawer-reset" id="drawerReset">전체 초기화</button>
-  </div>
-  <div class="region-drawer-grid" id="regionDrawerGrid"></div>
-  <button class="region-drawer-done" id="drawerDone">확인</button>
-</div>
 
 <!-- 통계 바 -->
 <div class="stats-bar">
@@ -610,31 +606,28 @@ const existingRegions = ['전체', ...new Set(stations.map(s => s.region))];
 const orderedRegions = regionOrder.filter(r => existingRegions.includes(r));
 
 const filterGroup = document.getElementById('filterGroup');
-const regionDrawerGrid = document.getElementById('regionDrawerGrid');
-const regionDrawerBtn = document.getElementById('regionDrawerBtn');
-const regionOverlay = document.getElementById('regionOverlay');
-const regionDrawer = document.getElementById('regionDrawer');
+const regionDdGrid = document.getElementById('regionDdGrid');
+const regionDdBtn  = document.getElementById('regionDdBtn');
+const regionDdPanel = document.getElementById('regionDdPanel');
 
-// ─── 드로어 배지 업데이트 ───────────────────────
-function updateDrawerBadge() {
+// ─── 드롭다운 배지 & 라벨 업데이트 ────────────
+function updateDdBadge() {
   const cnt = state.regions.size;
-  document.getElementById('regionDrawerBadge').textContent = cnt || '';
-  document.getElementById('drawerSelCount').textContent =
-    cnt ? `(${cnt}개 선택됨)` : '(전체)';
-  regionDrawerBtn.classList.toggle('has-selection', cnt > 0);
+  const badge = document.getElementById('regionDdBadge');
+  const label = document.getElementById('regionDdLabel');
+  badge.textContent = cnt || '';
+  label.textContent = cnt ? `${cnt}개 지역 선택됨` : '전체 표시 중';
+  regionDdBtn.classList.toggle('has-sel', cnt > 0);
 }
 
 // ─── 필터 버튼 활성화 동기화 ───────────────────
 function syncFilterBtns() {
   document.querySelectorAll('.filter-btn').forEach(b => {
     const r = b.dataset.region;
-    if (r === '전체') {
-      b.classList.toggle('active', state.regions.size === 0);
-    } else {
-      b.classList.toggle('active', state.regions.has(r));
-    }
+    b.classList.toggle('active',
+      r === '전체' ? state.regions.size === 0 : state.regions.has(r));
   });
-  updateDrawerBadge();
+  updateDdBadge();
 }
 
 // ─── 지역 버튼 클릭 공통 핸들러 ────────────────
@@ -642,11 +635,7 @@ function handleRegionClick(r) {
   if (r === '전체') {
     state.regions = new Set();
   } else {
-    if (state.regions.has(r)) {
-      state.regions.delete(r);
-    } else {
-      state.regions.add(r);
-    }
+    state.regions.has(r) ? state.regions.delete(r) : state.regions.add(r);
   }
   syncFilterBtns();
   render();
@@ -663,7 +652,7 @@ orderedRegions.forEach(r => {
   filterGroup.appendChild(btn);
 });
 
-// ─── 모바일 드로어 버튼 생성 ─────────────────────
+// ─── 모바일 드롭다운 버튼 생성 ──────────────────
 orderedRegions.forEach(r => {
   const btn = document.createElement('button');
   btn.className = 'filter-btn' + (r === '전체' ? ' active' : '');
@@ -671,24 +660,31 @@ orderedRegions.forEach(r => {
   const cnt = r === '전체' ? stations.length : regionCount(r);
   btn.innerHTML = `${r}<span class="cnt">${cnt}</span>`;
   btn.addEventListener('click', () => handleRegionClick(r));
-  regionDrawerGrid.appendChild(btn);
+  regionDdGrid.appendChild(btn);
 });
 
-// ─── 드로어 열기 / 닫기 ──────────────────────────
-function openDrawer() {
-  regionOverlay.classList.add('open');
-  regionDrawer.classList.add('open');
-  document.body.style.overflow = 'hidden';
+// ─── 드롭다운 열기 / 닫기 ────────────────────────
+function openDd() {
+  regionDdPanel.classList.add('open');
+  regionDdBtn.classList.add('open');
 }
-function closeDrawer() {
-  regionOverlay.classList.remove('open');
-  regionDrawer.classList.remove('open');
-  document.body.style.overflow = '';
+function closeDd() {
+  regionDdPanel.classList.remove('open');
+  regionDdBtn.classList.remove('open');
 }
-regionDrawerBtn.addEventListener('click', openDrawer);
-regionOverlay.addEventListener('click', closeDrawer);
-document.getElementById('drawerDone').addEventListener('click', closeDrawer);
-document.getElementById('drawerReset').addEventListener('click', () => {
+regionDdBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  regionDdPanel.classList.contains('open') ? closeDd() : openDd();
+});
+document.addEventListener('click', e => {
+  if (!document.getElementById('regionDdWrap').contains(e.target)) closeDd();
+});
+// 드롭다운 바깥 터치 시 닫기 (iOS)
+document.addEventListener('touchstart', e => {
+  if (!document.getElementById('regionDdWrap').contains(e.target)) closeDd();
+}, { passive: true });
+document.getElementById('regionDdClear').addEventListener('click', e => {
+  e.stopPropagation();
   state.regions = new Set();
   syncFilterBtns();
   render();
