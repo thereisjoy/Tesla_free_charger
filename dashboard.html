@@ -147,16 +147,16 @@
 <div class="setup-overlay" id="setupOverlay" style="display:none">
   <div class="setup-box">
     <h2>🔧 Firebase <span>연동 설정</span></h2>
-    <p>방문자 데이터를 수집·조회하려면 Firebase Realtime Database가 필요합니다.<br>
-    아래 단계를 따라 무료로 설정하세요 (2~3분 소요).</p>
+    <p>방문자 데이터를 조회하려면 Firebase Realtime Database URL이 필요합니다.<br>
+    이미 설정된 경우 아래 URL을 확인 후 <b>연결하기</b>를 누르세요.<br>
+    처음 설정하려면 아래 단계를 따르세요 (2~3분 소요).</p>
     <ol>
       <li><a href="https://console.firebase.google.com" target="_blank">Firebase 콘솔</a> 접속 → <b>프로젝트 추가</b></li>
-      <li>프로젝트명: <b>tesla-charger-analytics</b> (아무거나 가능)</li>
-      <li>Google Analytics는 사용안함 선택 → 프로젝트 만들기</li>
+      <li>프로젝트명: <b>tesla-charger-analytics</b></li>
+      <li>Google Analytics 사용안함 → 프로젝트 만들기</li>
       <li>좌측메뉴 <b>빌드 → Realtime Database → 데이터베이스 만들기</b></li>
-      <li>위치: <b>미국</b> 선택 → <b>테스트 모드에서 시작</b> → 사용 설정</li>
-      <li>상단에 표시되는 URL을 아래에 붙여넣기<br>
-      <code style="color:#e31937">https://프로젝트명-default-rtdb.firebaseio.com</code></li>
+      <li>위치: <b>미국</b> → <b>테스트 모드에서 시작</b> → 사용 설정</li>
+      <li>표시되는 URL을 아래에 붙여넣기</li>
     </ol>
     <textarea class="setup-input" id="setupInput" placeholder="https://your-project-default-rtdb.firebaseio.com"></textarea>
     <div class="setup-error" id="setupError">올바른 Firebase Realtime Database URL을 입력해주세요.</div>
@@ -176,6 +176,7 @@
   <div class="topbar-right">
     <div class="date-range" id="dateRange">📅 최근 7일</div>
     <button class="refresh-btn" id="refreshBtn">🔄 새로고침</button>
+    <button class="refresh-btn" id="settingsBtn" title="Firebase 설정">⚙️</button>
   </div>
 </div>
 
@@ -279,19 +280,22 @@
 // CONFIG
 // ═══════════════════════════════════════
 const HARDCODED_DB = 'https://tesla-charger-analytics-default-rtdb.firebaseio.com';
-let DB_URL = localStorage.getItem('tsla_db_url') || HARDCODED_DB;
+let DB_URL = localStorage.getItem('tsla_db_url') || '';
 let allHits = [];
 let demoMode = false;
 
 // ── 설정 모달 ──
 function checkSetup() {
-  if (DB_URL && !DB_URL.includes('HERE')) {
+  if (DB_URL && DB_URL.includes('firebaseio.com')) {
     document.getElementById('setupOverlay').style.display = 'none';
     document.getElementById('statusBadge').textContent = 'LIVE';
     document.getElementById('statusBadge').style.background = '#4caf50';
     loadData();
   } else {
+    // 저장된 URL이 없거나 유효하지 않으면 항상 모달 표시
     document.getElementById('setupOverlay').style.display = 'flex';
+    // 입력창에 기본 URL 미리 채우기
+    document.getElementById('setupInput').value = HARDCODED_DB;
   }
 }
 
@@ -320,6 +324,12 @@ document.getElementById('refreshBtn').addEventListener('click', () => {
   else loadData();
 });
 
+document.getElementById('settingsBtn').addEventListener('click', () => {
+  document.getElementById('setupError').style.display = 'none';
+  document.getElementById('setupInput').value = DB_URL || HARDCODED_DB;
+  document.getElementById('setupOverlay').style.display = 'flex';
+});
+
 // ── 날짜 범위 ──
 let dayRange = 7;
 document.getElementById('dateRange').addEventListener('click', function() {
@@ -334,15 +344,37 @@ document.getElementById('dateRange').addEventListener('click', function() {
 // DATA LOADING
 // ═══════════════════════════════════════
 async function loadData() {
+  document.getElementById('statusBadge').textContent = '로딩중...';
+  document.getElementById('statusBadge').style.background = '#888';
   try {
     const res = await fetch(DB_URL + '/hits.json');
+    if (!res.ok) throw new Error('HTTP ' + res.status + ' — Firebase 응답 오류');
     const data = await res.json();
-    if (!data) { allHits = []; renderAll(); return; }
+    if (!data) {
+      allHits = [];
+      document.getElementById('statusBadge').textContent = 'LIVE (데이터 없음)';
+      document.getElementById('statusBadge').style.background = '#4caf50';
+      renderAll();
+      return;
+    }
     allHits = Object.values(data);
+    document.getElementById('statusBadge').textContent = 'LIVE';
+    document.getElementById('statusBadge').style.background = '#4caf50';
     renderAll();
   } catch(e) {
     console.error('Load error:', e);
+    document.getElementById('statusBadge').textContent = 'OFFLINE';
+    document.getElementById('statusBadge').style.background = '#e31937';
+    showConnectError(e.message);
   }
+}
+
+function showConnectError(msg) {
+  const overlay = document.getElementById('setupOverlay');
+  const errEl = document.getElementById('setupError');
+  errEl.textContent = '연결 실패: ' + msg + ' — URL을 확인하거나 데모 모드로 보세요.';
+  errEl.style.display = 'block';
+  overlay.style.display = 'flex';
 }
 
 function getFiltered() {
