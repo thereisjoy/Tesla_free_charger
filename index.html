@@ -328,6 +328,7 @@
     .scroll-top { bottom: 20px; right: 16px; }
   }
 </style>
+<script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
 </head>
 <body>
 
@@ -797,9 +798,52 @@ function getSorted(list) {
   return copy; // default
 }
 
+// ─── 카카오 SDK 초기화 ────────────────────────────
+Kakao.init('a084ef81c2416a34d187bd4d972fefd7');
+
 // ─── 디바이스 감지 ───────────────────────────────
 function isMobile() {
   return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
+// ─── 주소 → 좌표 변환 후 카카오 내비 실행 ─────────
+async function openKakaoNavi(station) {
+  try {
+    const res = await fetch(
+      `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(station.address)}`,
+      { headers: { Authorization: 'KakaoAK d29a8acfdc757ef7de1ac564d7d63844' } }
+    );
+    const data = await res.json();
+    if (data.documents && data.documents.length > 0) {
+      const { x, y } = data.documents[0];
+      Kakao.Navi.start({
+        name: station.address,
+        x: parseFloat(x),
+        y: parseFloat(y),
+        coordType: 'wgs84'
+      });
+    } else {
+      // 주소 검색 실패 시 키워드 검색으로 재시도
+      const res2 = await fetch(
+        `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(station.name + ' ' + station.address)}`,
+        { headers: { Authorization: 'KakaoAK d29a8acfdc757ef7de1ac564d7d63844' } }
+      );
+      const data2 = await res2.json();
+      if (data2.documents && data2.documents.length > 0) {
+        const { x, y } = data2.documents[0];
+        Kakao.Navi.start({
+          name: station.address,
+          x: parseFloat(x),
+          y: parseFloat(y),
+          coordType: 'wgs84'
+        });
+      } else {
+        alert('주소를 찾을 수 없습니다.\n네이버 버튼을 이용해주세요.');
+      }
+    }
+  } catch (err) {
+    alert('카카오 내비 연결에 실패했습니다.\n네이버 버튼을 이용해주세요.');
+  }
 }
 
 // ─── 메인 렌더 ───────────────────────────────────
@@ -872,16 +916,10 @@ function render() {
     btn.addEventListener('click', (e) => {
       e.preventDefault();
       if (isMobile()) {
-        // 모바일: 카카오 내비 앱으로 연결
         const stationName = btn.dataset.name;
         const station = stations.find(s => s.name === stationName);
-        if (station) {
-          // Android / iOS 모두 kakaonavi:// 스킴 지원 → 주소로 길찾기
-          const addr = encodeURIComponent(station.address);
-          window.location.href = `kakaonavi://route?en=${addr}&by=CAR`;
-        }
+        if (station) openKakaoNavi(station);
       } else {
-        // PC/웹: 팝업 메시지
         alert('📱 모바일로 접속시 카카오내비로 연결됩니다.\n\n거리확인이 필요하시면 "네이버 버튼"을 클릭해주세요.');
       }
     });
