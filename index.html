@@ -797,6 +797,11 @@ function getSorted(list) {
   return copy; // default
 }
 
+// ─── 디바이스 감지 ───────────────────────────────
+function isMobile() {
+  return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+}
+
 // ─── 메인 렌더 ───────────────────────────────────
 function render() {
   const q = state.query.trim().toLowerCase();
@@ -819,9 +824,8 @@ function render() {
 
   sorted.forEach((s, i) => {
     const naverQuery = encodeURIComponent(`${s.name} ${s.address}`.trim());
-    const kakaoQuery = encodeURIComponent(s.name);
     const naverUrl = `https://map.naver.com/v5/search/${naverQuery}`;
-    const kakaoUrl = `https://map.kakao.com/?q=${kakaoQuery}`;
+    const kakaoNaviUrl = `kakaonavi://route?destination=${s.lat},${s.lng}&destinationname=${encodeURIComponent(s.name)}`;
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="row-num">${i + 1}</td>
@@ -840,10 +844,10 @@ function render() {
             <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
             네이버
           </a>
-          <a class="map-btn kakao" href="${kakaoUrl}" target="_blank" rel="noopener">
+          <button class="map-btn kakao" data-name="${s.name}">
             <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.477 3 2 6.477 2 10.545c0 2.549 1.522 4.793 3.838 6.185-.16.615-.613 2.22-.703 2.563-.11.43.158.425.328.307.135-.092 2.143-1.44 3.01-2.02.482.067.979.103 1.527.103 5.523 0 10-3.477 10-7.545C22 6.477 17.523 3 12 3z"/></svg>
             카카오
-          </a>
+          </button>
         </div>
       </td>
     `;
@@ -861,6 +865,31 @@ function render() {
       }
       syncFilterBtns();
       render();
+    });
+  });
+
+  // 카카오 버튼 클릭
+  tbody.querySelectorAll('.map-btn.kakao').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      if (isMobile()) {
+        // 모바일: 카카오 내비 앱으로 연결
+        const stationName = btn.dataset.name;
+        const station = stations.find(s => s.name === stationName);
+        if (station && station.lat && station.lng) {
+          const kakaoNaviUrl = `kakaonavi://route?destination=${station.lat},${station.lng}&destinationname=${encodeURIComponent(station.name)}`;
+          // Android는 다른 스킴 사용
+          const ua = navigator.userAgent.toLowerCase();
+          if (ua.includes('android')) {
+            window.location.href = `kakaomap://action/routeSearch?destination=${station.lat},${station.lng}&nickname=${encodeURIComponent(station.name)}`;
+          } else {
+            window.location.href = kakaoNaviUrl;
+          }
+        }
+      } else {
+        // PC/웹: 팝업 메시지
+        alert('📱 모바일로 접속시 카카오내비로 연결됩니다.\n\n주소확인이 필요하시면 "네이버 버튼"을 클릭해주세요.');
+      }
     });
   });
 
