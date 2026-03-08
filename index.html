@@ -445,102 +445,85 @@
 
 <script>
 const stations = [
-  // 서울
-  { name: "강남 N 타워", region: "서울", address: "강남구 테헤란로 129", detail: "", phone: "02-6250-5150" },
-  { name: "그랜드 워커힐 서울", region: "서울", address: "광진구 워커힐로 177", detail: "", phone: "02-455-5000" },
-  { name: "더 플라자 호텔", region: "서울", address: "중구 소공로 119", detail: "", phone: "02-771-2200" },
-  { name: "라이즈 오토그래프콜렉션 호텔", region: "서울", address: "마포구 양화로 130", detail: "", phone: "02-330-7700" },
+  { name: "강남 N 타워", region: "서울", address: "강남구 테헤란로 129", detail: "", phone: "02-6250-5150", lat: 37.4999397623793, lng: 127.032366449372 },
+  { name: "그랜드 워커힐 서울", region: "서울", address: "광진구 워커힐로 177", detail: "", phone: "02-455-5000", lat: 37.5586287308609, lng: 127.11170683593 },
+  { name: "더 플라자 호텔", region: "서울", address: "중구 소공로 119", detail: "", phone: "02-771-2200", lat: 37.5646641418657, lng: 126.978090221167 },
+  { name: "라이즈 오토그래프콜렉션 호텔", region: "서울", address: "마포구 양화로 130", detail: "", phone: "02-330-7700", lat: 37.5543349117636, lng: 126.921207395382 },
   { name: "마리오 아울렛", region: "서울", address: "구로구 디지털로9길 23", detail: "", phone: "02-2109-7000" },
-  { name: "메이필드 호텔", region: "서울", address: "강서구 방화대로 94", detail: "", phone: "02-2660-9000" },
-  { name: "서울 강남 - 센터필드", region: "서울", address: "강남구 테헤란로 231", detail: "센터필드 B5F", phone: "080-617-1399" },
-  { name: "서울 강북 - 안토", region: "서울", address: "강북구 삼양로 689", detail: "파라스파라 RF/1F", phone: "02-3408-5000" },
-  { name: "서울 서초 - 쌍용플래티넘", region: "서울", address: "서초구 서초중앙로 18", detail: "쌍용플래티넘 B2F", phone: "02-588-1586" },
-  { name: "서울 성수 - D Tower", region: "서울", address: "성동구 왕십리로 83-21", detail: "서울포레스트D타워 B5F", phone: "" },
-  { name: "서울 수유 - 에피소드 수유", region: "서울", address: "강북구 도봉로 315", detail: "에피소드 수유 838 B4F", phone: "" },
-  { name: "서울 왕십리 (5층)", region: "서울", address: "성동구 왕십리광장로 17", detail: "비트플렉스 5F", phone: "02-2200-1000" },
-  { name: "서울 청량리 (M5F층)", region: "서울", address: "동대문구 왕산로 214", detail: "롯데백화점 청량리점 M5F", phone: "" },
-  { name: "소설호텔", region: "서울", address: "서초구 반포대로14길 53", detail: "", phone: "02-507-0505" },
-  { name: "스테이폴리오 - 모여집", region: "서울", address: "서대문구 연희로31길 30-4", detail: "", phone: "1670-4123" },
-  { name: "임피리얼 팰리스 부티크 호텔 이태원", region: "서울", address: "용산구 이태원로 221", detail: "", phone: "02-3702-8000" },
-  { name: "포시즌스 호텔 서울", region: "서울", address: "종로구 새문안로 97", detail: "", phone: "02-6388-5000" },
-  { name: "사운즈 한남", region: "서울", address: "용산구 대사관로 35", detail: "", phone: "02-511-7443" },
+  { name: "메이필드 호텔", region: "서울", address: "강서구 방화대로 94", detail: "", phone: "02-2660-9000", lat: 37.5478957237892, lng: 126.819507121486 },
+  { name: "서울 강남 - 센터필드", region: "서울", address: "강남구 테헤란로 231", detail: "센터필드 B5F", phone: "080-617-1399", lat: 37.5028813541774, lng: 127.041356540268 },
+  { name: "서울 강북 - 안토", region: "서울", address: "강북구 삼양로 689", detail: "파라스파라 RF/1F", phone: "02-3408-5000", lat: 37.6649474833411, lng: 127.007680218158 },
+  { name: "서울 서초 - 쌍용플래티넘", region: "서울", address: "서초구 서초중앙로 18", detail: "쌍용플래티넘 B2F", phone: "02-588-1586", lat: 37.4840476212544, lng: 127.017348668302 },
+  { name: "서울 성수 - D Tower", region: "서울", address: "성동구 왕십리로 83-21", detail: "서울포레스트D타워 B5F", phone: "", lat: 37.5441547484979, lng: 127.043357753557 },
+  { name: "서울 수유 - 에피소드 수유", region: "서울", address: "강북구 도봉로 315", detail: "에피소드 수유 838 B4F", phone: "", lat: 37.6369305402999, lng: 127.02328159303 },
+  { name: "서울 왕십리 (5층)", region: "서울", address: "성동구 왕십리광장로 17", detail: "비트플렉스 5F", phone: "02-2200-1000", lat: 37.5614417528647, lng: 127.038394194396 },
+  { name: "서울 청량리 (M5F층)", region: "서울", address: "동대문구 왕산로 214", detail: "롯데백화점 청량리점 M5F", phone: "", lat: 37.584197400389, lng: 127.05114503929 },
+  { name: "소설호텔", region: "서울", address: "서초구 반포대로14길 53", detail: "", phone: "02-507-0505", lat: 37.486387109138, lng: 127.013779844026 },
+  { name: "스테이폴리오 - 모여집", region: "서울", address: "서대문구 연희로31길 30-4", detail: "", phone: "1670-4123", lat: 37.5760978316762, lng: 126.933977267131 },
+  { name: "임피리얼 팰리스 부티크 호텔 이태원", region: "서울", address: "용산구 이태원로 221", detail: "", phone: "02-3702-8000", lat: 37.5353647901185, lng: 126.998228746283 },
+  { name: "포시즌스 호텔 서울", region: "서울", address: "종로구 새문안로 97", detail: "", phone: "02-6388-5000", lat: 37.5706978504521, lng: 126.975398227489 },
+  { name: "사운즈 한남", region: "서울", address: "용산구 대사관로 35", detail: "", phone: "02-511-7443", lat: 37.5337501903567, lng: 127.00214819989 },
   { name: "Geonmokplaza", region: "서울", address: "서초구 시흥대로27길 22", detail: "", phone: "" },
-  // 경기
-  { name: "수원 광교 - 법조타운", region: "경기", address: "수원시 법조로149번길 269", detail: "광교 법원 주차장 3F", phone: "" },
-  { name: "수원 광교 - 롯데아울렛", region: "경기", address: "수원시 도청로 10", detail: "롯데아울렛 광교점 지하4층 A3 기둥 인근", phone: "" },
-  { name: "광명 - AK플라자", region: "경기", address: "광명시 양지로 19", detail: "광명 유플래닛 B5F", phone: "" },
-  { name: "군포 - AK플라자 (지하2층, 14구역)", region: "경기", address: "군포시 엘에스로 143", detail: "AK PLAZA 금정점 B2", phone: "" },
-  { name: "그리드위즈 연구동", region: "경기", address: "성남시 분당구 하오개로344번길 2", detail: "", phone: "031-698-3387" },
-  { name: "김포 구래", region: "경기", address: "김포시 김포한강4로 487", detail: "카림애비뉴 김포 B1F", phone: "" },
-  { name: "디테라스", region: "경기", address: "성남시 분당구 판교로319번길 13", detail: "", phone: "031-609-7999" },
-  { name: "렉스필드 CC", region: "경기", address: "여주시 산북면 광여로 1115", detail: "", phone: "031-880-0300" },
-  { name: "부천 (지하4층 E3)", region: "경기", address: "부천시 길주로 300", detail: "", phone: "" },
-  { name: "안양 평촌 (주차비 있음, 7층)", region: "경기", address: "안양시 관평로170번길 33", detail: "CGV 평촌 7F", phone: "" },
-  { name: "여주 - 신세계프리미엄아울렛", region: "경기", address: "여주시 명품로 360", detail: "여주프리미엄아울렛", phone: "1644-4001" },
-  { name: "용인 기흥 - 롯데프리미엄아울렛", region: "경기", address: "용인시 신고매로 124", detail: "롯데프리미엄아울렛 기흥점 B3F", phone: "" },
-  { name: "의왕 - 롯데프리미엄아울렛", region: "경기", address: "의왕시 바라산로 1", detail: "롯데프리미엄아울렛 의왕점 B1F (09:30~21:30)", phone: "1577-0001" },
-  { name: "카페인W", region: "경기", address: "김포시 양촌읍 김포한강4로 292-1", detail: "", phone: "070-7722-3330" },
-  { name: "파주 - 뮌스터담", region: "경기", address: "파주시 운정로 113-175", detail: "", phone: "" },
-  { name: "성남 판교 - 카카오아지트", region: "경기", address: "성남시 분당구 판교역로 166", detail: "카카오 판교 아지트 B2F", phone: "" },
-  { name: "성남 판교 - 테크원", region: "경기", address: "성남시 분당구 백현동 534", detail: "", phone: "" },
-  { name: "포춘테일", region: "경기", address: "포천시 동교로 15-14", detail: "", phone: "" },
-  { name: "화성 동탄 - 롯데백화점", region: "경기", address: "화성시 동탄역로 160", detail: "롯데백화점 동탄 B4F", phone: "1577-0001" },
-  // 인천
-  { name: "그랜드 하얏트 인천 웨스트타워", region: "인천", address: "중구 영종해안남로321번길 190", detail: "", phone: "032-745-1234" },
-  { name: "그랜드 하얏트 인천 이스트타워", region: "인천", address: "중구 영종해안남로321번길 208", detail: "", phone: "032-745-1234" },
-  { name: "인천 미추홀 - 앨리웨이", region: "인천", address: "미추홀구 숙골로88번길 12", detail: "앨리웨이 인천 B4F", phone: "" },
-  { name: "인천 영종 - 그랜드하얏트 West", region: "인천", address: "중구 영종해안남로321번길 208", detail: "", phone: "" },
-  { name: "인천 영종 - 그랜드하얏트 East", region: "인천", address: "중구 영종해안남로321번길 208", detail: "", phone: "" },
-  { name: "인천 청라 - 스퀘어7", region: "인천", address: "서구 청라루비로 76", detail: "스퀘어7", phone: "" },
+  { name: "수원 광교 - 법조타운", region: "경기", address: "수원시 법조로149번길 269", detail: "광교 법원 주차장 3F", phone: "", lat: 37.293391141106, lng: 127.070190419521 },
+  { name: "수원 광교 - 롯데아울렛", region: "경기", address: "수원시 도청로 10", detail: "롯데아울렛 광교점 지하4층 A3 기둥 인근", phone: "", lat: 37.2866696524735, lng: 127.055448351197 },
+  { name: "광명 - AK플라자", region: "경기", address: "광명시 양지로 19", detail: "광명 유플래닛 B5F", phone: "", lat: 37.4190189911899, lng: 126.882623607455 },
+  { name: "군포 - AK플라자 (지하2층, 14구역)", region: "경기", address: "군포시 엘에스로 143", detail: "AK PLAZA 금정점 B2", phone: "", lat: 37.3728500250826, lng: 126.944923276711 },
+  { name: "그리드위즈 연구동", region: "경기", address: "성남시 분당구 하오개로344번길 2", detail: "", phone: "031-698-3387", lat: 37.3910494336859, lng: 127.056447967115 },
+  { name: "김포 구래", region: "경기", address: "김포시 김포한강4로 487", detail: "카림애비뉴 김포 B1F", phone: "", lat: 37.646397891817, lng: 126.629516278447 },
+  { name: "디테라스", region: "경기", address: "성남시 분당구 판교로319번길 13", detail: "", phone: "031-609-7999", lat: 37.4037383177861, lng: 127.109117752246 },
+  { name: "렉스필드 CC", region: "경기", address: "여주시 산북면 광여로 1115", detail: "", phone: "031-880-0300", lat: 37.3988920709185, lng: 127.431395053386 },
+  { name: "부천 (지하4층 E3)", region: "경기", address: "부천시 길주로 300", detail: "", phone: "", lat: 37.5025627553952, lng: 126.775275476115 },
+  { name: "안양 평촌 (주차비 있음, 7층)", region: "경기", address: "안양시 관평로170번길 33", detail: "CGV 평촌 7F", phone: "", lat: 37.3930187793518, lng: 126.962287233607 },
+  { name: "여주 - 신세계프리미엄아울렛", region: "경기", address: "여주시 명품로 360", detail: "여주프리미엄아울렛", phone: "1644-4001", lat: 37.2459466972835, lng: 127.612385423931 },
+  { name: "용인 기흥 - 롯데프리미엄아울렛", region: "경기", address: "용인시 신고매로 124", detail: "롯데프리미엄아울렛 기흥점 B3F", phone: "", lat: 37.2255419641124, lng: 127.121283960956 },
+  { name: "의왕 - 롯데프리미엄아울렛", region: "경기", address: "의왕시 바라산로 1", detail: "롯데프리미엄아울렛 의왕점 B1F (09:30~21:30)", phone: "1577-0001", lat: 37.3758168645238, lng: 127.010277326166 },
+  { name: "카페인W", region: "경기", address: "김포시 양촌읍 김포한강4로 292-1", detail: "", phone: "070-7722-3330", lat: 37.6519500855799, lng: 126.650509838498 },
+  { name: "파주 - 뮌스터담", region: "경기", address: "파주시 운정로 113-175", detail: "", phone: "", lat: 37.7267736397005, lng: 126.784125404353 },
+  { name: "성남 판교 - 카카오아지트", region: "경기", address: "성남시 분당구 판교역로 166", detail: "카카오 판교 아지트 B2F", phone: "", lat: 37.3952969470752, lng: 127.110449292622 },
+  { name: "성남 판교 - 테크원", region: "경기", address: "성남시 분당구 백현동 534", detail: "", phone: "", lat: 37.3954596217643, lng: 127.112129738248 },
+  { name: "포춘테일", region: "경기", address: "포천시 동교로 15-14", detail: "", phone: "", lat: 37.8426616451082, lng: 127.131662642415 },
+  { name: "화성 동탄 - 롯데백화점", region: "경기", address: "화성시 동탄역로 160", detail: "롯데백화점 동탄 B4F", phone: "1577-0001", lat: 37.200666359626, lng: 127.098203113972 },
+  { name: "그랜드 하얏트 인천 웨스트타워", region: "인천", address: "중구 영종해안남로321번길 190", detail: "", phone: "032-745-1234", lat: 37.4398298995074, lng: 126.456113275998 },
+  { name: "그랜드 하얏트 인천 이스트타워", region: "인천", address: "중구 영종해안남로321번길 208", detail: "", phone: "032-745-1234", lat: 37.4404634809323, lng: 126.457464899839 },
+  { name: "인천 미추홀 - 앨리웨이", region: "인천", address: "미추홀구 숙골로88번길 12", detail: "앨리웨이 인천 B4F", phone: "", lat: 37.4695305506994, lng: 126.664593164043 },
+  { name: "인천 영종 - 그랜드하얏트 West", region: "인천", address: "중구 영종해안남로321번길 208", detail: "", phone: "", lat: 37.4404634809323, lng: 126.457464899839 },
+  { name: "인천 영종 - 그랜드하얏트 East", region: "인천", address: "중구 영종해안남로321번길 208", detail: "", phone: "", lat: 37.4404634809323, lng: 126.457464899839 },
+  { name: "인천 청라 - 스퀘어7", region: "인천", address: "서구 청라루비로 76", detail: "스퀘어7", phone: "", lat: 37.5322840014817, lng: 126.642099544013 },
   { name: "이비스스타일앰베서더호텔 에어포트", region: "인천", address: "중구 제2공항대로 340", detail: "", phone: "" },
-  { name: "아이나비 프리미엄 스토어 인천점", region: "인천", address: "인천", detail: "", phone: "" },
-  // 대구
-  { name: "대구백화점 프라자점", region: "대구", address: "중구 명덕로 333", detail: "", phone: "053-426-1234" },
-  // 대전
-  { name: "대전 서구 - 롯데백화점", region: "대전", address: "서구 계룡로 598", detail: "롯데백화점 대전 B4F", phone: "" },
-  // 광주
-  { name: "제일볼링센터", region: "광주", address: "북구 서방로 83", detail: "", phone: "" },
+  { name: "아이나비 프리미엄 스토어 인천점", region: "인천", address: "인천", detail: "", phone: "", lat: 37.4560044656442, lng: 126.705258070068 },
+  { name: "대구백화점 프라자점", region: "대구", address: "중구 명덕로 333", detail: "", phone: "053-426-1234", lat: 35.8557170359818, lng: 128.606361603087 },
+  { name: "대전 서구 - 롯데백화점", region: "대전", address: "서구 계룡로 598", detail: "롯데백화점 대전 B4F", phone: "", lat: 36.3406861255513, lng: 127.389548388967 },
+  { name: "제일볼링센터", region: "광주", address: "북구 서방로 83", detail: "", phone: "", lat: 35.1718713620011, lng: 126.922236530331 },
   { name: "럭셔리몰임팩트광주명품백화점", region: "광주", address: "서구 상무대로 509", detail: "", phone: "062-946-3333" },
-  // 부산
-  { name: "부산 기장 - 롯데프리미엄아울렛", region: "부산", address: "기장군 기장해안로 147", detail: "롯데프리미엄아울렛 동부산점", phone: "" },
-  { name: "한화리조트 해운대 티볼리", region: "부산", address: "해운대구 마린시티3로 52", detail: "", phone: "051-749-5500" },
-  { name: "코리아 골프 연습장", region: "부산", address: "사하구 장림번영로103번길 35", detail: "", phone: "051-264-6378" },
-  // 울산
-  { name: "간절곶 까르마레 펜션", region: "울산", address: "울주군 서생면 불안길 32-11", detail: "", phone: "052-242-5600" },
-  // 세종
-  { name: "세종 어진 - AK플라자 (지하2층, 14구역)", region: "세종", address: "다솜1로 20", detail: "KT&G 세종타워C B2F", phone: "" },
-  // 강원
-  { name: "라임 비치 펜션", region: "강원", address: "강릉시 해안로 651-17", detail: "", phone: "010-2603-5436" },
-  { name: "보키하우스", region: "강원", address: "고성군 죽왕면 자작도선사길 110", detail: "", phone: "033-631-0303" },
-  { name: "삼척 원더풀", region: "강원", address: "삼척시 동해대로 3852", detail: "", phone: "033-575-5189" },
-  { name: "양양 - 설해원", region: "강원", address: "양양군 공항로 230", detail: "설해원 리조트", phone: "" },
-  { name: "춘천 - ENTA 2022", region: "강원", address: "춘천시 후석로 120", detail: "엔타2022 지하2층", phone: "" },
-  { name: "TrueLamerHotel (Sokcho)", region: "강원", address: "속초시 동해대로 4201", detail: "", phone: "" },
-  { name: "한화리조트 설악 쏘라노", region: "강원", address: "속초시 미시령로2983번길 111", detail: "", phone: "033-630-5500" },
-  // 충북
-  { name: "이븐데일 컨트리클럽", region: "충북", address: "청주시 상당구 대신2길 31", detail: "", phone: "043-288-1000" },
-  { name: "충주 - 모다아울렛", region: "충북", address: "충주시 중원대로 3683", detail: "", phone: "" },
-  { name: "충주 - 홈마트", region: "충북", address: "충주시 기업도시로 26", detail: "", phone: "043-846-7796" },
-  // 충남
-  { name: "부여 - 롯데프리미엄아울렛", region: "충남", address: "부여군 백제문로 387", detail: "롯데아울렛 부여", phone: "041-435-2500" },
-  { name: "스테이폴리오 - 제로플레이스", region: "충남", address: "서산시 일락골길 367-19", detail: "", phone: "0504-0904-2004" },
-  // 경북
-  { name: "그린 빌딩", region: "경북", address: "고령군 왕릉로 114", detail: "", phone: "054-956-7007" },
-  { name: "포항", region: "경북", address: "포항시 북구 흥해읍 동해대로 878", detail: "포항오토파크", phone: "" },
-  // 경남
-  { name: "사랑채 한방오리", region: "경남", address: "김해시 분성로307번길 16", detail: "", phone: "055-325-5292" },
-  // 전북
-  { name: "전주 - 효자몰 (주차비 있음, 지하2층)", region: "전북", address: "전주시 용머리로 45", detail: "몰오브효자 B2F", phone: "" },
-  { name: "한일렌트카", region: "전북", address: "전주시 쑥고개로 301-15", detail: "", phone: "063-255-8166" },
-  // 전남
-  { name: "포레스트 96", region: "전남", address: "화순군 화순읍", detail: "", phone: "061-375-2404" },
-  // 제주
-  { name: "더 클라우드 호텔", region: "제주", address: "서귀포시 성산읍 한도로 269-37", detail: "", phone: "064-783-8366" },
+  { name: "부산 기장 - 롯데프리미엄아울렛", region: "부산", address: "기장군 기장해안로 147", detail: "롯데프리미엄아울렛 동부산점", phone: "", lat: 35.1923229796397, lng: 129.212495349946 },
+  { name: "한화리조트 해운대 티볼리", region: "부산", address: "해운대구 마린시티3로 52", detail: "", phone: "051-749-5500", lat: 35.1544470889259, lng: 129.145059295243 },
+  { name: "코리아 골프 연습장", region: "부산", address: "사하구 장림번영로103번길 35", detail: "", phone: "051-264-6378", lat: 35.0818339455272, lng: 128.97508977968 },
+  { name: "간절곶 까르마레 펜션", region: "울산", address: "울주군 서생면 불안길 32-11", detail: "", phone: "052-242-5600", lat: 35.3594414880331, lng: 129.334000706155 },
+  { name: "세종 어진 - AK플라자 (지하2층, 14구역)", region: "세종", address: "다솜1로 20", detail: "KT&G 세종타워C B2F", phone: "", lat: 36.5003122343055, lng: 127.256674820241 },
+  { name: "라임 비치 펜션", region: "강원", address: "강릉시 해안로 651-17", detail: "", phone: "010-2603-5436", lat: 37.8129836199366, lng: 128.895157183518 },
+  { name: "보키하우스", region: "강원", address: "고성군 죽왕면 자작도선사길 110", detail: "", phone: "033-631-0303", lat: 38.3079826297318, lng: 128.541270589685 },
+  { name: "삼척 원더풀", region: "강원", address: "삼척시 동해대로 3852", detail: "", phone: "033-575-5189", lat: 37.4295043897939, lng: 129.183056714873 },
+  { name: "양양 - 설해원", region: "강원", address: "양양군 공항로 230", detail: "설해원 리조트", phone: "", lat: 38.0555847904558, lng: 128.664155059627 },
+  { name: "춘천 - ENTA 2022", region: "강원", address: "춘천시 후석로 120", detail: "엔타2022 지하2층", phone: "", lat: 37.8633518904834, lng: 127.74834628981 },
+  { name: "TrueLamerHotel (Sokcho)", region: "강원", address: "속초시 동해대로 4201", detail: "", phone: "", lat: 38.1941373493827, lng: 128.576720530812 },
+  { name: "한화리조트 설악 쏘라노", region: "강원", address: "속초시 미시령로2983번길 111", detail: "", phone: "033-630-5500", lat: 38.2101595305386, lng: 128.527388761735 },
+  { name: "이븐데일 컨트리클럽", region: "충북", address: "청주시 상당구 대신2길 31", detail: "", phone: "043-288-1000", lat: 36.68294979598, lng: 127.60363688116 },
+  { name: "충주 - 모다아울렛", region: "충북", address: "충주시 중원대로 3683", detail: "", phone: "", lat: 36.9614816203079, lng: 127.898156089973 },
+  { name: "충주 - 홈마트", region: "충북", address: "충주시 기업도시로 26", detail: "", phone: "043-846-7796", lat: 37.0010828759683, lng: 127.835172625128 },
+  { name: "부여 - 롯데프리미엄아울렛", region: "충남", address: "부여군 백제문로 387", detail: "롯데아울렛 부여", phone: "041-435-2500", lat: 36.3071477811308, lng: 126.902270362904 },
+  { name: "스테이폴리오 - 제로플레이스", region: "충남", address: "서산시 일락골길 367-19", detail: "", phone: "0504-0904-2004", lat: 36.7241790482863, lng: 126.576135359926 },
+  { name: "그린 빌딩", region: "경북", address: "고령군 왕릉로 114", detail: "", phone: "054-956-7007", lat: 35.7295190263116, lng: 128.268051764144 },
+  { name: "포항", region: "경북", address: "포항시 북구 흥해읍 동해대로 878", detail: "포항오토파크", phone: "", lat: 36.0590254041689, lng: 129.320816134279 },
+  { name: "사랑채 한방오리", region: "경남", address: "김해시 분성로307번길 16", detail: "", phone: "055-325-5292", lat: 35.2347719091215, lng: 128.879873102314 },
+  { name: "전주 - 효자몰 (주차비 있음, 지하2층)", region: "전북", address: "전주시 용머리로 45", detail: "몰오브효자 B2F", phone: "", lat: 35.8069313015329, lng: 127.115569344574 },
+  { name: "한일렌트카", region: "전북", address: "전주시 쑥고개로 301-15", detail: "", phone: "063-255-8166", lat: 35.8022154480302, lng: 127.097235038484 },
+  { name: "포레스트 96", region: "전남", address: "화순군 화순읍", detail: "", phone: "061-375-2404", lat: 35.0599399781348, lng: 126.984565050764 },
+  { name: "더 클라우드 호텔", region: "제주", address: "서귀포시 성산읍 한도로 269-37", detail: "", phone: "064-783-8366", lat: 33.4691169590312, lng: 126.935143076579 },
   { name: "모노리스제주파크", region: "제주", address: "제주시 애월읍 어음리 산 131-3", detail: "", phone: "070-4900-2230" },
-  { name: "씨에스 호텔 & 리조트", region: "제주", address: "서귀포시 중문관광로 198", detail: "", phone: "064-735-3000" },
-  { name: "스테이폴리오 - 송당아진", region: "제주", address: "제주시 송당5길 46-78", detail: "", phone: "0504-0904-2420" },
-  { name: "스테이폴리오 - 빈티지제주", region: "제주", address: "제주시 주전길 98-1", detail: "", phone: "0504-0904-2034" },
-  { name: "스테이폴리오 - 월령선인장", region: "제주", address: "제주시 월령1길 10", detail: "", phone: "0504-0904-2049" },
+  { name: "씨에스 호텔 & 리조트", region: "제주", address: "서귀포시 중문관광로 198", detail: "", phone: "064-735-3000", lat: 33.24291591839, lng: 126.420293320269 },
+  { name: "스테이폴리오 - 송당아진", region: "제주", address: "제주시 송당5길 46-78", detail: "", phone: "0504-0904-2420", lat: 33.4771399769141, lng: 126.785605129545 },
+  { name: "스테이폴리오 - 빈티지제주", region: "제주", address: "제주시 주전길 98-1", detail: "", phone: "0504-0904-2034", lat: 33.3345943043061, lng: 126.175134555535 },
+  { name: "스테이폴리오 - 월령선인장", region: "제주", address: "제주시 월령1길 10", detail: "", phone: "0504-0904-2049", lat: 33.376133829184, lng: 126.215910564161 }
 ];
 
 // ─── 상태 ───────────────────────────────────────
@@ -807,56 +790,20 @@ function isMobile() {
 }
 
 // ─── 주소 → 좌표 변환 후 카카오 내비 실행 ─────────
-async function openKakaoNavi(station) {
-  // 지역명 앞에 붙여서 검색 정확도 향상 (예: "서울 강남구 테헤란로 129")
-  const fullAddr = station.region + ' ' + station.address;
-  console.log('🚀 카카오 내비 검색 시작:', { station: station.name, fullAddr });
-  try {
-    const res = await fetch(
-      `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(fullAddr)}`,
-      { headers: { Authorization: 'KakaoAK d29a8acfdc757ef7de1ac564d7d63844' } }
-    );
-    const data = await res.json();
-    console.log('📡 API 응답 (주소 검색):', data);
-
-    if (data.documents && data.documents.length > 0) {
-      const { x, y } = data.documents[0];
-      console.log('✅ 좌표 찾음:', { x, y });
-      Kakao.Navi.start({
-        name: station.address,
-        x: parseFloat(x),
-        y: parseFloat(y),
-        coordType: 'wgs84'
-      });
-    } else {
-      console.log('⚠️ 주소 검색 실패, 키워드 검색 시도...');
-      alert('[DEBUG] 주소 검색 실패\n검색어: ' + fullAddr + '\n응답: ' + JSON.stringify(data));
-      // 주소 검색 실패 시 키워드 검색으로 재시도
-      const res2 = await fetch(
-        `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(station.name + ' ' + fullAddr)}`,
-        { headers: { Authorization: 'KakaoAK d29a8acfdc757ef7de1ac564d7d63844' } }
-      );
-      const data2 = await res2.json();
-      console.log('📡 API 응답 (키워드 검색):', data2);
-
-      if (data2.documents && data2.documents.length > 0) {
-        const { x, y } = data2.documents[0];
-        console.log('✅ 키워드로 좌표 찾음:', { x, y });
-        Kakao.Navi.start({
-          name: station.address,
-          x: parseFloat(x),
-          y: parseFloat(y),
-          coordType: 'wgs84'
-        });
-      } else {
-        console.error('❌ 주소를 찾을 수 없음');
-        alert('[DEBUG] 키워드 검색도 실패\n검색어: ' + station.name + ' ' + fullAddr + '\n응답: ' + JSON.stringify(data2));
-        alert('주소를 찾을 수 없습니다.\n네이버 버튼을 이용해주세요.');
-      }
-    }
-  } catch (err) {
-    console.error('🔴 API 호출 오류:', err);
-    alert('카카오 내비 연결에 실패했습니다.\n네이버 버튼을 이용해주세요.');
+function openKakaoNavi(station) {
+  // 좌표가 있으면 직접 사용 (API 호출 불필요)
+  if (station.lat && station.lng) {
+    console.log('✅ 좌표 직접 사용:', { lat: station.lat, lng: station.lng });
+    Kakao.Navi.start({
+      name: station.address,
+      x: station.lng,
+      y: station.lat,
+      coordType: 'wgs84'
+    });
+  } else {
+    // 좌표 없는 충전소는 네이버로 연결
+    console.log('⚠️ 좌표 없음, 네이버로 연결:', station.name);
+    alert('해당 충전소는 카카오 내비로 연결할 수 없습니다.\n네이버 버튼을 이용해주세요.');
   }
 }
 
