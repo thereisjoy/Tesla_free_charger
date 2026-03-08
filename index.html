@@ -793,13 +793,18 @@ function isMobile() {
 function openKakaoNavi(station) {
   // 좌표가 있으면 직접 사용 (API 호출 불필요)
   if (station.lat && station.lng) {
-    console.log('✅ 좌표 직접 사용:', { lat: station.lat, lng: station.lng });
-    Kakao.Navi.start({
-      name: station.address,
-      x: station.lng,
-      y: station.lat,
-      coordType: 'wgs84'
-    });
+    console.log('✅ 카카오 내비 시작:', { name: station.name, lat: station.lat, lng: station.lng });
+    try {
+      Kakao.Navi.start({
+        name: station.name,  // 주소 대신 충전소 이름 사용
+        x: station.lng,
+        y: station.lat,
+        coordType: 'wgs84'
+      });
+    } catch (err) {
+      console.error('카카오 내비 오류:', err);
+      alert('카카오 내비 연결 실패:\n' + err.message + '\n\n네이버 버튼을 이용해주세요.');
+    }
   } else {
     // 좌표 없는 충전소는 네이버로 연결
     console.log('⚠️ 좌표 없음, 네이버로 연결:', station.name);
