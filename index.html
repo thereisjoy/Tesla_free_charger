@@ -825,7 +825,6 @@ function render() {
   sorted.forEach((s, i) => {
     const naverQuery = encodeURIComponent(s.address.trim());
     const naverUrl = `https://map.naver.com/v5/search/${naverQuery}`;
-    const kakaoNaviUrl = `kakaonavi://route?destination=${s.lat},${s.lng}&destinationname=${encodeURIComponent(s.name)}`;
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td class="row-num">${i + 1}</td>
