@@ -810,14 +810,18 @@ function isMobile() {
 async function openKakaoNavi(station) {
   // 지역명 앞에 붙여서 검색 정확도 향상 (예: "서울 강남구 테헤란로 129")
   const fullAddr = station.region + ' ' + station.address;
+  console.log('🚀 카카오 내비 검색 시작:', { station: station.name, fullAddr });
   try {
     const res = await fetch(
       `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(fullAddr)}`,
       { headers: { Authorization: 'KakaoAK d29a8acfdc757ef7de1ac564d7d63844' } }
     );
     const data = await res.json();
+    console.log('📡 API 응답 (주소 검색):', data);
+
     if (data.documents && data.documents.length > 0) {
       const { x, y } = data.documents[0];
+      console.log('✅ 좌표 찾음:', { x, y });
       Kakao.Navi.start({
         name: station.address,
         x: parseFloat(x),
@@ -825,14 +829,18 @@ async function openKakaoNavi(station) {
         coordType: 'wgs84'
       });
     } else {
+      console.log('⚠️ 주소 검색 실패, 키워드 검색 시도...');
       // 주소 검색 실패 시 키워드 검색으로 재시도
       const res2 = await fetch(
         `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(station.name + ' ' + fullAddr)}`,
         { headers: { Authorization: 'KakaoAK d29a8acfdc757ef7de1ac564d7d63844' } }
       );
       const data2 = await res2.json();
+      console.log('📡 API 응답 (키워드 검색):', data2);
+
       if (data2.documents && data2.documents.length > 0) {
         const { x, y } = data2.documents[0];
+        console.log('✅ 키워드로 좌표 찾음:', { x, y });
         Kakao.Navi.start({
           name: station.address,
           x: parseFloat(x),
@@ -840,10 +848,12 @@ async function openKakaoNavi(station) {
           coordType: 'wgs84'
         });
       } else {
+        console.error('❌ 주소를 찾을 수 없음');
         alert('주소를 찾을 수 없습니다.\n네이버 버튼을 이용해주세요.');
       }
     }
   } catch (err) {
+    console.error('🔴 API 호출 오류:', err);
     alert('카카오 내비 연결에 실패했습니다.\n네이버 버튼을 이용해주세요.');
   }
 }
