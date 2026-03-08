@@ -876,14 +876,16 @@ function render() {
         // 모바일: 카카오 내비 앱으로 연결
         const stationName = btn.dataset.name;
         const station = stations.find(s => s.name === stationName);
-        if (station && station.lat && station.lng) {
-          const kakaoNaviUrl = `kakaonavi://route?destination=${station.lat},${station.lng}&destinationname=${encodeURIComponent(station.name)}`;
-          // Android는 다른 스킴 사용
+        if (station) {
           const ua = navigator.userAgent.toLowerCase();
+          const name = encodeURIComponent(station.name);
+          const addr = encodeURIComponent(station.address);
           if (ua.includes('android')) {
-            window.location.href = `kakaomap://action/routeSearch?destination=${station.lat},${station.lng}&nickname=${encodeURIComponent(station.name)}`;
+            // Android: 카카오맵 앱 → 길찾기 검색
+            window.location.href = `kakaomap://search?q=${name} ${addr}`;
           } else {
-            window.location.href = kakaoNaviUrl;
+            // iOS: 카카오내비 앱 → 목적지 이름으로 연결
+            window.location.href = `kakaonavi://route?destinationName=${name}`;
           }
         }
       } else {
