@@ -808,9 +808,11 @@ function isMobile() {
 
 // ─── 주소 → 좌표 변환 후 카카오 내비 실행 ─────────
 async function openKakaoNavi(station) {
+  // 지역명 앞에 붙여서 검색 정확도 향상 (예: "서울 강남구 테헤란로 129")
+  const fullAddr = station.region + ' ' + station.address;
   try {
     const res = await fetch(
-      `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(station.address)}`,
+      `https://dapi.kakao.com/v2/local/search/address.json?query=${encodeURIComponent(fullAddr)}`,
       { headers: { Authorization: 'KakaoAK d29a8acfdc757ef7de1ac564d7d63844' } }
     );
     const data = await res.json();
@@ -825,7 +827,7 @@ async function openKakaoNavi(station) {
     } else {
       // 주소 검색 실패 시 키워드 검색으로 재시도
       const res2 = await fetch(
-        `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(station.name + ' ' + station.address)}`,
+        `https://dapi.kakao.com/v2/local/search/keyword.json?query=${encodeURIComponent(station.name + ' ' + fullAddr)}`,
         { headers: { Authorization: 'KakaoAK d29a8acfdc757ef7de1ac564d7d63844' } }
       );
       const data2 = await res2.json();
