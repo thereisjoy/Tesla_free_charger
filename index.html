@@ -823,7 +823,7 @@ function render() {
   const sorted = getSorted(filtered);
 
   sorted.forEach((s, i) => {
-    const naverQuery = encodeURIComponent(`${s.name} ${s.address}`.trim());
+    const naverQuery = encodeURIComponent(s.address.trim());
     const naverUrl = `https://map.naver.com/v5/search/${naverQuery}`;
     const kakaoNaviUrl = `kakaonavi://route?destination=${s.lat},${s.lng}&destinationname=${encodeURIComponent(s.name)}`;
     const tr = document.createElement('tr');
@@ -883,7 +883,7 @@ function render() {
         }
       } else {
         // PC/웹: 팝업 메시지
-        alert('📱 모바일로 접속시 카카오내비로 연결됩니다.\n\n주소확인이 필요하시면 "네이버 버튼"을 클릭해주세요.');
+        alert('📱 모바일로 접속시 카카오내비로 연결됩니다.\n\n거리확인이 필요하시면 "네이버 버튼"을 클릭해주세요.');
       }
     });
   });
