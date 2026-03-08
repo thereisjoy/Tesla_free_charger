@@ -877,9 +877,9 @@ function render() {
         const stationName = btn.dataset.name;
         const station = stations.find(s => s.name === stationName);
         if (station) {
-          // Android / iOS 모두 kakaonavi:// 스킴 지원 → 주소로 검색
+          // Android / iOS 모두 kakaonavi:// 스킴 지원 → 주소로 길찾기
           const addr = encodeURIComponent(station.address);
-          window.location.href = `kakaonavi://route?destinationName=${addr}`;
+          window.location.href = `kakaonavi://route?en=${addr}&by=CAR`;
         }
       } else {
         // PC/웹: 팝업 메시지
