@@ -133,6 +133,14 @@
 
   .nodata-msg { text-align: center; padding: 40px; color: #333; font-size: 14px; }
 
+  /* ── 시간대 탭 ── */
+  .hour-tab {
+    background: #1a1a24; border: 1px solid #2a2a34; border-radius: 6px;
+    padding: 3px 10px; color: #555; font-size: 11px; cursor: pointer; transition: all 0.15s;
+  }
+  .hour-tab.active { background: #e31937; border-color: #e31937; color: #fff; }
+  .hour-tab:hover:not(.active) { border-color: #444; color: #aaa; }
+
   @media (max-width: 800px) {
     .container { padding: 16px; }
     .monetization-panel { grid-template-columns: 1fr; }
@@ -236,10 +244,29 @@
     </div>
   </div>
 
-  <!-- ── 시간대별 히트맵 ── -->
-  <div class="chart-box full" style="margin-bottom:24px">
-    <div class="chart-title">🕐 시간대별 트래픽 히트맵 <span class="tip">— 광고 스케줄링 최적 시간</span></div>
-    <div id="heatmapContainer"></div>
+  <!-- ── 시간대별 방문자 그래프 ── -->
+  <div class="chart-box full" style="margin-bottom:16px">
+    <div class="chart-title" style="justify-content:space-between">
+      <span>🕐 시간대별 방문자 <span class="tip">— 피크 타임 파악</span></span>
+      <div style="display:flex;gap:6px">
+        <button class="hour-tab active" data-mode="pv">PV</button>
+        <button class="hour-tab" data-mode="uv">UV</button>
+      </div>
+    </div>
+    <canvas id="chartHourly" style="max-height:220px"></canvas>
+    <div id="hourlyInsight" style="margin-top:10px;font-size:12px;color:#555;text-align:center"></div>
+  </div>
+
+  <!-- ── 요일 + 시간대 히트맵 ── -->
+  <div class="chart-grid" style="margin-bottom:24px">
+    <div class="chart-box">
+      <div class="chart-title">📅 요일별 방문 패턴</div>
+      <canvas id="chartWeekday" style="max-height:220px"></canvas>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">🕐 요일×시간 히트맵 <span class="tip">— 광고 스케줄링</span></div>
+      <div id="heatmapContainer" style="padding-top:4px"></div>
+    </div>
   </div>
 
   <!-- ── 테이블 ── -->
@@ -430,6 +457,8 @@ function renderAll() {
   renderKPIs(hits);
   renderMonetization(hits);
   renderCharts(hits);
+  renderHourlyChart(hits);
+  renderWeekdayChart(hits);
   renderTables(hits);
   renderHeatmap(hits);
 }
@@ -622,6 +651,150 @@ function fillTable(id, data, total, showPct) {
       </div></td>
     </tr>
   `).join('');
+}
+
+// ── 시간대별 방문자 차트 ──
+let hourMode = 'pv';
+document.querySelectorAll('.hour-tab').forEach(btn => {
+  btn.addEventListener('click', function() {
+    document.querySelectorAll('.hour-tab').forEach(b => b.classList.remove('active'));
+    this.classList.add('active');
+    hourMode = this.dataset.mode;
+    const hits = getFiltered();
+    renderHourlyChart(hits);
+  });
+});
+
+function renderHourlyChart(hits) {
+  if (charts.hourly) { charts.hourly.destroy(); delete charts.hourly; }
+
+  const hourData = Array(24).fill(0);
+  const hourUV = Array.from({length:24}, () => new Set());
+
+  hits.forEach(h => {
+    const d = new Date(h.tsUnix || new Date(h.ts).getTime());
+    const hr = d.getHours();
+    hourData[hr]++;
+    if (h.vid) hourUV[hr].add(h.vid);
+  });
+
+  const pvData = hourData;
+  const uvData = hourUV.map(s => s.size);
+  const chartData = hourMode === 'uv' ? uvData : pvData;
+
+  const maxVal = Math.max(1, ...chartData);
+  const peakHr = chartData.indexOf(maxVal);
+
+  // 색상: 피크는 빨강, 나머지는 강도에 따라 그라데이션
+  const colors = chartData.map((v, i) => {
+    const intensity = v / maxVal;
+    if (i === peakHr) return '#e31937';
+    if (intensity > 0.7) return 'rgba(227,25,55,0.7)';
+    if (intensity > 0.4) return 'rgba(227,25,55,0.4)';
+    if (intensity > 0.1) return 'rgba(227,25,55,0.2)';
+    return '#1a1a26';
+  });
+
+  const labels = Array.from({length:24}, (_, i) => `${i}시`);
+
+  charts.hourly = new Chart(document.getElementById('chartHourly'), {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{
+        data: chartData,
+        backgroundColor: colors,
+        borderRadius: 4,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.raw}${hourMode === 'uv' ? '명(UV)' : '회(PV)'}`,
+            title: ctx => `${ctx[0].label} (${ctx[0].dataIndex === peakHr ? '🔥 피크' : ''})`
+          },
+          backgroundColor: '#1a1a2a', titleColor: '#ccc', bodyColor: '#aaa',
+          borderColor: '#333', borderWidth: 1
+        }
+      },
+      scales: {
+        x: { ticks: { color: ctx => ctx.index === peakHr ? '#e31937' : '#444', font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: '#444', font: { size: 10 } }, grid: { color: '#1a1a22' }, beginAtZero: true }
+      }
+    }
+  });
+
+  // 인사이트 텍스트
+  const total = chartData.reduce((a,b)=>a+b,0);
+  const peakPct = total ? Math.round(chartData[peakHr]/total*100) : 0;
+  const morning = chartData.slice(6,12).reduce((a,b)=>a+b,0);
+  const afternoon = chartData.slice(12,18).reduce((a,b)=>a+b,0);
+  const night = chartData.slice(18,24).reduce((a,b)=>a+b,0);
+  const bestPeriod = morning >= afternoon && morning >= night ? '오전(6-12시)' : afternoon >= night ? '오후(12-18시)' : '저녁(18-24시)';
+
+  document.getElementById('hourlyInsight').textContent =
+    `🔥 피크: ${peakHr}시 (전체의 ${peakPct}%) · 가장 활발한 시간대: ${bestPeriod}`;
+}
+
+// ── 요일별 방문 패턴 ──
+function renderWeekdayChart(hits) {
+  if (charts.weekday) { charts.weekday.destroy(); delete charts.weekday; }
+
+  const dayLabels = ['일','월','화','수','목','금','토'];
+  const dayData = Array(7).fill(0);
+  const dayUV = Array.from({length:7}, () => new Set());
+
+  hits.forEach(h => {
+    const d = new Date(h.tsUnix || new Date(h.ts).getTime());
+    const wd = d.getDay();
+    dayData[wd]++;
+    if (h.vid) dayUV[wd].add(h.vid);
+  });
+
+  const maxVal = Math.max(1, ...dayData);
+  const peakDay = dayData.indexOf(maxVal);
+
+  const colors = dayData.map((v, i) =>
+    i === peakDay ? '#e31937' : `rgba(227,25,55,${0.15 + (v/maxVal)*0.45})`
+  );
+
+  charts.weekday = new Chart(document.getElementById('chartWeekday'), {
+    type: 'bar',
+    data: {
+      labels: dayLabels,
+      datasets: [{
+        label: 'PV',
+        data: dayData,
+        backgroundColor: colors,
+        borderRadius: 6,
+        borderSkipped: false,
+      }, {
+        label: 'UV',
+        data: dayUV.map(s => s.size),
+        backgroundColor: dayData.map((_, i) => i === peakDay ? 'rgba(255,255,255,0.3)' : 'rgba(255,255,255,0.08)'),
+        borderRadius: 6,
+        borderSkipped: false,
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { labels: { color: '#555', font: { size: 10 } } },
+        tooltip: {
+          backgroundColor: '#1a1a2a', titleColor: '#ccc', bodyColor: '#aaa',
+          borderColor: '#333', borderWidth: 1
+        }
+      },
+      scales: {
+        x: { ticks: { color: ctx => ctx.index === peakDay ? '#e31937' : '#555', font: { size: 12, weight: ctx => ctx.index === peakDay ? '700' : '400' } }, grid: { display: false } },
+        y: { ticks: { color: '#444', font: { size: 10 } }, grid: { color: '#1a1a22' }, beginAtZero: true }
+      }
+    }
+  });
 }
 
 // ── 히트맵 ──
