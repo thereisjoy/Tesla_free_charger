@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Tesla 무료충전소(데스티네이션)</title>
+<title>Tesla 충전소</title>
 
 <!-- Open Graph / 카카오톡·SNS 링크 미리보기 -->
 <meta property="og:type"        content="website">
 <meta property="og:url"         content="https://thereisjoy.github.io/Tesla_free_charger/">
-<meta property="og:title"       content="Tesla 무료충전소(데스티네이션)">
-<meta property="og:description" content="전국 79개 Tesla 무료 충전소(데스티네이션) 위치 안내 및 카카오·네이버 내비게이션 바로 연결">
+<meta property="og:title"       content="Tesla 충전소">
+<meta property="og:description" content="전국 79개 Tesla 충전소 위치 안내 및 카카오·네이버 내비게이션 바로 연결">
 <meta property="og:image"       content="https://thereisjoy.github.io/Tesla_free_charger/og-image.png">
 <meta property="og:image:width"  content="1200">
 <meta property="og:image:height" content="630">
@@ -17,8 +17,8 @@
 
 <!-- 트위터 카드 -->
 <meta name="twitter:card"        content="summary_large_image">
-<meta name="twitter:title"       content="Tesla 무료충전소(데스티네이션)">
-<meta name="twitter:description" content="전국 79개 Tesla 무료 충전소(데스티네이션) 위치 안내 및 카카오·네이버 내비게이션 바로 연결">
+<meta name="twitter:title"       content="Tesla 충전소">
+<meta name="twitter:description" content="전국 79개 Tesla 충전소 위치 안내 및 카카오·네이버 내비게이션 바로 연결">
 <meta name="twitter:image"       content="https://thereisjoy.github.io/Tesla_free_charger/og-image.png">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -170,6 +170,25 @@
   .row-num { color: #444; font-size: 12px; }
   .name { font-weight: 600; color: #fff; line-height: 1.4; }
   .name mark { background: rgba(227,25,55,0.2); color: #ff6b7a; border-radius: 2px; padding: 0 1px; }
+  .name-link { color: #fff; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.25); text-underline-offset: 3px; transition: color 0.15s, text-decoration-color 0.15s; }
+  .name-link:hover { color: #e31937; text-decoration-color: #e31937; }
+
+  /* 탭별 컬럼 표시 제어 */
+  .col-sc { display: none; }
+  .col-dest { display: table-cell; }
+  #mainTable.mode-sc .col-sc { display: table-cell; }
+  #mainTable.mode-sc .col-dest { display: none; }
+
+  /* 충전기/요금 셀 스타일 */
+  .stalls-cell { text-align: center; font-size: 13px; color: #ccc; }
+  .stalls-num { font-weight: 700; font-size: 15px; color: #fff; }
+  .stalls-kw { font-size: 11px; color: #777; display: block; margin-top: 1px; }
+  /* 모바일 충전기 배지 — 데스크탑에서는 숨김 */
+  .stalls-badge { display: none; }
+  .price-cell { font-size: 12px; line-height: 1.6; }
+  .price-tesla { color: #e31937; font-weight: 600; }
+  .price-other { color: #888; }
+  .price-label { font-size: 10px; color: #555; margin-right: 2px; }
 
   .region-badge {
     display: inline-block;
@@ -287,28 +306,37 @@
   .mob-region-grid .filter-btn .cnt { font-size: 9px; }
 
   /* ─── 모바일 반응형 ─────────────────────────────────── */
+  /* ─── 모바일 반응형 (iPhone 17 / max-width:768px) ──────── */
   @media (max-width: 768px) {
+
+    /* ── 헤더 ── */
+    header {
+      padding: 10px 16px 10px max(16px, env(safe-area-inset-left));
+      gap: 10px;
+      position: sticky; top: 0; z-index: 110;
+    }
+    .header-left { gap: 10px; }
+    .tesla-logo { width: 24px; height: 24px; }
+    header h1 { font-size: 15px; }
+    header .subtitle { font-size: 10px; }
+    .header-count { font-size: 11px; padding: 3px 9px; }
+
+    /* ── 탭 바 ── */
     .tab-bar { padding: 0 16px; }
     .tab-btn { padding: 11px 14px; font-size: 13px; }
 
-    /* 헤더 */
-    header { padding: 12px 16px; gap: 10px; }
-    .header-left { gap: 10px; }
-    .tesla-logo { width: 26px; height: 26px; }
-    header h1 { font-size: 16px; }
-    header .subtitle { font-size: 11px; }
-    .header-count { font-size: 12px; padding: 3px 10px; }
-
-    /* 컨트롤 */
-    .controls { padding: 10px 16px; gap: 8px; }
-    .search-box { padding: 10px 46px 10px 36px; }
+    /* ── 검색 / 컨트롤 ── */
+    .controls {
+      padding: 10px 16px;
+      gap: 8px;
+      top: 47px;           /* sticky: 헤더 아래 */
+    }
+    .search-box { padding: 10px 44px 10px 36px; font-size: 15px; }
     .kbd-hint { display: none; }
 
-    /* 데스크톱 필터 행 숨기고 모바일 지역 섹션 표시 */
+    /* 데스크톱 필터 숨기고 모바일 지역 섹션 표시 */
     .filter-row { display: none; }
     .mob-region-section { display: block; }
-
-    /* extra-row: 드롭다운 wrap 숨기고 정렬만 표시 */
     .region-dd-wrap { display: none !important; }
     .extra-row {
       flex-wrap: nowrap; overflow-x: auto;
@@ -322,9 +350,8 @@
     .stats-bar { padding: 8px 16px; gap: 8px; }
     .stats-bar .stat { font-size: 11px; }
 
-
-    /* ── 테이블 → 카드 레이아웃 ── */
-    .table-wrap { padding: 12px 16px 24px; overflow-x: visible; }
+    /* ─── 테이블 → 카드 레이아웃 ─────────────────────── */
+    .table-wrap { padding: 10px 12px calc(32px + env(safe-area-inset-bottom)); overflow-x: visible; }
     table { min-width: unset; width: 100%; }
     table, tbody { display: block; }
     thead { display: none; }
@@ -333,43 +360,96 @@
       display: grid;
       grid-template-columns: 1fr auto;
       grid-template-areas:
-        "td-name td-region"
-        "td-addr td-addr"
-        "td-phone td-phone"
-        "td-map td-map";
+        "td-name   td-region"
+        "td-addr   td-addr"
+        "td-map    td-map";
       background: #111;
       border: 1px solid #1e1e1e;
-      border-radius: 12px;
-      margin-bottom: 10px;
-      padding: 14px;
+      border-radius: 14px;
+      margin-bottom: 9px;
+      padding: 13px 14px;
       gap: 4px 8px;
+      -webkit-tap-highlight-color: transparent;
+      transition: background 0.12s;
     }
-    tbody tr:hover { background: #141414; }
-    td { padding: 2px 0; border: none; vertical-align: top; }
+    tbody tr:active { background: #171717; }
 
-    /* 각 열 → grid-area 배치 */
-    td:nth-child(1) { display: none; }                                      /* 번호 숨김 */
-    td:nth-child(2) { grid-area: td-name; }                                 /* 충전소명 */
-    td:nth-child(3) { grid-area: td-region; align-self: start; padding-top: 3px; } /* 지역 */
-    td:nth-child(4) { grid-area: td-addr; }                                 /* 주소 */
-    td:nth-child(5) { grid-area: td-phone; }                                /* 전화번호 */
-    td:nth-child(6) { grid-area: td-map; }                                  /* 지도 버튼 */
+    td { padding: 0; border: none; vertical-align: top; }
 
-    .name { font-size: 15px; }
-    .address { font-size: 13px; }
-    .phone-link { font-size: 13px; }
-    .no-data { display: none; }
+    /* ── 클래스 기반 grid-area 배치 (nth-child 대신) ── */
+    td.row-num                          { display: none; }
+    td:has(.name)                       { grid-area: td-name;   min-width: 0; }
+    td:has(.region-badge)               { grid-area: td-region; align-self: start; padding-top: 2px; }
+    td.address                          { grid-area: td-addr; }
+    /* td.stalls-cell — 모바일에서 숨김 처리됨 (배지로 대체) */
+    td.col-dest:not(.stalls-cell)       { grid-area: td-extra;  align-self: center; }
+    td.price-cell                       { grid-area: td-extra;  align-self: center; }
 
-    /* 지도 버튼 가로 정렬 */
-    .map-btns { flex-direction: row; gap: 8px; margin-top: 4px; }
-    .map-btn { flex: 1; justify-content: center; padding: 9px 8px; }
+    /* SC 탭: 이름+배지(요금포함) / 주소 / 버튼 */
+    #mainTable.mode-sc tbody tr {
+      grid-template-areas:
+        "td-name   td-region"
+        "td-addr   td-addr"
+        "td-map    td-map";
+    }
+    /* SC 모바일: price-cell 숨김 (배지에 포함됨) */
+    #mainTable.mode-sc td.price-cell { display: none; }
+    td:has(.map-btns)                   { grid-area: td-map; }
 
-    /* 검색 결과 없음 */
-    .no-results { padding: 40px 16px; }
+    /* col-sc 빈 셀(데스티네이션 행) — 이미 display:none이지만 명시 */
+    td.col-sc:not(.stalls-cell):not(.price-cell) { display: none; }
 
-    /* 맨 위로 버튼 */
-    .scroll-top { bottom: 20px; right: 16px; }
+    /* ── 텍스트 스타일 ── */
+    .name          { font-size: 15px; font-weight: 700; line-height: 1.3; display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
+    .name-link     { color: inherit; text-decoration: none; }
+    .name-link:active { opacity: 0.7; }
+
+    /* ── 충전기 배지 (이름 옆에 인라인 표시) ── */
+    .stalls-badge {
+      display: inline-flex; align-items: center;
+      background: #e31937; color: #fff;
+      font-size: 11px; font-weight: 700;
+      padding: 2px 7px; border-radius: 20px;
+      letter-spacing: 0.3px; white-space: nowrap;
+      flex-shrink: 0;
+    }
+
+    .address       { font-size: 12px; color: #888; line-height: 1.5; margin-top: 2px; }
+    .detail        { font-size: 11px; color: #666; margin-top: 1px; }
+
+    /* ── 충전기 정보 칸 — 모바일에서 숨김 (배지로 대체) ── */
+    td.stalls-cell { display: none !important; }
+
+    /* ── 전화번호 ── */
+    .phone-link { font-size: 12px; }
+    .no-data    { display: none; }
+
+    /* ── 가격 (슈퍼차저) ── */
+    .price-cell    { font-size: 11px; line-height: 1.5; text-align: right; }
+    .price-tesla   { font-size: 15px; font-weight: 700; }
+    .price-other   { font-size: 11px; }
+
+    /* ── 지도 버튼 ── */
+    .map-btns { flex-direction: row; gap: 8px; margin-top: 6px; }
+    .map-btn  {
+      flex: 1; justify-content: center;
+      padding: 10px 8px; font-size: 12px;
+      border-radius: 8px; min-height: 44px;   /* Apple HIG 최소 터치 영역 */
+      touch-action: manipulation;
+    }
+
+    /* ── 기타 ── */
+    .no-results  { padding: 40px 16px; }
+    .scroll-top  {
+      bottom: calc(20px + env(safe-area-inset-bottom));
+      right: max(16px, env(safe-area-inset-right));
+    }
   }
+  /* ── 전화번호 열 숨김 ── */
+  th[data-col="phone"],
+  td.col-dest:not(.stalls-cell) { display: none !important; }
+  #hasPhoneBtn { display: none !important; }
+
 </style>
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
 </head>
@@ -384,8 +464,8 @@
       </g>
     </svg>
     <div>
-      <h1 onclick="location.reload()" style="cursor:pointer">Tesla 무료충전소</h1>
-      <div class="subtitle" id="headerSubtitle">대한민국 전국 데스티네이션 · 슈퍼차저 안내</div>
+      <h1 onclick="location.reload()" style="cursor:pointer">Tesla 충전소</h1>
+      <div class="subtitle" id="headerSubtitle">전국 데스티네이션 안내</div>
     </div>
   </div>
   <div class="header-count" id="headerCount">전체 0개</div>
@@ -394,10 +474,18 @@
 <!-- ── 탭 바 ── -->
 <div class="tab-bar">
   <button class="tab-btn active" id="tabDest" onclick="switchTab('destination')">
-    ⚡ 데스티네이션 <span class="tab-cnt" id="tabDestCnt">79</span>
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0">
+      <rect x="9" y="2" width="2.5" height="7" rx="1"/>
+      <rect x="12.5" y="2" width="2.5" height="7" rx="1"/>
+      <path d="M6 8h12a1 1 0 0 1 1 1v4a5 5 0 0 1-5 5h-1v3a1 1 0 0 1-2 0v-3h-1a5 5 0 0 1-5-5V9a1 1 0 0 1 1-1z"/>
+    </svg>
+    데스티네이션 <span class="tab-cnt" id="tabDestCnt">79</span>
   </button>
-  <button class="tab-btn" id="tabSc" onclick="switchTab('supercharger')">
-    🔴 슈퍼차저 <span class="tab-cnt" id="tabScCnt">175</span>
+  <button class="tab-btn" id="tabSc" onclick="switchTab('supercharger')" style="display:none">
+    <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0">
+      <path d="M13 2L4.5 13.5H11L10 22L19.5 10H13L13 2Z"/>
+    </svg>
+    슈퍼차저 <span class="tab-cnt" id="tabScCnt">175</span>
   </button>
 </div>
 
@@ -476,10 +564,13 @@
     <thead>
       <tr>
         <th style="width:36px"><div class="th-inner">#</div></th>
-        <th style="width:230px" data-col="name"><div class="th-inner">충전소명 <span class="sort-ind" id="ind-name"></span></div></th>
-        <th style="width:80px" data-col="region"><div class="th-inner">지역 <span class="sort-ind" id="ind-region"></span></div></th>
+        <th style="width:210px" data-col="name"><div class="th-inner">충전소명 <span class="sort-ind" id="ind-name"></span></div></th>
+        <th style="width:72px" data-col="region"><div class="th-inner">지역 <span class="sort-ind" id="ind-region"></span></div></th>
         <th data-col="address"><div class="th-inner">주소</div></th>
-        <th style="width:130px" data-col="phone"><div class="th-inner">전화번호</div></th>
+        <th class="col-dest" style="width:80px" data-col="destStalls"><div class="th-inner">충전기</div></th>
+        <th class="col-dest" style="width:130px" data-col="phone"><div class="th-inner">전화번호</div></th>
+        <th class="col-sc" style="width:72px" data-col="stalls"><div class="th-inner">충전기 <span class="sort-ind" id="ind-stalls"></span></div></th>
+        <th class="col-sc" style="width:115px" data-col="price"><div class="th-inner">요금(Tesla/타) <span class="sort-ind" id="ind-price"></span></div></th>
         <th style="width:110px"><div class="th-inner">지도</div></th>
       </tr>
     </thead>
@@ -498,263 +589,263 @@
 
 <script>
 const stations = [
-  { name: "강남 N 타워", region: "서울", address: "강남구 테헤란로 129", detail: "", phone: "02-6250-5150", lat: 37.4999397623793, lng: 127.032366449372 },
-  { name: "그랜드 워커힐 서울", region: "서울", address: "광진구 워커힐로 177", detail: "", phone: "02-455-5000", lat: 37.5586287308609, lng: 127.11170683593 },
-  { name: "더 플라자 호텔", region: "서울", address: "중구 소공로 119", detail: "", phone: "02-771-2200", lat: 37.5646641418657, lng: 126.978090221167 },
-  { name: "라이즈 오토그래프콜렉션 호텔", region: "서울", address: "마포구 양화로 130", detail: "", phone: "02-330-7700", lat: 37.5543349117636, lng: 126.921207395382 },
-  { name: "마리오 아울렛", region: "서울", address: "구로구 디지털로9길 23", detail: "", phone: "02-2109-7000", lat: 37.4786643, lng: 126.8863597 },
-  { name: "메이필드 호텔", region: "서울", address: "강서구 방화대로 94", detail: "", phone: "02-2660-9000", lat: 37.5478957237892, lng: 126.819507121486 },
-  { name: "서울 강남 - 센터필드", region: "서울", address: "강남구 테헤란로 231", detail: "센터필드 B5F", phone: "080-617-1399", lat: 37.5028813541774, lng: 127.041356540268 },
-  { name: "서울 강북 - 안토", region: "서울", address: "강북구 삼양로 689", detail: "파라스파라 RF/1F", phone: "02-3408-5000", lat: 37.6649474833411, lng: 127.007680218158 },
-  { name: "서울 서초 - 쌍용플래티넘", region: "서울", address: "서초구 서초중앙로 18", detail: "쌍용플래티넘 B2F", phone: "02-588-1586", lat: 37.4840476212544, lng: 127.017348668302 },
-  { name: "서울 성수 - D Tower", region: "서울", address: "성동구 왕십리로 83-21", detail: "서울포레스트D타워 B5F", phone: "", lat: 37.5441547484979, lng: 127.043357753557 },
-  { name: "서울 수유 - 에피소드 수유", region: "서울", address: "강북구 도봉로 315", detail: "에피소드 수유 838 B4F", phone: "", lat: 37.6369305402999, lng: 127.02328159303 },
-  { name: "서울 왕십리 (5층)", region: "서울", address: "성동구 왕십리광장로 17", detail: "비트플렉스 5F", phone: "02-2200-1000", lat: 37.5614417528647, lng: 127.038394194396 },
-  { name: "서울 청량리 (M5F층)", region: "서울", address: "동대문구 왕산로 214", detail: "롯데백화점 청량리점 M5F", phone: "", lat: 37.584197400389, lng: 127.05114503929 },
-  { name: "소설호텔", region: "서울", address: "서초구 반포대로14길 53", detail: "", phone: "02-507-0505", lat: 37.486387109138, lng: 127.013779844026 },
-  { name: "스테이폴리오 - 모여집", region: "서울", address: "서대문구 연희로31길 30-4", detail: "", phone: "1670-4123", lat: 37.5760978316762, lng: 126.933977267131 },
-  { name: "임피리얼 팰리스 부티크 호텔 이태원", region: "서울", address: "용산구 이태원로 221", detail: "", phone: "02-3702-8000", lat: 37.5353647901185, lng: 126.998228746283 },
-  { name: "포시즌스 호텔 서울", region: "서울", address: "종로구 새문안로 97", detail: "", phone: "02-6388-5000", lat: 37.5706978504521, lng: 126.975398227489 },
-  { name: "사운즈 한남", region: "서울", address: "용산구 대사관로 35", detail: "", phone: "02-511-7443", lat: 37.5337501903567, lng: 127.00214819989 },
-  { name: "Geonmokplaza", region: "서울", address: "서초구 시흥대로27길 22", detail: "", phone: "", lat: 37.4411891, lng: 126.9022928 },
-  { name: "수원 광교 - 법조타운", region: "경기", address: "수원시 법조로149번길 269", detail: "광교 법원 주차장 3F", phone: "", lat: 37.293391141106, lng: 127.070190419521 },
-  { name: "수원 광교 - 롯데아울렛", region: "경기", address: "수원시 도청로 10", detail: "롯데아울렛 광교점 지하4층 A3 기둥 인근", phone: "", lat: 37.2866696524735, lng: 127.055448351197 },
-  { name: "광명 - AK플라자", region: "경기", address: "광명시 양지로 19", detail: "광명 유플래닛 B5F", phone: "", lat: 37.4190189911899, lng: 126.882623607455 },
-  { name: "군포 - AK플라자 (지하2층, 14구역)", region: "경기", address: "군포시 엘에스로 143", detail: "AK PLAZA 금정점 B2", phone: "", lat: 37.3728500250826, lng: 126.944923276711 },
-  { name: "그리드위즈 연구동", region: "경기", address: "성남시 분당구 하오개로344번길 2", detail: "", phone: "031-698-3387", lat: 37.3910494336859, lng: 127.056447967115 },
-  { name: "김포 구래", region: "경기", address: "김포시 김포한강4로 487", detail: "카림애비뉴 김포 B1F", phone: "", lat: 37.646397891817, lng: 126.629516278447 },
-  { name: "디테라스", region: "경기", address: "성남시 분당구 판교로319번길 13", detail: "", phone: "031-609-7999", lat: 37.4037383177861, lng: 127.109117752246 },
-  { name: "렉스필드 CC", region: "경기", address: "여주시 산북면 광여로 1115", detail: "", phone: "031-880-0300", lat: 37.3988920709185, lng: 127.431395053386 },
-  { name: "부천 (지하4층 E3)", region: "경기", address: "부천시 길주로 300", detail: "", phone: "", lat: 37.5025627553952, lng: 126.775275476115 },
-  { name: "안양 평촌 (주차비 있음, 7층)", region: "경기", address: "안양시 관평로170번길 33", detail: "CGV 평촌 7F", phone: "", lat: 37.3930187793518, lng: 126.962287233607 },
-  { name: "여주 - 신세계프리미엄아울렛", region: "경기", address: "여주시 명품로 360", detail: "여주프리미엄아울렛", phone: "1644-4001", lat: 37.2459466972835, lng: 127.612385423931 },
-  { name: "용인 기흥 - 롯데프리미엄아울렛", region: "경기", address: "용인시 신고매로 124", detail: "롯데프리미엄아울렛 기흥점 B3F", phone: "", lat: 37.2255419641124, lng: 127.121283960956 },
-  { name: "의왕 - 롯데프리미엄아울렛", region: "경기", address: "의왕시 바라산로 1", detail: "롯데프리미엄아울렛 의왕점 B1F (09:30~21:30)", phone: "1577-0001", lat: 37.3758168645238, lng: 127.010277326166 },
-  { name: "카페인W", region: "경기", address: "김포시 양촌읍 김포한강4로 292-1", detail: "", phone: "070-7722-3330", lat: 37.6519500855799, lng: 126.650509838498 },
-  { name: "파주 - 뮌스터담", region: "경기", address: "파주시 운정로 113-175", detail: "", phone: "", lat: 37.7267736397005, lng: 126.784125404353 },
-  { name: "성남 판교 - 카카오아지트", region: "경기", address: "성남시 분당구 판교역로 166", detail: "카카오 판교 아지트 B2F", phone: "", lat: 37.3952969470752, lng: 127.110449292622 },
-  { name: "성남 판교 - 테크원", region: "경기", address: "성남시 분당구 백현동 534", detail: "", phone: "", lat: 37.3954596217643, lng: 127.112129738248 },
-  { name: "포춘테일", region: "경기", address: "포천시 동교로 15-14", detail: "", phone: "", lat: 37.8426616451082, lng: 127.131662642415 },
-  { name: "화성 동탄 - 롯데백화점", region: "경기", address: "화성시 동탄역로 160", detail: "롯데백화점 동탄 B4F", phone: "1577-0001", lat: 37.200666359626, lng: 127.098203113972 },
-  { name: "그랜드 하얏트 인천 웨스트타워", region: "인천", address: "중구 영종해안남로321번길 190", detail: "", phone: "032-745-1234", lat: 37.4398298995074, lng: 126.456113275998 },
-  { name: "그랜드 하얏트 인천 이스트타워", region: "인천", address: "중구 영종해안남로321번길 208", detail: "", phone: "032-745-1234", lat: 37.4404634809323, lng: 126.457464899839 },
-  { name: "인천 미추홀 - 앨리웨이", region: "인천", address: "미추홀구 숙골로88번길 12", detail: "앨리웨이 인천 B4F", phone: "", lat: 37.4695305506994, lng: 126.664593164043 },
-  { name: "인천 영종 - 그랜드하얏트 West", region: "인천", address: "중구 영종해안남로321번길 208", detail: "", phone: "", lat: 37.4404634809323, lng: 126.457464899839 },
-  { name: "인천 영종 - 그랜드하얏트 East", region: "인천", address: "중구 영종해안남로321번길 208", detail: "", phone: "", lat: 37.4404634809323, lng: 126.457464899839 },
-  { name: "인천 청라 - 스퀘어7", region: "인천", address: "서구 청라루비로 76", detail: "스퀘어7", phone: "", lat: 37.5322840014817, lng: 126.642099544013 },
-  { name: "이비스스타일앰베서더호텔 에어포트", region: "인천", address: "중구 제2공항대로 340", detail: "", phone: "", lat: 37.4799108, lng: 126.4213027 },
-  { name: "아이나비 프리미엄 스토어 인천점", region: "인천", address: "인천", detail: "", phone: "", lat: 37.4560044656442, lng: 126.705258070068 },
-  { name: "대구백화점 프라자점", region: "대구", address: "중구 명덕로 333", detail: "", phone: "053-426-1234", lat: 35.8557170359818, lng: 128.606361603087 },
-  { name: "대전 서구 - 롯데백화점", region: "대전", address: "서구 계룡로 598", detail: "롯데백화점 대전 B4F", phone: "", lat: 36.3406861255513, lng: 127.389548388967 },
-  { name: "제일볼링센터", region: "광주", address: "북구 서방로 83", detail: "", phone: "", lat: 35.1718713620011, lng: 126.922236530331 },
-  { name: "럭셔리몰임팩트광주명품백화점", region: "광주", address: "서구 상무대로 509", detail: "", phone: "062-946-3333", lat: 35.1487646, lng: 126.8633902 },
-  { name: "부산 기장 - 롯데프리미엄아울렛", region: "부산", address: "기장군 기장해안로 147", detail: "롯데프리미엄아울렛 동부산점", phone: "", lat: 35.1923229796397, lng: 129.212495349946 },
-  { name: "한화리조트 해운대 티볼리", region: "부산", address: "해운대구 마린시티3로 52", detail: "", phone: "051-749-5500", lat: 35.1544470889259, lng: 129.145059295243 },
-  { name: "코리아 골프 연습장", region: "부산", address: "사하구 장림번영로103번길 35", detail: "", phone: "051-264-6378", lat: 35.0818339455272, lng: 128.97508977968 },
-  { name: "간절곶 까르마레 펜션", region: "울산", address: "울주군 서생면 불안길 32-11", detail: "", phone: "052-242-5600", lat: 35.3594414880331, lng: 129.334000706155 },
-  { name: "세종 어진 - AK플라자 (지하2층, 14구역)", region: "세종", address: "다솜1로 20", detail: "KT&G 세종타워C B2F", phone: "", lat: 36.5003122343055, lng: 127.256674820241 },
-  { name: "라임 비치 펜션", region: "강원", address: "강릉시 해안로 651-17", detail: "", phone: "010-2603-5436", lat: 37.8129836199366, lng: 128.895157183518 },
-  { name: "보키하우스", region: "강원", address: "고성군 죽왕면 자작도선사길 110", detail: "", phone: "033-631-0303", lat: 38.3079826297318, lng: 128.541270589685 },
-  { name: "삼척 원더풀", region: "강원", address: "삼척시 동해대로 3852", detail: "", phone: "033-575-5189", lat: 37.4295043897939, lng: 129.183056714873 },
-  { name: "양양 - 설해원", region: "강원", address: "양양군 공항로 230", detail: "설해원 리조트", phone: "", lat: 38.0555847904558, lng: 128.664155059627 },
-  { name: "춘천 - ENTA 2022", region: "강원", address: "춘천시 후석로 120", detail: "엔타2022 지하2층", phone: "", lat: 37.8633518904834, lng: 127.74834628981 },
-  { name: "TrueLamerHotel (Sokcho)", region: "강원", address: "속초시 동해대로 4201", detail: "", phone: "", lat: 38.1941373493827, lng: 128.576720530812 },
-  { name: "한화리조트 설악 쏘라노", region: "강원", address: "속초시 미시령로2983번길 111", detail: "", phone: "033-630-5500", lat: 38.2101595305386, lng: 128.527388761735 },
-  { name: "이븐데일 컨트리클럽", region: "충북", address: "청주시 상당구 대신2길 31", detail: "", phone: "043-288-1000", lat: 36.68294979598, lng: 127.60363688116 },
-  { name: "충주 - 모다아울렛", region: "충북", address: "충주시 중원대로 3683", detail: "", phone: "", lat: 36.9614816203079, lng: 127.898156089973 },
-  { name: "충주 - 홈마트", region: "충북", address: "충주시 기업도시로 26", detail: "", phone: "043-846-7796", lat: 37.0010828759683, lng: 127.835172625128 },
-  { name: "부여 - 롯데프리미엄아울렛", region: "충남", address: "부여군 백제문로 387", detail: "롯데아울렛 부여", phone: "041-435-2500", lat: 36.3071477811308, lng: 126.902270362904 },
-  { name: "스테이폴리오 - 제로플레이스", region: "충남", address: "서산시 일락골길 367-19", detail: "", phone: "0504-0904-2004", lat: 36.7241790482863, lng: 126.576135359926 },
-  { name: "그린 빌딩", region: "경북", address: "고령군 왕릉로 114", detail: "", phone: "054-956-7007", lat: 35.7295190263116, lng: 128.268051764144 },
-  { name: "포항", region: "경북", address: "포항시 북구 흥해읍 동해대로 878", detail: "포항오토파크", phone: "", lat: 36.0590254041689, lng: 129.320816134279 },
-  { name: "사랑채 한방오리", region: "경남", address: "김해시 분성로307번길 16", detail: "", phone: "055-325-5292", lat: 35.2347719091215, lng: 128.879873102314 },
-  { name: "전주 - 효자몰 (주차비 있음, 지하2층)", region: "전북", address: "전주시 용머리로 45", detail: "몰오브효자 B2F", phone: "", lat: 35.8069313015329, lng: 127.115569344574 },
-  { name: "한일렌트카", region: "전북", address: "전주시 쑥고개로 301-15", detail: "", phone: "063-255-8166", lat: 35.8022154480302, lng: 127.097235038484 },
-  { name: "포레스트 96", region: "전남", address: "화순군 화순읍", detail: "", phone: "061-375-2404", lat: 35.0599399781348, lng: 126.984565050764 },
-  { name: "더 클라우드 호텔", region: "제주", address: "서귀포시 성산읍 한도로 269-37", detail: "", phone: "064-783-8366", lat: 33.4691169590312, lng: 126.935143076579 },
-  { name: "모노리스제주파크", region: "제주", address: "제주시 애월읍 어음리 산 131-3", detail: "", phone: "070-4900-2230", lat: 33.3885692, lng: 126.3664921 },
-  { name: "씨에스 호텔 & 리조트", region: "제주", address: "서귀포시 중문관광로 198", detail: "", phone: "064-735-3000", lat: 33.24291591839, lng: 126.420293320269 },
-  { name: "스테이폴리오 - 송당아진", region: "제주", address: "제주시 송당5길 46-78", detail: "", phone: "0504-0904-2420", lat: 33.4771399769141, lng: 126.785605129545 },
-  { name: "스테이폴리오 - 빈티지제주", region: "제주", address: "제주시 주전길 98-1", detail: "", phone: "0504-0904-2034", lat: 33.3345943043061, lng: 126.175134555535 },
-  { name: "스테이폴리오 - 월령선인장", region: "제주", address: "제주시 월령1길 10", detail: "", phone: "0504-0904-2049", lat: 33.376133829184, lng: 126.215910564161 }
+  { name: "강남 N 타워", region: "서울", address: "강남구 테헤란로 129", detail: "", phone: "02-6250-5150", lat: 37.4999397623793, lng: 127.032366449372, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc80940", stalls: 6, maxKw: 7 },
+  { name: "그랜드 워커힐 서울", region: "서울", address: "광진구 워커힐로 177", detail: "", phone: "02-455-5000", lat: 37.5586287308609, lng: 127.11170683593, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc27187", stalls: 3, maxKw: 16 },
+  { name: "더 플라자 호텔", region: "서울", address: "중구 소공로 119", detail: "", phone: "02-771-2200", lat: 37.5646641418657, lng: 126.978090221167, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc27197", stalls: 3, maxKw: 16 },
+  { name: "라이즈 오토그래프콜렉션 호텔", region: "서울", address: "마포구 양화로 130", detail: "", phone: "02-330-7700", lat: 37.5543349117636, lng: 126.921207395382, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc41686", stalls: 2, maxKw: 6 },
+  { name: "마리오 아울렛", region: "서울", address: "구로구 디지털로9길 23", detail: "", phone: "02-2109-7000", lat: 37.4786643, lng: 126.8863597, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc66000", stalls: 2, maxKw: 6 },
+  { name: "메이필드 호텔", region: "서울", address: "강서구 방화대로 94", detail: "", phone: "02-2660-9000", lat: 37.5478957237892, lng: 126.819507121486, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc36122", stalls: 3, maxKw: 16 },
+  { name: "서울 강남 - 센터필드", region: "서울", address: "강남구 테헤란로 231", detail: "센터필드 B5F", phone: "080-617-1399", lat: 37.5028813541774, lng: 127.041356540268, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/seolleungsupercharger", stalls: 12, maxKw: 3 },
+  { name: "서울 강북 - 안토", region: "서울", address: "강북구 삼양로 689", detail: "파라스파라 RF/1F", phone: "02-3408-5000", lat: 37.6649474833411, lng: 127.007680218158, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/gangbuksupercharger", stalls: 2, maxKw: 7 },
+  { name: "서울 서초 - 쌍용플래티넘", region: "서울", address: "서초구 서초중앙로 18", detail: "쌍용플래티넘 B2F", phone: "02-588-1586", lat: 37.4840476212544, lng: 127.017348668302, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/seoulseochosupercharger", stalls: 8, maxKw: 7 },
+  { name: "서울 성수 - D Tower", region: "서울", address: "성동구 왕십리로 83-21", detail: "서울포레스트D타워 B5F", phone: "", lat: 37.5441547484979, lng: 127.043357753557, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/seongsudtowerq322", stalls: 3, maxKw: 7 },
+  { name: "서울 수유 - 에피소드 수유", region: "서울", address: "강북구 도봉로 315", detail: "에피소드 수유 838 B4F", phone: "", lat: 37.6369305402999, lng: 127.02328159303, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/suyusupercharger", stalls: 2, maxKw: 7 },
+  { name: "서울 왕십리 (5층)", region: "서울", address: "성동구 왕십리광장로 17", detail: "비트플렉스 5F", phone: "02-2200-1000", lat: 37.5614417528647, lng: 127.038394194396, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/seoulseongsusupercharger", stalls: 3, maxKw: 7 },
+  { name: "서울 청량리 (M5F층)", region: "서울", address: "동대문구 왕산로 214", detail: "롯데백화점 청량리점 M5F", phone: "", lat: 37.584197400389, lng: 127.05114503929, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/Misasupercharger", stalls: 6, maxKw: 7 },
+  { name: "소설호텔", region: "서울", address: "서초구 반포대로14길 53", detail: "", phone: "02-507-0505", lat: 37.486387109138, lng: 127.013779844026, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc41685", stalls: 2, maxKw: 6 },
+  { name: "스테이폴리오 - 모여집", region: "서울", address: "서대문구 연희로31길 30-4", detail: "", phone: "1670-4123", lat: 37.5760978316762, lng: 126.933977267131, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc1025781", stalls: 1, maxKw: 7 },
+  { name: "임피리얼 팰리스 부티크 호텔 이태원", region: "서울", address: "용산구 이태원로 221", detail: "", phone: "02-3702-8000", lat: 37.5353647901185, lng: 126.998228746283, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc28101", stalls: 2, maxKw: 16 },
+  { name: "포시즌스 호텔 서울", region: "서울", address: "종로구 새문안로 97", detail: "", phone: "02-6388-5000", lat: 37.5706978504521, lng: 126.975398227489, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc27195", stalls: 2, maxKw: 16 },
+  { name: "사운즈 한남", region: "서울", address: "용산구 대사관로 35", detail: "", phone: "02-511-7443", lat: 37.5337501903567, lng: 127.00214819989, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/54749", stalls: 1, maxKw: 10 },
+  { name: "Geonmokplaza", region: "서울", address: "서초구 시흥대로27길 22", detail: "", phone: "", lat: 37.4411891, lng: 126.9022928, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/GeonmokPlaza", stalls: 20, maxKw: 0 },
+  { name: "수원 광교 - 법조타운", region: "경기", address: "수원시 법조로149번길 269", detail: "광교 법원 주차장 3F", phone: "", lat: 37.293391141106, lng: 127.070190419521, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/gwanggyosupercharger", stalls: 1, maxKw: 10 },
+  { name: "수원 광교 - 롯데아울렛", region: "경기", address: "수원시 도청로 10", detail: "롯데아울렛 광교점 지하4층 A3 기둥 인근", phone: "", lat: 37.2866696524735, lng: 127.055448351197, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/gwanggyolakesupercharger", stalls: 3, maxKw: 7 },
+  { name: "광명 - AK플라자", region: "경기", address: "광명시 양지로 19", detail: "광명 유플래닛 B5F", phone: "", lat: 37.4190189911899, lng: 126.882623607455, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/gwangmyeongsupercharger", stalls: 6, maxKw: 7 },
+  { name: "군포 - AK플라자 (지하2층, 14구역)", region: "경기", address: "군포시 엘에스로 143", detail: "AK PLAZA 금정점 B2", phone: "", lat: 37.3728500250826, lng: 126.944923276711, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/gunpogeumjeongakplaza", stalls: 3, maxKw: 7 },
+  { name: "그리드위즈 연구동", region: "경기", address: "성남시 분당구 하오개로344번길 2", detail: "", phone: "031-698-3387", lat: 37.3910494336859, lng: 127.056447967115, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/55540", stalls: 1, maxKw: 11 },
+  { name: "김포 구래", region: "경기", address: "김포시 김포한강4로 487", detail: "카림애비뉴 김포 B1F", phone: "", lat: 37.646397891817, lng: 126.629516278447, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/gimposupercharger", stalls: 3, maxKw: 7 },
+  { name: "디테라스", region: "경기", address: "성남시 분당구 판교로319번길 13", detail: "", phone: "031-609-7999", lat: 37.4037383177861, lng: 127.109117752246, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/55551", stalls: 1, maxKw: 16 },
+  { name: "렉스필드 CC", region: "경기", address: "여주시 산북면 광여로 1115", detail: "", phone: "031-880-0300", lat: 37.3988920709185, lng: 127.431395053386, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc27196", stalls: 2, maxKw: 16 },
+  { name: "부천 (지하4층 E3)", region: "경기", address: "부천시 길주로 300", detail: "", phone: "", lat: 37.5025627553952, lng: 126.775275476115, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/teslabucheonlottedepartmentsupercharger", stalls: 7, maxKw: 7 },
+  { name: "안양 평촌 (주차비 있음, 7층)", region: "경기", address: "안양시 관평로170번길 33", detail: "CGV 평촌 7F", phone: "", lat: 37.3930187793518, lng: 126.962287233607, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/gyeonggianyangsupercharger", stalls: 3, maxKw: 7 },
+  { name: "여주 - 신세계프리미엄아울렛", region: "경기", address: "여주시 명품로 360", detail: "여주프리미엄아울렛", phone: "1644-4001", lat: 37.2459466972835, lng: 127.612385423931, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/yeojusupercharger", stalls: 11, maxKw: 7 },
+  { name: "용인 기흥 - 롯데프리미엄아울렛", region: "경기", address: "용인시 신고매로 124", detail: "롯데프리미엄아울렛 기흥점 B3F", phone: "", lat: 37.2255419641124, lng: 127.121283960956, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/yonginsupercharger", stalls: 6, maxKw: 7 },
+  { name: "의왕 - 롯데프리미엄아울렛", region: "경기", address: "의왕시 바라산로 1", detail: "롯데프리미엄아울렛 의왕점 B1F (09:30~21:30)", phone: "1577-0001", lat: 37.3758168645238, lng: 127.010277326166, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/euiwangsupercharger", stalls: 3, maxKw: 7 },
+  { name: "카페인W", region: "경기", address: "김포시 양촌읍 김포한강4로 292-1", detail: "", phone: "070-7722-3330", lat: 37.6519500855799, lng: 126.650509838498, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc590587", stalls: 3, maxKw: 19 },
+  { name: "파주 - 뮌스터담", region: "경기", address: "파주시 운정로 113-175", detail: "", phone: "", lat: 37.7267736397005, lng: 126.784125404353, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/superchargerpajumunsterdam", stalls: 3, maxKw: 7 },
+  { name: "성남 판교 - 카카오아지트", region: "경기", address: "성남시 분당구 판교역로 166", detail: "카카오 판교 아지트 B2F", phone: "", lat: 37.3952969470752, lng: 127.110449292622, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/superchargerseongnamakr", stalls: 2, maxKw: 10 },
+  { name: "성남 판교 - 테크원", region: "경기", address: "성남시 분당구 백현동 534", detail: "", phone: "", lat: 37.3954596217643, lng: 127.112129738248, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/seongnamalphadome2supercharger", stalls: 2, maxKw: 7 },
+  { name: "포춘테일", region: "경기", address: "포천시 동교로 15-14", detail: "", phone: "", lat: 37.8426616451082, lng: 127.131662642415, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/52388", stalls: 2, maxKw: 10 },
+  { name: "화성 동탄 - 롯데백화점", region: "경기", address: "화성시 동탄역로 160", detail: "롯데백화점 동탄 B4F", phone: "1577-0001", lat: 37.200666359626, lng: 127.098203113972, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dongtansupercharger", stalls: 3, maxKw: 7 },
+  { name: "그랜드 하얏트 인천 웨스트타워", region: "인천", address: "중구 영종해안남로321번길 190", detail: "", phone: "032-745-1234", lat: 37.4398298995074, lng: 126.456113275998, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc28243", stalls: 2, maxKw: 16 },
+  { name: "그랜드 하얏트 인천 이스트타워", region: "인천", address: "중구 영종해안남로321번길 208", detail: "", phone: "032-745-1234", lat: 37.4404634809323, lng: 126.457464899839, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc27312", stalls: 2, maxKw: 16 },
+  { name: "인천 미추홀 - 앨리웨이", region: "인천", address: "미추홀구 숙골로88번길 12", detail: "앨리웨이 인천 B4F", phone: "", lat: 37.4695305506994, lng: 126.664593164043, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/incheonmichuholsupercharger", stalls: 6, maxKw: 7 },
+  { name: "인천 영종 - 그랜드하얏트 West", region: "인천", address: "중구 영종해안남로321번길 208", detail: "", phone: "", lat: 37.4404634809323, lng: 126.457464899839, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/incheonyeongjonggrandhyatthotelwestkr", stalls: 6, maxKw: 7 },
+  { name: "인천 영종 - 그랜드하얏트 East", region: "인천", address: "중구 영종해안남로321번길 208", detail: "", phone: "", lat: 37.4404634809323, lng: 126.457464899839, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/incheonyeongjonggrandhyatthotelwestkr", stalls: 6, maxKw: 7 },
+  { name: "인천 청라 - 스퀘어7", region: "인천", address: "서구 청라루비로 76", detail: "스퀘어7", phone: "", lat: 37.5322840014817, lng: 126.642099544013, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/cheongnasupercharger", stalls: 4, maxKw: 7 },
+  { name: "이비스스타일앰베서더호텔 에어포트", region: "인천", address: "중구 제2공항대로 340", detail: "", phone: "", lat: 37.4799108, lng: 126.4213027, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/ibisambassadorhotelincheonairport", stalls: 21, maxKw: 7 },
+  { name: "아이나비 프리미엄 스토어 인천점", region: "인천", address: "인천광역시 서구 심곡로 57", detail: "", phone: "", lat: 37.4560044656442, lng: 126.705258070068, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc1126931", stalls: 1, maxKw: 10 },
+  { name: "대구백화점 프라자점", region: "대구", address: "중구 명덕로 333", detail: "", phone: "053-426-1234", lat: 35.8557170359818, lng: 128.606361603087, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc28128", stalls: 3, maxKw: 7 },
+  { name: "대전 서구 - 롯데백화점", region: "대전", address: "서구 계룡로 598", detail: "롯데백화점 대전 B4F", phone: "", lat: 36.3406861255513, lng: 127.389548388967, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/Daejeon", stalls: 4, maxKw: 7 },
+  { name: "제일볼링센터", region: "광주", address: "북구 서방로 83", detail: "", phone: "", lat: 35.1718713620011, lng: 126.922236530331, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc585981", stalls: 4, maxKw: 7 },
+  { name: "럭셔리몰임팩트광주명품백화점", region: "광주", address: "서구 상무대로 509", detail: "", phone: "062-946-3333", lat: 35.1487646, lng: 126.8633902, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/52607", stalls: 5, maxKw: 10 },
+  { name: "부산 기장 - 롯데프리미엄아울렛", region: "부산", address: "기장군 기장해안로 147", detail: "롯데프리미엄아울렛 동부산점", phone: "", lat: 35.1923229796397, lng: 129.212495349946, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/busangijangsupercharger", stalls: 6, maxKw: 7 },
+  { name: "한화리조트 해운대 티볼리", region: "부산", address: "해운대구 마린시티3로 52", detail: "", phone: "051-749-5500", lat: 35.1544470889259, lng: 129.145059295243, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc28516", stalls: 3, maxKw: 7 },
+  { name: "코리아 골프 연습장", region: "부산", address: "사하구 장림번영로103번길 35", detail: "", phone: "051-264-6378", lat: 35.0818339455272, lng: 128.97508977968, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc572072", stalls: 2, maxKw: 7 },
+  { name: "간절곶 까르마레 펜션", region: "울산", address: "울주군 서생면 불안길 32-11", detail: "", phone: "052-242-5600", lat: 35.3594414880331, lng: 129.334000706155, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc31919", stalls: 1, maxKw: 7 },
+  { name: "세종 어진 - AK플라자 (지하2층, 14구역)", region: "세종", address: "다솜1로 20", detail: "KT&G 세종타워C B2F", phone: "", lat: 36.5003122343055, lng: 127.256674820241, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/sejongsupercharger", stalls: 3, maxKw: 7 },
+  { name: "라임 비치 펜션", region: "강원", address: "강릉시 해안로 651-17", detail: "", phone: "010-2603-5436", lat: 37.8129836199366, lng: 128.895157183518, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc57041", stalls: 2, maxKw: 6 },
+  { name: "보키하우스", region: "강원", address: "고성군 죽왕면 자작도선사길 110", detail: "", phone: "033-631-0303", lat: 38.3079826297318, lng: 128.541270589685, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc636162", stalls: 4, maxKw: 19 },
+  { name: "삼척 원더풀", region: "강원", address: "삼척시 동해대로 3852", detail: "", phone: "033-575-5189", lat: 37.4295043897939, lng: 129.183056714873, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc37992", stalls: 3, maxKw: 16 },
+  { name: "양양 - 설해원", region: "강원", address: "양양군 공항로 230", detail: "설해원 리조트", phone: "", lat: 38.0555847904558, lng: 128.664155059627, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/yangyangsupercharger", stalls: 5, maxKw: 7 },
+  { name: "춘천 - ENTA 2022", region: "강원", address: "춘천시 후석로 120", detail: "엔타2022 지하2층", phone: "", lat: 37.8633518904834, lng: 127.74834628981, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/chuncheonsupercharger", stalls: 6, maxKw: 7 },
+  { name: "TrueLamerHotel (Sokcho)", region: "강원", address: "속초시 동해대로 4201", detail: "", phone: "", lat: 38.1941373493827, lng: 128.576720530812, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/TruelLamerHotelsokchokr", stalls: 4, maxKw: 0 },
+  { name: "한화리조트 설악 쏘라노", region: "강원", address: "속초시 미시령로2983번길 111", detail: "", phone: "033-630-5500", lat: 38.2101595305386, lng: 128.527388761735, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc28513", stalls: 3, maxKw: 16 },
+  { name: "이븐데일 컨트리클럽", region: "충북", address: "청주시 상당구 대신2길 31", detail: "", phone: "043-288-1000", lat: 36.68294979598, lng: 127.60363688116, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc585988", stalls: 2, maxKw: 19 },
+  { name: "충주 - 모다아울렛", region: "충북", address: "충주시 중원대로 3683", detail: "", phone: "", lat: 36.9614816203079, lng: 127.898156089973, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/chungjumodaoutletsupercharger", stalls: 3, maxKw: 7 },
+  { name: "충주 - 홈마트", region: "충북", address: "충주시 기업도시로 26", detail: "", phone: "043-846-7796", lat: 37.0010828759683, lng: 127.835172625128, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/chungjusupercharger", stalls: 7, maxKw: 7 },
+  { name: "부여 - 롯데프리미엄아울렛", region: "충남", address: "부여군 백제문로 387", detail: "롯데아울렛 부여", phone: "041-435-2500", lat: 36.3071477811308, lng: 126.902270362904, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/buyeosupercharger", stalls: 5, maxKw: 7 },
+  { name: "스테이폴리오 - 제로플레이스", region: "충남", address: "서산시 일락골길 367-19", detail: "", phone: "0504-0904-2004", lat: 36.7241790482863, lng: 126.576135359926, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc1128842", stalls: 1, maxKw: 10 },
+  { name: "그린 빌딩", region: "경북", address: "고령군 왕릉로 114", detail: "", phone: "054-956-7007", lat: 35.7295190263116, lng: 128.268051764144, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc71701", stalls: 2, maxKw: 6 },
+  { name: "포항", region: "경북", address: "포항시 북구 흥해읍 동해대로 878", detail: "포항오토파크", phone: "", lat: 36.0590254041689, lng: 129.320816134279, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/pohangsupercharger", stalls: 14, maxKw: 7 },
+  { name: "사랑채 한방오리", region: "경남", address: "김해시 분성로307번길 16", detail: "", phone: "055-325-5292", lat: 35.2347719091215, lng: 128.879873102314, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc572132", stalls: 3, maxKw: 19 },
+  { name: "전주 - 효자몰 (주차비 있음, 지하2층)", region: "전북", address: "전주시 용머리로 45", detail: "몰오브효자 B2F", phone: "", lat: 35.8069313015329, lng: 127.115569344574, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/jeonjusupercharger", stalls: 3, maxKw: 7 },
+  { name: "한일렌트카", region: "전북", address: "전주시 쑥고개로 301-15", detail: "", phone: "063-255-8166", lat: 35.8022154480302, lng: 127.097235038484, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/404264", stalls: 3, maxKw: 0 },
+  { name: "포레스트 96", region: "전남", address: "화순군 화순읍", detail: "", phone: "061-375-2404", lat: 35.0599399781348, lng: 126.984565050764, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc79999", stalls: 2, maxKw: 7 },
+  { name: "더 클라우드 호텔", region: "제주", address: "서귀포시 성산읍 한도로 269-37", detail: "", phone: "064-783-8366", lat: 33.4691169590312, lng: 126.935143076579, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc27298", stalls: 2, maxKw: 16 },
+  { name: "모노리스제주파크", region: "제주", address: "제주시 애월읍 어음리 산 131-3", detail: "", phone: "070-4900-2230", lat: 33.3885692, lng: 126.3664921, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc43100", stalls: 7, maxKw: 6 },
+  { name: "씨에스 호텔 & 리조트", region: "제주", address: "서귀포시 중문관광로 198", detail: "", phone: "064-735-3000", lat: 33.24291591839, lng: 126.420293320269, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/dc27266", stalls: 2, maxKw: 16 },
+  { name: "스테이폴리오 - 송당아진", region: "제주", address: "제주시 송당5길 46-78", detail: "", phone: "0504-0904-2420", lat: 33.4771399769141, lng: 126.785605129545, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/54828", stalls: 1, maxKw: 10 },
+  { name: "스테이폴리오 - 빈티지제주", region: "제주", address: "제주시 주전길 98-1", detail: "", phone: "0504-0904-2034", lat: 33.3345943043061, lng: 126.175134555535, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/54831", stalls: 1, maxKw: 10 },
+  { name: "스테이폴리오 - 월령선인장", region: "제주", address: "제주시 월령1길 10", detail: "", phone: "0504-0904-2049", lat: 33.376133829184, lng: 126.215910564161, chargerUrl: "https://www.tesla.com/ko_KR/findus/location/charger/54832", stalls: 1, maxKw: 10 }
 ];
 
 const superchargers = [
-  { name: '서울 대치 - KT&G', region: '서울', address: '서울특별시 416 영동대로', note: '영동대로 416 KT&G상상마당 대치', lat: 37.5067600874053, lng: 127.065150015652, phone: '080-617-1399' },
-  { name: '강릉 - 세인트존스호텔', region: '강원', address: '강원도 강릉시 307 창해로', note: '창해로 307', lat: 37.79125474022498, lng: 128.92097417796126, phone: '080-617-1399' },
-  { name: '강릉 - 테라로사', region: '강원', address: '강릉 25 구정면 현천길', note: '', lat: 37.822396275144285, lng: 128.885037687341, phone: '080-617-1399' },
-  { name: '강릉 - 라카이 샌드파인', region: '강원', address: '강원도 강릉시 536 해안로', note: '해안로 536, 라카이 샌드파인 B2F', lat: 37.80610683492571, lng: 128.90449844596327, phone: '080-617-1399' },
-  { name: '인천 강화 - 씨사이드리조트', region: '인천', address: '인천광역시 217 길상면 장흥로', note: '', lat: 37.617149875930124, lng: 126.4981741641961, phone: '080-617-1399' },
-  { name: '경기 광주 - 9Block', region: '경기', address: '경기도 광주시 1967 경충대로', note: '경충대로 1967, 나인블럭 중대동점', lat: 37.4034655785769, lng: 127.223567606035, phone: '080-617-1399' },
-  { name: '경주 - 신라명가', region: '경북', address: '경상북도 경주시 676-1 탑동', note: '화장실 24시간 개방 도어락 번호 0229*', lat: 35.8411894078043, lng: 129.216186080754, phone: '080-617-1399' },
-  { name: '경주 - 라한셀렉트', region: '경북', address: '경상북도 경주시 338 보문로', note: '', lat: 35.8503196784132, lng: 129.27702298089, phone: '080-617-1399' },
-  { name: '고성 - 오션투유리조트', region: '강원', address: '강원도 고성군 9 삼포해변길', note: '삼포해변길 9 오션투유리조트', lat: 38.3171143664804, lng: 128.530989687984, phone: '080-617-1399' },
-  { name: '고양 도내동', region: '경기', address: '경기도 고양시 449 권율대로', note: '권유대로 449, 커피명당', lat: 37.6221485405323, lng: 126.862965198087, phone: '080-617-1399' },
-  { name: '고양 일산 - 소노캄', region: '경기', address: '경기도 고양시 20 태극로', note: '태극로 20, 소노캄 고양 B3F', lat: 37.6619253545306, lng: 126.750808685393, phone: '080-617-1399' },
-  { name: '고양 행주', region: '경기', address: '경기도 고양시 487 자유로', note: '자유로 487', lat: 37.596101261945115, lng: 126.8287096301388, phone: '080-617-1399' },
-  { name: '수원 광교 - 법조타운', region: '경기', address: '경기도 수원시 269 법조로149번길', note: '법조로149번길 269, 광교 법원 주차장 3F', lat: 37.2921496261248, lng: 127.067986942394, phone: '080-617-1399' },
-  { name: '수원 광교 - 롯데아울렛', region: '경기', address: '경기도 수원시 10 도청로', note: '도청로 10 롯데아울렛 광교점 지하4층 A3 기둥 인근', lat: 37.2860295495803, lng: 127.056412504261, phone: '080-617-1399' },
-  { name: '광명 - AK플라자', region: '경기', address: '경기도 광명시 19 양지로', note: '양지로 19, 광명 유플래닛 B5F', lat: 37.418680382779755, lng: 126.88289028656294, phone: '080-617-1399' },
-  { name: '광양 - LF스퀘어', region: '전남', address: '전라남도 광양시 466 순광로', note: '순광로 466, LF스퀘어 광양점 2F', lat: 34.9631726636811, lng: 127.565873709773, phone: '080-617-1399' },
-  { name: '광주 첨단 (주차비 있음 옥상층)', region: '광주', address: '광주광역시 19-20 임방울대로826번길', note: '임방울대로826번길 19-20, 보이저 첨단 옥상층', lat: 35.2163708813576, lng: 126.849495730527, phone: '080-617-1399' },
-  { name: '광주 - 홀리데이인', region: '광주', address: '광주광역시 55 상무누리로', note: '상무누리로 55, 홀리데이인 광주 B1F', lat: 35.147637008880146, lng: 126.83820936828113, phone: '080-617-1399' },
-  { name: '군산', region: '전북', address: '전라북도 군산시 1321 번영로', note: '번영로 1321, 군산 GS칼텍스 샛별주유소', lat: 35.8106890647466, lng: 126.410505924295, phone: '080-617-1399' },
-  { name: '군포 - AK플라자 (지하2층 14구역)', region: '경기', address: '경기도 군포시 143 엘에스로', note: '엘에스로 143, AK PLAZA 금정점 B2', lat: 37.3727577761477, lng: 126.94418871483848, phone: '080-617-1399' },
-  { name: '김포 구래', region: '경기', address: '경기도 김포시 487 김포한강4로', note: '김포한강4로 487, 카림애비뉴 김포 B1F', lat: 37.6438933306417, lng: 126.622349373141, phone: '080-617-1399' },
-  { name: '김해 주촌', region: '경남', address: '경상남도 김해시 1566-3 주촌면 천곡리', note: '천곡리 1566-3', lat: 35.2328610092256, lng: 128.828670383762, phone: '080-617-1399' },
-  { name: '남양주 화도 - 디스플레인', region: '경기', address: '경기도 남양주 48-24 화도읍 소래비로', note: '소래비로 48-24', lat: 37.654455088895865, lng: 127.319889025936, phone: '080-617-1399' },
-  { name: '논산', region: '충남', address: '충청남도 논산시 40 동안로 1113번길', note: '동안로 1113번길 40, 라온빌리지', lat: 36.140393061797, lng: 127.30922048096143, phone: '080-617-1399' },
-  { name: '당진', region: '충남', address: '충청남도 당진시 590-3 가학리 343-822', note: '가학리 590-3, 워시블랑 당진점', lat: 37.04492374579673, lng: 126.52461545756205, phone: '080-617-1399' },
-  { name: '평창 대관령', region: '강원', address: '강원도 평창군 5754 경강로', note: '', lat: 37.64405741078855, lng: 128.67891991885864, phone: '080-617-1399' },
-  { name: '대구 북구 - EXCO', region: '대구', address: '대구광역시 10 엑스코로', note: '엑스코로 10, EXCO B1F', lat: 35.9080476200807, lng: 128.614586966895, phone: '080-617-1399' },
-  { name: '대구 수성', region: '대구', address: '대구광역시 18 수성못6길', note: '', lat: 35.82770180872425, lng: 128.61727641474653, phone: '080-617-1399' },
-  { name: '대구 동구 - 이시아폴리스', region: '대구', address: '대구광역시 16 팔공로49길', note: '팔공로49길 16, 롯데아울렛 이시아폴리스점', lat: 35.918995808176916, lng: 128.63579607552765, phone: '080-617-1399' },
-  { name: '대전 서구 - 롯데백화점', region: '대전', address: '대전광역시 598 계룡로', note: '계룡로 598, 롯데백화점 대전 B4F', lat: 36.340653703926, lng: 127.389624974978, phone: '080-617-1399' },
-  { name: '화성 동탄 - 롯데백화점', region: '경기', address: '경기도 화성시 160 동탄역로 445-150', note: '동탄역로 160, 롯데백화점 동탄 B4F', lat: 37.20070867365914, lng: 127.09791931212142, phone: '080-617-1399' },
-  { name: '화성 동탄 - 그란비아스타', region: '경기', address: '경기도 화성시 446 동탄대로', note: '동탄대로 446, 그란비아스타 지하2층', lat: 37.19339307810837, lng: 127.10002168907872, phone: '080-617-1399' },
-  { name: '동해', region: '강원', address: '강원도 동해시 361-1 천곡동', note: '천곡동 361-1 동해웰빙레포츠타운', lat: 37.4778289847792, lng: 129.159510802511, phone: '080-617-1399' },
-  { name: '김천 - 모다아울렛', region: '경북', address: '경상북도 김천시 1417 아포대로', note: '아포대로 1417, 모다아울렛 김천구미점 지상주차장', lat: 36.1546025777557, lng: 128.281875926773, phone: '080-617-1399' },
-  { name: '구리 - 모다아울렛', region: '경기', address: '경기도 구리시 230 경춘북로', note: '230 경춘북로', lat: 37.6333361833713, lng: 127.11592878058, phone: '080-617-1399' },
-  { name: '충주 - 모다아울렛', region: '충북', address: '충청북도 충주시 3683 중원대로', note: '3683 중원대로', lat: 36.96141498114042, lng: 127.89830576809436, phone: '080-617-1399' },
-  { name: '목포', region: '전남', address: '전라남도 목포시 95 옥암로', note: '옥암로 95, 포르모큐브 지하2층 A15 기둥 인근', lat: 34.7920224100901, lng: 126.425759127126, phone: '080-617-1399' },
-  { name: '인천 미추홀 - 앨리웨이', region: '인천', address: '인천광역시 12 숙골로88번', note: '숙골로88번길 12, 앨리웨이 인천 B4F', lat: 37.469474955865294, lng: 126.66326165156543, phone: '080-617-1399' },
-  { name: '부산 남구 - IFC', region: '부산', address: '부산광역시 133 전포대로', note: '전포대로 133, IFC 부산몰 B3F', lat: 35.1482114222035, lng: 129.065468666201, phone: '080-617-1399' },
-  { name: '부산 동래 - 농심호텔', region: '부산', address: '부산 부산 20번길 금강공원로', note: '금강공원로 23', lat: 35.2202523390207, lng: 129.082261741882, phone: '080-617-1399' },
-  { name: '부산 해운대 - 롯데백화점', region: '부산', address: '부산광역시 부산 59 센텀남대로', note: '센텀남대로 59, 롯데백화점 센텀시티점 B5F', lat: 35.16981500549287, lng: 129.1310930492833, phone: '080-617-1399' },
-  { name: '부산 기장 - 롯데프리미엄아울렛', region: '부산', address: '부산광역시 147 기장해안로', note: '기장해안로 147 롯데프리미엄아울렛 동부산점', lat: 35.19166083470112, lng: 129.21254446105058, phone: '080-617-1399' },
-  { name: '부산 연제', region: '부산', address: '부산광역시 290 좌수영로', note: '좌수영로 290, 부산 테슬라센터', lat: 35.189951461926, lng: 129.106876298355, phone: '080-617-1399' },
-  { name: '부산 해운대 - 파라다이스호텔', region: '부산', address: '부산광역시 296 해운대해변로', note: '해운대해변로 296, 파라다이스 호텔 부산', lat: 35.160221528629094, lng: 129.16527311134593, phone: '080-617-1399' },
-  { name: '부여 - 롯데프리미엄아울렛', region: '충남', address: '충청남도 부여군 387 백제문', note: '백제문로 387, 롯데아울렛 부여', lat: 36.30827078218486, lng: 126.90099484875672, phone: '080-617-1399' },
-  { name: '부천 (지하4층 E3)', region: '경기', address: '경기도 부천시 300 길주로', note: '길주로 300', lat: 37.50256910703231, lng: 126.77520420831686, phone: '080-617-1399' },
-  { name: '성남 분당 - AK플라자', region: '경기', address: '경기도 Seongnam 36 황새울로312번길 36', note: '황새울로312번길', lat: 37.385235537553974, lng: 127.1231811647888, phone: '080-617-1399' },
-  { name: '삼척', region: '강원', address: '강원도 삼척시 3852 동해대로', note: '동해대로 3852 원더플주유소', lat: 37.323688041427, lng: 129.00825185709374, phone: '080-617-1399' },
-  { name: '상주', region: '경북', address: '경상북도 상주시 4207 경상대로', note: '경상대로 4207, 연꽃 참 한우', lat: 36.56778608269924, lng: 127.8621942443125, phone: '080-617-1399' },
-  { name: '제주 서귀포 - 롯데호텔', region: '제주', address: '제주특별자치도 서귀포시 35 중문관광로 72번길', note: '중문관광로 72번길 35, 롯데호텔 제주', lat: 33.24859943127331, lng: 126.41032986158476, phone: '080-617-1399' },
-  { name: '서울 강남 - 파르나스', region: '서울', address: '서울특별시 521 테헤란로 6164', note: '테헤란로 521, 그랜드 인터컨티넨탈 서울 파르나스 B4F', lat: 37.509194847542865, lng: 127.06132584117331, phone: '080-617-1399' },
-  { name: '서울 구로 - G Tower', region: '서울', address: '서울특별시 38 디지털로26길', note: '디지털로26길 38, 지타워 B4F', lat: 37.47996818512058, lng: 126.89534090500588, phone: '080-617-1399' },
-  { name: '서울 금천 - 마리오아울렛', region: '서울', address: '서울특별시 23 디지털로9', note: '', lat: 37.47807301962545, lng: 126.88713677551051, phone: '080-617-1399' },
-  { name: '서울 서초 - 쌍용플래티넘', region: '서울', address: '서울특별시 18 서초중앙로 서초구', note: '서초중앙로 18, 쌍용플래티넘 B2F', lat: 37.48405338902754, lng: 127.01733973745542, phone: '080-617-1399' },
-  { name: '서울 왕십리(5층)', region: '서울', address: '서울특별시 17 왕십리광장로', note: '왕십리광장로 17, 비트플렉스 5F', lat: 37.562727140714, lng: 127.033894190964, phone: '080-617-1399' },
-  { name: '서울 강남 - 센터필드', region: '서울', address: '서울특별시 231 테헤란로', note: '테헤란로 231 센터필드 B5F', lat: 37.50358205418571, lng: 127.04164724167455, phone: '080-617-1399' },
-  { name: '서울 압구정 - 안다즈', region: '서울', address: '서울특별시 854 논현로', note: '논현로 854, 안다즈 서울 강남 B4F', lat: 37.525418092797, lng: 127.02887026009083, phone: '080-617-1399' },
-  { name: '서울 여의도 - IFC', region: '서울', address: '서울특별시 10 국제금융로 7326', note: '국제금융로 10 IFC 주차장 P5층 C6구역', lat: 37.525041576560504, lng: 126.92589589473786, phone: '080-617-1399' },
-  { name: '서울 용산 - 그랜드하얏트', region: '서울', address: '서울특별시 322 소월로', note: '소월로 322, 그랜드 하얏트 서울 B2F', lat: 37.539444767461234, lng: 126.99708075146782, phone: '080-617-1399' },
-  { name: '서울 잠실 - 롯데월드타워', region: '서울', address: '서울특별시 300 올림픽로', note: '올림픽로 300, 롯데월드타워 B3F', lat: 37.51260447840551, lng: 127.10255558658325, phone: '080-617-1399' },
-  { name: '서울 종각 - 센트로폴리스 (지하6층 C13)', region: '서울', address: '서울특별시 서울특별시 5-1 공평동', note: '공평동 5-1, 센트로폴리스 지하6층 주차장', lat: 37.57187957811884, lng: 126.98359757806016, phone: '080-617-1399' },
-  { name: '서울 여의도 - CCMM', region: '서울', address: '서울특별시 Seoul 101 여의공원로', note: '여의공원로 101, CCMM 빌딩 B6F', lat: 37.52925403869, lng: 126.92491085801, phone: '080-617-1399' },
-  { name: '서울 김포공항 - 롯데몰', region: '서울', address: '서울특별시 38 하늘길', note: '하늘길 38, 롯데몰 김포공항점 P1F층 A15구역', lat: 37.5633661796519, lng: 126.803148162496, phone: '080-617-1399' },
-  { name: '서울 잠실 - 롯데월드', region: '서울', address: '서울특별시 Seoul 240 올림픽로', note: '올림픽로 240, 롯데백화점 잠실점 B3F', lat: 37.51146661087409, lng: 127.10034052818551, phone: '080-617-1399' },
-  { name: '서울 신림 - 타임스트림', region: '서울', address: '서울특별시 Seoul 330 신림로', note: '신림로 330, 타임스트림 B6F', lat: 37.48388636094257, lng: 126.93034045502553, phone: '080-617-1399' },
-  { name: '서울 강남 - 빗썸금융타워', region: '서울', address: '서울특별시 129 테헤란로', note: '테헤란로 129, 강남N타워 B4F', lat: 37.4999223606234, lng: 127.032411451482, phone: '080-617-1399' },
-  { name: '서울 강북 - 안토', region: '서울', address: '서울특별시', note: '삼양로 689, 파라스파라 RF/1F', lat: 37.66382169138598, lng: 127.009169019449, phone: '080-617-1399' },
-  { name: '서울 신사', region: '서울', address: '서울특별시 Seoul 652 강남대로', note: '강남대로 652, 신사스퀘어 B4F', lat: 37.5267558230172, lng: 127.039152029523, phone: '080-617-1399' },
-  { name: '서울 청량리 (M5F층)', region: '서울', address: '서울특별시 214 왕산로', note: '왕산로 214, 롯데백화점 청량리점 M5F', lat: 37.58082967458468, lng: 127.0476836634231, phone: '080-617-1399' },
-  { name: '성남 오리', region: '경기', address: '경기도 성남시 20 탄천상로151번길', note: '탄천상로 151번길 20, CGV 스퀘어 B4F', lat: 37.382543559705745, lng: 127.15233426157216, phone: '080-617-1399' },
-  { name: '서울 성수 - D Tower', region: '서울', address: '서울특별시 83-21 왕십리로', note: '왕십리로 83-21, 서울포레스트D타워 B5F', lat: 37.544166761299, lng: 127.044249771592, phone: '080-617-1399' },
-  { name: '세종 어진 - AK플라자 (지하2층 14구역)', region: '세종', address: '세종시 20 다솜1로', note: '다솜 1로 20 KT&G 세종타워C B2F', lat: 36.4997, lng: 127.2564, phone: '080-617-1399' },
-  { name: '세종 대평', region: '세종', address: '세종특별자치시 세종특별자치시 29 종합운동장로', note: '', lat: 36.46820055995363, lng: 127.28152975161096, phone: '080-617-1399' },
-  { name: '속초 설악 - 한화리조트 (워터피아주차장)', region: '강원', address: '강원도 속초시 88 미시령로2983번길', note: '미시령로2983번길 88 설악워터피아', lat: 38.2074232970338, lng: 128.526903218721, phone: '080-617-1399' },
-  { name: '속초 - 롯데리조트', region: '강원', address: '강원도 속초시 186 대포항길', note: '대포항길 186, 롯데리조트 속초 B3F', lat: 38.180717297287785, lng: 128.61320159917025, phone: '080-617-1399' },
-  { name: '서울 송파 - 소피텔', region: '서울', address: '서울특별시 209 잠실로', note: '잠실로 209, 소피텔 앰배서더 서울 B4F', lat: 37.51378610891105, lng: 127.106165424275, phone: '080-617-1399' },
-  { name: '수원 영통 - 판타지움', region: '경기', address: '경기도 수원시 1566 덕영대로', note: '덕영대로 1566 지상주차장 2 3F', lat: 37.2451294218834, lng: 127.061899042807, phone: '080-617-1399' },
-  { name: '수원 - 롯데몰 (지하2층 K1)', region: '경기', address: '경기도 수원시 134 세화로', note: '세화로 134, 롯데몰 수원점 B2F', lat: 37.26449820456967, lng: 126.9985231516336, phone: '080-617-1399' },
-  { name: '서울 수유 - 에피소드 수유', region: '서울', address: '서울특별시 Seoul 315 도봉로', note: '도봉로 315, 에피소드 수유 838 B4F', lat: 37.63693440988844, lng: 127.02330515998024, phone: '080-617-1399' },
-  { name: '순천', region: '전남', address: '전라남도 순천시 640 조례동 540-964', note: '조례동, 호수공원 외식타운', lat: 34.9292183256846, lng: 127.498901621838, phone: '080-617-1399' },
-  { name: '대전 신탄진', region: '대전', address: '대전광역시 490 신탄진로', note: '신탄진로 490, 대덕패션타운', lat: 36.47485472417273, lng: 127.4796164095806, phone: '080-617-1399' },
-  { name: '안동', region: '경북', address: '경상북도 안동시', note: '노리 212-1 안동노리카페', lat: 36.5389828267328, lng: 128.518141153901, phone: '080-617-1399' },
-  { name: '안성', region: '경기', address: '경기도 안성시 833 안성맞춤대로', note: '안성맞춤대로 833, 안성축산업협동조합', lat: 37.14175538287641, lng: 127.25930753627605, phone: '080-617-1399' },
-  { name: '안양 평촌 (주차비 있음 7층)', region: '경기', address: '경기도 안양시 33 관평로170번길', note: '관평로170번기 33, CGV 평촌 7F', lat: 37.39305418239436, lng: 126.96226485597738, phone: '080-617-1399' },
-  { name: '양산 - 오슬로파크', region: '경남', address: '경상남도 양산시 14 범구로', note: '범구로 14, 양산 오슬로 파크 B2F', lat: 35.32680019746542, lng: 129.01115193992922, phone: '080-617-1399' },
-  { name: '양양 - 설해원', region: '강원', address: '강원도 양양군 230 공항로', note: '공항로 230, 설해원 리조트', lat: 38.05351753519729, lng: 128.66223509558932, phone: '080-617-1399' },
-  { name: '여수 - 히든베이호텔', region: '전남', address: '전라남도 여수 496-25 신월로', note: '신월로 496-25, 여수 히든베이호텔', lat: 34.72142300120746, lng: 127.69890175475977, phone: '080-617-1399' },
-  { name: '여주 - 신세계프리미엄아울렛', region: '경기', address: '경기도 여주시 360 명품로', note: '명품로 360, 여주프리미엄아울렛', lat: 37.24139161292635, lng: 127.61219574661799, phone: '080-617-1399' },
-  { name: '인천 연수 - 더 스탈릿', region: '인천', address: '인천광역시 825-23 아암대로', note: '아암대로 825-23, 더 스탈릿', lat: 37.39628110804933, lng: 126.66322122506114, phone: '080-617-1399' },
-  { name: '인천 송도 - 트리플스트리트', region: '인천', address: '인천광역시 33-4 송도과학로 16번길', note: '송도과학로 16번길 33-4, 트리플 스트리트 B2F', lat: 37.37999514170518, lng: 126.66099750370242, phone: '080-617-1399' },
-  { name: '인천 영종 - 그랜드하얏트 West', region: '인천', address: '인천광역시 인천광역시 208 영종해안남로321번길 208', note: '영종해안남로321번길 208', lat: 37.44060223991513, lng: 126.45740694661126, phone: '080-617-1399' },
-  { name: '완주', region: '전북', address: '전라북도 완주군 23 봉동읍 봉비로', note: '', lat: 35.96224065467041, lng: 127.23289615478289, phone: '080-617-1399' },
-  { name: '서울 용산 - 드래곤시티 (지하3층 58구역)', region: '서울', address: '서울특별시 용산구 95 청파로 20길', note: '청파로 20길 95 용산 서울드래곤시티 지하3층', lat: 37.5318164676656, lng: 126.962764139611, phone: '080-617-1399' },
-  { name: '용인 기흥 - 롯데프리미엄아울렛', region: '경기', address: '경기도 용인시 124 신고매로', note: '신고매로 124, 롯데프리미엄아울렛 기흥점 B3F', lat: 37.22517252218746, lng: 127.12182287105342, phone: '080-617-1399' },
-  { name: '용인 포곡', region: '경기', address: '경기도 용인시 1051 석성로', note: '석성로 1051 수하림 지상주차장', lat: 37.293101115700345, lng: 127.20219830178264, phone: '080-617-1399' },
-  { name: '원주 - 오크밸리', region: '강원', address: '강원도 원주시 66 오크밸리1길', note: '오크밸리 1길 66, 오크밸리', lat: 37.434470076906024, lng: 127.81756132551133, phone: '080-617-1399' },
-  { name: '음성 대소', region: '충북', address: '충청북도 음성군 25-18 대성로 77번길', note: '대성로 77번길 25-18', lat: 36.9728754903184, lng: 127.50088273206, phone: '080-617-1399' },
-  { name: '의왕 - 롯데프리미엄아울렛', region: '경기', address: '경기도 의왕시 1 바라산로', note: '바라산로 1, 롯데프리미엄아울렛 의왕점 B1F', lat: 37.375616005115546, lng: 127.009447690386, phone: '080-617-1399' },
-  { name: '의정부 - 우리나라', region: '경기', address: '경기도 의정부시 11 동일로128번', note: '동일로128번길 11, 이디야커피 후면 지상 주차장', lat: 37.70061467119393, lng: 127.05587587095918, phone: '080-617-1399' },
-  { name: '인제 - 스피디움', region: '강원', address: '강원도 인제군 130 상하답로', note: '상하답로 130 인제스피디움', lat: 38.00285208225072, lng: 128.29535864950344, phone: '080-617-1399' },
-  { name: '고양 일산 - 원마운트', region: '경기', address: '경기도 일산 300 한류월드로 300', note: '한류월드로 300', lat: 37.664554097950486, lng: 126.75452646872884, phone: '080-617-1399' },
-  { name: '고양 일산 - N2Wash', region: '경기', address: '경기도 고양시 31 장항로', note: '장항로 31, N2WASH 일산전기차충전소', lat: 37.6296865662391, lng: 126.790765709178, phone: '080-617-1399' },
-  { name: '임실 - 임실치즈테마파크', region: '전북', address: '전라남도 임실군 50 성수면 도인2길', note: '도인2길', lat: 35.63311508767043, lng: 127.30122678617481, phone: '080-617-1399' },
-  { name: '장흥 - 정남진물과학관', region: '전남', address: '전라남도 장흥군 20 행원강변길', note: '행원강변길 20 정남진물과학관', lat: 34.6860668384226, lng: 126.900099815729, phone: '080-617-1399' },
-  { name: '전주 - 효자몰 (주차비 있음 지하2층)', region: '전북', address: '전라북도 전주시 45 용머리로', note: '용머리로 45, 몰오브효자 B2F', lat: 35.8067794848131, lng: 127.115521549412, phone: '080-617-1399' },
-  { name: '전주 - 미곡 로스터리', region: '전북', address: '전라북도 전주시 10 덕진구 금상길', note: '카페미곡로스터리', lat: 35.8415267330359, lng: 127.173842632811, phone: '080-617-1399' },
-  { name: '제천', region: '충북', address: '충청북도 제천시 741 청풍호로', note: '청풍호로 741, 남제천IC 휴게소', lat: 37.173177061675815, lng: 128.21070543766643, phone: '080-617-1399' },
-  { name: '진주 - 롯데몰', region: '경남', address: '경상남도 진주시 440 동진로', note: '동진로 440, 롯데몰 진주점 옥상', lat: 35.180265821001036, lng: 128.13979045382274, phone: '080-617-1399' },
-  { name: '진천 - 뤁스퀘어', region: '충북', address: '충청북도 진천군 599-79 내촌리', note: '내촌리 599-79, 만나씨이에이', lat: 36.9428374146815, lng: 127.43197518454, phone: '080-617-1399' },
-  { name: '창원', region: '경남', address: '경상남도 창원시 13 중앙대로100번길', note: '중앙대로100번길 13, CGV 창원상남 B2F', lat: 35.31215423031234, lng: 128.6725021628999, phone: '080-617-1399' },
-  { name: '천안 - 소노벨', region: '충남', address: '충청남도 천안시 200 종합휴양지로', note: '종합휴양지로 200, 소노벨 천안', lat: 36.75740499628105, lng: 127.22408070357226, phone: '080-617-1399' },
-  { name: '천안 - 중앙교회', region: '충남', address: '충청남도 천안 27 부대중앙길', note: '부대중앙길 27', lat: 36.841476678752095, lng: 127.14894029451382, phone: '080-617-1399' },
-  { name: '청도', region: '경북', address: '경상북도 청도군 1376 새마을로', note: '새마을로 1376, Gam1376 카페', lat: 35.6839809696742, lng: 128.71878233032, phone: '080-617-1399' },
-  { name: '인천 청라 - 스퀘어7', region: '인천', address: '인천광역시 76 청라루비로', note: '청라루비로 76, 스퀘어7', lat: 37.53209181020851, lng: 126.64120588432482, phone: '080-617-1399' },
-  { name: '청주 청원 (지상 2 3층)', region: '충북', address: '충청북도 청주시 191 율량로', note: '율량로 191, 이안스퀘어 2F/3F', lat: 36.6652863281603, lng: 127.49927159465, phone: '080-617-1399' },
-  { name: '춘천 - ENTA 2022', region: '강원', address: '강원도 춘천시 120 후석로', note: '후석로 120, 엔타2022 지하2층', lat: 37.863203963856286, lng: 127.7482602458034, phone: '080-617-1399' },
-  { name: '충주 - 홈마트', region: '충북', address: '충청북도 충주시 26 기업도시로', note: '기업도시로 26, 홈마트', lat: 37.001082694995, lng: 127.835172735496, phone: '080-617-1399' },
-  { name: '성남 판교 - 카카오아지트', region: '경기', address: '경기도 성남시 166 판교역로 463-420', note: '판교역로 166, 카카오 판교 아지트 B2F', lat: 37.39541713271851, lng: 127.11036420512991, phone: '080-617-1399' },
-  { name: '파주 - 뮌스터담', region: '경기', address: '경기도 파주시 113-175 운정로 113-175', note: '운정로 113-175', lat: 37.72677382072452, lng: 126.78412585756114, phone: '080-617-1399' },
-  { name: '성남 판교 - 디테라스 (주차비 있음 4층 C21)', region: '경기', address: '경기도 성남시 691 삼평동', note: '691 삼평동', lat: 37.40374013609216, lng: 127.10910013550354, phone: '080-617-1399' },
-  { name: '성남 판교 - 테크원', region: '경기', address: '경기도 성남시 534 백현동 463-420', note: '', lat: 37.39543330064149, lng: 127.11233150900603, phone: '080-617-1399' },
-  { name: '평창 - 휘닉스파크', region: '강원', address: '강원도 Pyeongchang-gun Bongpyeong-myeon 106 태기로', note: '', lat: 37.58134611756336, lng: 128.32740908253098, phone: '080-617-1399' },
-  { name: '평택 송탄', region: '경기', address: '경기도 평택시 1409 청원로', note: '청원로 1409, 블루에너지', lat: 37.055099525434, lng: 127.107452249043, phone: '080-617-1399' },
-  { name: '포항', region: '강원', address: '경상북도 포항시 870 동해대로', note: '북구 흥해읍 동해대로 878, 포항오토파크', lat: 36.0780561712913, lng: 129.56973687334, phone: '080-617-1399' },
-  { name: '하남 - 스타필드', region: '경기', address: '경기도 하남시 750 미사대로', note: '미사대로 750, 스타필드 하남 4F', lat: 37.545512916608395, lng: 127.22367994072209, phone: '080-617-1399' },
-  { name: '하동', region: '경남', address: '경상남도 하동군 426-12 진교리', note: '진교리 426-12', lat: 35.1555906084513, lng: 127.688100367243, phone: '080-617-1399' },
-  { name: '함양', region: '경남', address: '경상남도 함양군 298 고운로', note: '고운로 298, 타이어프로 함양IC점', lat: 35.33691118099147, lng: 127.73062186929766, phone: '080-617-1399' },
-  { name: '화성 발안', region: '경기', address: '경기도 화성시 806 서해로', note: '서해로 806, 대야 에너지', lat: 37.1296388507345, lng: 126.90008590948, phone: '080-617-1399' },
-  { name: '중앙역 환승 주차장', region: '경기', address: '경기도 안산시 237 광덕4로', note: '광덕4로 237, 안산 중앙역 환승 주차장', lat: 37.3151055697887, lng: 126.839766334732, phone: '080-617-1399' },
-  { name: '성남 분당 - 라포르테블랑', region: '경기', address: '경기도 성남시 28 황새울로 311번길', note: '황새울로 311번길 28', lat: 37.3860202813955, lng: 127.120604527422, phone: '080-617-1399' },
-  { name: '부산 하단 - 아트몰링', region: '부산', address: '부산 부산광역시 1413 낙동남로', note: '낙동남로 1413, 하단 아트몰링 지하 5층', lat: 35.1067217516844, lng: 128.966333184454, phone: '080-617-1399' },
-  { name: '천안 - 모다아울렛(지하 3층 C9구역)', region: '충남', address: '충청남도 천안시 196 공원로', note: '공원로 196 모다아울렛 천안아산점 지하3층 주차장 C9구역', lat: 36.798424837109295, lng: 127.10143636265975, phone: '080-617-1399' },
-  { name: '공주 - 이인휴게소', region: '충남', address: '충청남도 공주시 32 논산천안고속도로', note: '', lat: 36.35266663811522, lng: 127.06971548776588, phone: '080-617-1399' },
-  { name: '공주 - 탄천휴게소', region: '충남', address: '충청남도 공주시 27 논산천안고속도로', note: '', lat: 36.3179561012356, lng: 127.07069012901, phone: '080-617-1399' },
-  { name: '대전 유성 - DCC', region: '대전', address: '대전광역시 107 엑스포로', note: '엑스포로 107 대전컨벤션센터 서측 지상주차장', lat: 36.37513538590228, lng: 127.38932437431839, phone: '080-617-1399' },
-  { name: '대전 - 모다아울렛', region: '기타', address: 'Daejeon 5 대정로', note: '대정로 5, 모다아울렛 대전점 옥상주차장', lat: 36.3126105754741, lng: 127.318515433001, phone: '080-617-1399' },
-  { name: '화성 동탄 - 카페 아스타나', region: '경기', address: '경기도 화성시 1203-8 효행로', note: '효행로 1203-8', lat: 37.2182440955323, lng: 127.054322703949, phone: '080-617-1399' },
-  { name: '서울 서초 - 에피소드서초', region: '서울', address: '서울특별시 서울특별시 1338-5 에피소드 서초 B5F 서초동', note: '서초동 1338-5', lat: 37.489966960585, lng: 127.029648131957, phone: '080-617-1399' },
-  { name: '서울 강동 - DM스퀘어', region: '서울', address: '서울특별시 35 고덕비즈밸리로 4', note: '', lat: 37.5678416323427, lng: 127.160385240031, phone: '080-617-1399' },
-  { name: '경기 가평 - 가평휴게소(춘천방향)', region: '경기', address: '경기도 가평군 51 미사리로 540번길 51', note: '미사리로540번길 51, 가평휴게소(춘천방향)', lat: 37.701929541611875, lng: 127.54682365381369, phone: '080-617-1399' },
-  { name: '경기 가평 - 가평휴게소(서울방향)', region: '경기', address: '경기도 가평군 544 미사리로 544', note: '미사리로 544, 가평휴게소(서울방향)', lat: 37.701622357301176, lng: 127.54350122339451, phone: '080-617-1399' },
-  { name: '김해 - 진영복합휴게소', region: '경남', address: '경상남도 김해시 94-4 하계로96번길', note: '하계로96번길 94-4, 진영복합휴게소(부산방향)', lat: 35.27738158449638, lng: 128.71734772378963, phone: '080-617-1399' },
-  { name: '서울 고척 - 아이파크몰', region: '서울', address: '서울 서울특별시 49 경인로43길', note: '경인로43길 49 고척 아이파크몰 B1', lat: 37.498666972176224, lng: 126.85910418250997, phone: '080-617-1399' },
-  { name: '구미 형곡', region: '경북', address: '경상북도 구미시 74-4 새마을로', note: '새마을로 74-4 460정육식당', lat: 36.1001694332916, lng: 128.325958244104, phone: '080-617-1399' },
-  { name: '광주 - 유스퀘어', region: '광주', address: '광주광역시 904 무진대로', note: '', lat: 35.16040310400629, lng: 126.87931031267314, phone: '080-617-1399' },
-  { name: '이천 - 테르메덴', region: '경기', address: '경기도 이천시 984 사실로', note: '사실로', lat: 37.19507109548797, lng: 127.44596994574883, phone: '080-617-1399' },
-  { name: '제주 - 제주스토어', region: '제주', address: '제주도 제주시 2108 오라삼동', note: '', lat: 33.492671670394046, lng: 126.50687298933951, phone: '080-617-1399' },
-  { name: '공주 - 정안알밤휴게소(천안방향)', region: '충남', address: '충청남도 공주시 58 논산천안고속도로', note: '', lat: 36.5695272317411, lng: 127.115078652119, phone: '080-617-1399' },
-  { name: '공주 - 정안알밤휴게소(순천방향)', region: '충남', address: '충청남도 공주시 57 논산천안고속도로', note: '', lat: 36.57115105256033, lng: 127.112196438789, phone: '080-617-1399' },
-  { name: '서울 중랑 - 이노시티', region: '서울', address: '서울특별시 353 망우로 353', note: '망우로 353, 이노시티 지하4층 주차장', lat: 37.5982371182892, lng: 127.091528112457, phone: '080-617-1399' },
-  { name: '서울 상암 (주차비 있음 9층 28구역)', region: '서울', address: '서울특별시 80 매봉산로', note: '매봉산로 80, 파크엠 지상9층', lat: 37.5785295751525, lng: 126.894286118, phone: '080-617-1399' },
-  { name: '하남 미사', region: '경기', address: '경기도 하남시 1143 망월동', note: '망월동 1143 하남종합운동장', lat: 37.5816045145693, lng: 127.195514124075, phone: '080-617-1399' },
-  { name: '오산 - 모다아울렛 (신관 지상주차장)', region: '경기', address: '경기도 오산시 822-22 경기대로', note: '경기대로 822-22, 모다아울렛 오산동탄점 신관 지상주차장', lat: 37.192713645895296, lng: 127.04597544292338, phone: '080-617-1399' },
-  { name: '평창 - 평창휴게소(인천방향)', region: '강원', address: '강원도 평창군 63 탑거리길', note: '', lat: 37.6107895550262, lng: 128.463372989684, phone: '080-617-1399' },
-  { name: '진주 - 모다아울렛', region: '경남', address: '경상남도 진주시 46 삼일로 95번길', note: '삼일로95번길 46 모다아울렛 진주점 본관 지상주차장', lat: 35.131868733267694, lng: 128.09850879534494, phone: '080-617-1399' },
-  { name: 'Suwon-AK Plaza', region: '경기', address: '경기도 수원시 924 덕영대로', note: '덕영대로 924, AK플라자 수원점 지상4층 주차장', lat: 37.2655524309286, lng: 127.000689957099, phone: '080-617-1399' },
-  { name: '청주 강서 (주차비 있음)', region: '충북', address: '충청북도 청주시 191 가포산로', note: '가포산로 191, 레인디어커피', lat: 36.6162272011867, lng: 127.421349846682, phone: '080-617-1399' },
-  { name: '당진 행담도 - 모다아울렛', region: '충남', address: '충청남도 당진시 276 서해안고속도로', note: '서해안고속도로 276', lat: 36.9410263402903, lng: 126.809417141531, phone: '080-617-1399' },
-  { name: '음성 금왕', region: '충북', address: '충청북도 음성군 1356 대금로', note: '', lat: 36.957451320743, lng: 127.609828811228, phone: '080-617-1399' },
-  { name: '양양 - 물치항', region: '강원', address: '강원도 양양군 3594 동해대로', note: '', lat: 38.15350588374406, lng: 128.60712028367323, phone: '080-617-1399' },
-  { name: '원주 - AK플라자', region: '강원', address: '강원도 원주시 1 봉화로', note: '봉화로 1 AK플라자 원주점 지하 5층', lat: 37.34573045545508, lng: 127.9276491064738, phone: '080-617-1399' },
-  { name: '광명 - 광명역 (지상 3층)', region: '경기', address: '경기도 광명시 310-1 일직동', note: '일직동 310-1', lat: 37.4155562726182, lng: 126.882608226235, phone: '080-617-1399' },
-  { name: '인천 서구 - 모다아울렛', region: '인천', address: '인천광역시 50 북항로32번안길', note: '북항로32번안길 50, 모다아울렛 인천점 지상4층', lat: 37.51004232778682, lng: 126.64770749600926, phone: '080-617-1399' },
-  { name: '인천 영종 - 그랜드하얏트 East', region: '인천', address: '인천광역시 인천광역시 208 영종해안남로 321번길', note: '영종해안남로 321번길 208', lat: 37.44060223991513, lng: 126.45740694661126, phone: '080-617-1399' },
-  { name: '평택 - AK플라자', region: '경기', address: '경기도 평택시 51 평택로', note: '평택로 51, AK플라자 평택점 지상 4층 주차장', lat: 36.991141153299466, lng: 127.08500370097137, phone: '080-617-1399' },
-  { name: '서울 성수 - 팩토리얼 성수 (주차비 있음 지하2층)', region: '서울', address: '서울 서울특별시 314-11 성수동2가', note: '성수동2가 314-11 팩토리얼 성수 B2', lat: 37.5441714976058, lng: 127.054473446127, phone: '080-617-1399' },
-  { name: '서울 강남 - 건설회관', region: '서울', address: '서울특별시 강남구 711 언주로', note: '', lat: 37.51745529840666, lng: 127.03457954777078, phone: '080-617-1399' },
-  { name: '태백 - 365 Safe Town (제2주차장)', region: '강원', address: '강원도 태백시 15 평화길', note: '', lat: 37.100491001509624, lng: 129.02461251953432, phone: '080-617-1399' },
-  { name: '속초 엑스포 공영 주차장', region: '강원', address: '강원도 속초시 1556-6 조양동', note: '조양동 1556-6, 속초 엑스포 공영 주차장', lat: 38.1915630301352, lng: 128.59109794546, phone: '080-617-1399' },
-  { name: '영월', region: '강원', address: '강원도 영월군 782 방절리 230887', note: '', lat: 37.1973762292613, lng: 128.452785489904, phone: '080-617-1399' },
-  { name: '용인 양지', region: '경기', address: '경기도 용인시 924 양지', note: '양지리 924 양지로지스틱스', lat: 37.21550692728138, lng: 127.27781681891572, phone: '080-617-1399' },
-  { name: '성남 분당 - 한국잡월드', region: '경기', address: '경기도 성남시 501 분당구 분당수서로 501', note: '', lat: 37.3784834384883, lng: 127.106286030845, phone: '080-617-1399' },
-  { name: '울산 - 모다아울렛', region: '울산', address: '울산광역시 78-6 진장유통로', note: '', lat: 35.57705151021915, lng: 129.35718755079682, phone: '080-617-1399' },
-  { name: '여주 - 썬밸리호텔', region: '경기', address: '경기도 여주시 414 연양동', note: '연양동 414 여주 썬밸리호텔', lat: 37.29312533833915, lng: 127.66105145778131, phone: '080-617-1399' },
-  { name: '인천 연수 - 바다쏭', region: '인천', address: '인천광역시 연수구 16 능허대로', note: '', lat: 37.42954374180985, lng: 126.63611340023536, phone: '080-617-1399' }
+  { name: '서울 대치 - KT&G', region: '서울', address: '서울특별시 416 영동대로', note: '영동대로 416 KT&G상상마당 대치', lat: 37.5067600874053, lng: 127.065150015652, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/superchargetseouldaechi' , stalls: 9, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '강릉 - 세인트존스호텔', region: '강원', address: '강원도 강릉시 307 창해로', note: '창해로 307', lat: 37.79125474022498, lng: 128.92097417796126, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gangneungsaintjohnshotelkr' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '강릉 - 테라로사', region: '강원', address: '강릉 25 구정면 현천길', note: '', lat: 37.822396275144285, lng: 128.885037687341, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/Gangneungterarosa' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '강릉 - 라카이 샌드파인', region: '강원', address: '강원도 강릉시 536 해안로', note: '해안로 536, 라카이 샌드파인 B2F', lat: 37.80610683492571, lng: 128.90449844596327, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gangneungsupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '인천 강화 - 씨사이드리조트', region: '인천', address: '인천광역시 217 길상면 장흥로', note: '', lat: 37.617149875930124, lng: 126.4981741641961, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/4005316' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 400 },
+  { name: '경기 광주 - 9Block', region: '경기', address: '경기도 광주시 1967 경충대로', note: '경충대로 1967, 나인블럭 중대동점', lat: 37.4034655785769, lng: 127.223567606035, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gyeonggigwangjusupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '경주 - 신라명가', region: '경북', address: '경상북도 경주시 676-1 탑동', note: '화장실 24시간 개방 도어락 번호 0229*', lat: 35.8411894078043, lng: 129.216186080754, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/teslagyeongjub' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '경주 - 라한셀렉트', region: '경북', address: '경상북도 경주시 338 보문로', note: '', lat: 35.8503196784132, lng: 129.27702298089, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gyeongjusupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '고성 - 오션투유리조트', region: '강원', address: '강원도 고성군 9 삼포해변길', note: '삼포해변길 9 오션투유리조트', lat: 38.3171143664804, lng: 128.530989687984, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/goseongoceantoyou' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '고양 도내동', region: '경기', address: '경기도 고양시 449 권율대로', note: '권유대로 449, 커피명당', lat: 37.6221485405323, lng: 126.862965198087, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/teslagoyangdonaedongsupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '고양 일산 - 소노캄', region: '경기', address: '경기도 고양시 20 태극로', note: '태극로 20, 소노캄 고양 B3F', lat: 37.6619253545306, lng: 126.750808685393, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/goyangsupercharger' , stalls: 4, maxKw: 119, teslaPrice: 339, otherPrice: null },
+  { name: '고양 행주', region: '경기', address: '경기도 고양시 487 자유로', note: '자유로 487', lat: 37.596101261945115, lng: 126.8287096301388, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31758' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '수원 광교 - 법조타운', region: '경기', address: '경기도 수원시 269 법조로149번길', note: '법조로149번길 269, 광교 법원 주차장 3F', lat: 37.2921496261248, lng: 127.067986942394, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gwanggyosupercharger' , stalls: 3, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '수원 광교 - 롯데아울렛', region: '경기', address: '경기도 수원시 10 도청로', note: '도청로 10 롯데아울렛 광교점 지하4층 A3 기둥 인근', lat: 37.2860295495803, lng: 127.056412504261, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gwanggyolakesupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '광명 - AK플라자', region: '경기', address: '경기도 광명시 19 양지로', note: '양지로 19, 광명 유플래닛 B5F', lat: 37.418680382779755, lng: 126.88289028656294, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gwangmyeongsupercharger' , stalls: 3, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '광양 - LF스퀘어', region: '전남', address: '전라남도 광양시 466 순광로', note: '순광로 466, LF스퀘어 광양점 2F', lat: 34.9631726636811, lng: 127.565873709773, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gwangyangsupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '광주 첨단 (주차비 있음 옥상층)', region: '광주', address: '광주광역시 19-20 임방울대로826번길', note: '임방울대로826번길 19-20, 보이저 첨단 옥상층', lat: 35.2163708813576, lng: 126.849495730527, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gwangjucheomdansupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '광주 - 홀리데이인', region: '광주', address: '광주광역시 55 상무누리로', note: '상무누리로 55, 홀리데이인 광주 B1F', lat: 35.147637008880146, lng: 126.83820936828113, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gwangjusupercharger' , stalls: 6, maxKw: 119, teslaPrice: 339, otherPrice: null },
+  { name: '군산', region: '전북', address: '전라북도 군산시 1321 번영로', note: '번영로 1321, 군산 GS칼텍스 샛별주유소', lat: 35.8106890647466, lng: 126.410505924295, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gunsansupercharger' , stalls: 8, maxKw: 119, teslaPrice: 339, otherPrice: null },
+  { name: '군포 - AK플라자 (지하2층 14구역)', region: '경기', address: '경기도 군포시 143 엘에스로', note: '엘에스로 143, AK PLAZA 금정점 B2', lat: 37.3727577761477, lng: 126.94418871483848, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gunpogeumjeongakplaza' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '김포 구래', region: '경기', address: '경기도 김포시 487 김포한강4로', note: '김포한강4로 487, 카림애비뉴 김포 B1F', lat: 37.6438933306417, lng: 126.622349373141, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gimposupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '김해 주촌', region: '경남', address: '경상남도 김해시 1566-3 주촌면 천곡리', note: '천곡리 1566-3', lat: 35.2328610092256, lng: 128.828670383762, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31714' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 417 },
+  { name: '남양주 화도 - 디스플레인', region: '경기', address: '경기도 남양주 48-24 화도읍 소래비로', note: '소래비로 48-24', lat: 37.654455088895865, lng: 127.319889025936, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/Namyangjuhwadothisplane' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '논산', region: '충남', address: '충청남도 논산시 40 동안로 1113번길', note: '동안로 1113번길 40, 라온빌리지', lat: 36.140393061797, lng: 127.30922048096143, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/nonsansupercharger' , stalls: 4, maxKw: 119, teslaPrice: 339, otherPrice: null },
+  { name: '당진', region: '충남', address: '충청남도 당진시 590-3 가학리 343-822', note: '가학리 590-3, 워시블랑 당진점', lat: 37.04492374579673, lng: 126.52461545756205, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/dangjinsupercharger' , stalls: 4, maxKw: 120, teslaPrice: 339, otherPrice: null },
+  { name: '평창 대관령', region: '강원', address: '강원도 평창군 5754 경강로', note: '', lat: 37.64405741078855, lng: 128.67891991885864, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31771' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 400 },
+  { name: '대구 북구 - EXCO', region: '대구', address: '대구광역시 10 엑스코로', note: '엑스코로 10, EXCO B1F', lat: 35.9080476200807, lng: 128.614586966895, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/daegusupercharger' , stalls: 6, maxKw: 120, teslaPrice: 339, otherPrice: null },
+  { name: '대구 수성', region: '대구', address: '대구광역시 18 수성못6길', note: '', lat: 35.82770180872425, lng: 128.61727641474653, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/daegususeongsupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '대구 동구 - 이시아폴리스', region: '대구', address: '대구광역시 16 팔공로49길', note: '팔공로49길 16, 롯데아울렛 이시아폴리스점', lat: 35.918995808176916, lng: 128.63579607552765, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/daeguhyuksinlsupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '대전 서구 - 롯데백화점', region: '대전', address: '대전광역시 598 계룡로', note: '계룡로 598, 롯데백화점 대전 B4F', lat: 36.340653703926, lng: 127.389624974978, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/Daejeon' , stalls: 6, maxKw: null, teslaPrice: 339, otherPrice: 408 },
+  { name: '화성 동탄 - 롯데백화점', region: '경기', address: '경기도 화성시 160 동탄역로 445-150', note: '동탄역로 160, 롯데백화점 동탄 B4F', lat: 37.20070867365914, lng: 127.09791931212142, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/dongtansupercharger' , stalls: 3, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '화성 동탄 - 그란비아스타', region: '경기', address: '경기도 화성시 446 동탄대로', note: '동탄대로 446, 그란비아스타 지하2층', lat: 37.19339307810837, lng: 127.10002168907872, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/32964' , stalls: 9, maxKw: 250, teslaPrice: 339, otherPrice: 396 },
+  { name: '동해', region: '강원', address: '강원도 동해시 361-1 천곡동', note: '천곡동 361-1 동해웰빙레포츠타운', lat: 37.4778289847792, lng: 129.159510802511, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/58507' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 417 },
+  { name: '김천 - 모다아울렛', region: '경북', address: '경상북도 김천시 1417 아포대로', note: '아포대로 1417, 모다아울렛 김천구미점 지상주차장', lat: 36.1546025777557, lng: 128.281875926773, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/34277' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '구리 - 모다아울렛', region: '경기', address: '경기도 구리시 230 경춘북로', note: '230 경춘북로', lat: 37.6333361833713, lng: 127.11592878058, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gurisupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '충주 - 모다아울렛', region: '충북', address: '충청북도 충주시 3683 중원대로', note: '3683 중원대로', lat: 36.96141498114042, lng: 127.89830576809436, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/chungjumodaoutletsupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '목포', region: '전남', address: '전라남도 목포시 95 옥암로', note: '옥암로 95, 포르모큐브 지하2층 A15 기둥 인근', lat: 34.7920224100901, lng: 126.425759127126, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/mokpopormocubesupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '인천 미추홀 - 앨리웨이', region: '인천', address: '인천광역시 12 숙골로88번', note: '숙골로88번길 12, 앨리웨이 인천 B4F', lat: 37.469474955865294, lng: 126.66326165156543, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/incheonmichuholsupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '부산 남구 - IFC', region: '부산', address: '부산광역시 133 전포대로', note: '전포대로 133, IFC 부산몰 B3F', lat: 35.1482114222035, lng: 129.065468666201, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/busannamgusupercharger' , stalls: 4, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '부산 동래 - 농심호텔', region: '부산', address: '부산 부산 20번길 금강공원로', note: '금강공원로 23', lat: 35.2202523390207, lng: 129.082261741882, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/teslabusanhotelnongshimsupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '부산 해운대 - 롯데백화점', region: '부산', address: '부산광역시 부산 59 센텀남대로', note: '센텀남대로 59, 롯데백화점 센텀시티점 B5F', lat: 35.16981500549287, lng: 129.1310930492833, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/teslabusanhaewondaelottedepartmentcentumcitysupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '부산 기장 - 롯데프리미엄아울렛', region: '부산', address: '부산광역시 147 기장해안로', note: '기장해안로 147 롯데프리미엄아울렛 동부산점', lat: 35.19166083470112, lng: 129.21254446105058, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/busangijangsupercharger' , stalls: 12, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '부산 연제', region: '부산', address: '부산광역시 290 좌수영로', note: '좌수영로 290, 부산 테슬라센터', lat: 35.189951461926, lng: 129.106876298355, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/busansupercharger' , stalls: 3, maxKw: 250, teslaPrice: 339, otherPrice: 396 },
+  { name: '부산 해운대 - 파라다이스호텔', region: '부산', address: '부산광역시 296 해운대해변로', note: '해운대해변로 296, 파라다이스 호텔 부산', lat: 35.160221528629094, lng: 129.16527311134593, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/busansupercharger' , stalls: 3, maxKw: 250, teslaPrice: 339, otherPrice: 396 },
+  { name: '부여 - 롯데프리미엄아울렛', region: '충남', address: '충청남도 부여군 387 백제문', note: '백제문로 387, 롯데아울렛 부여', lat: 36.30827078218486, lng: 126.90099484875672, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/buyeosupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '부천 (지하4층 E3)', region: '경기', address: '경기도 부천시 300 길주로', note: '길주로 300', lat: 37.50256910703231, lng: 126.77520420831686, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/teslabucheonlottedepartmentsupercharger' , stalls: 9, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '성남 분당 - AK플라자', region: '경기', address: '경기도 Seongnam 36 황새울로312번길 36', note: '황새울로312번길', lat: 37.385235537553974, lng: 127.1231811647888, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31733' , stalls: 9, maxKw: null, teslaPrice: 339, otherPrice: 412 },
+  { name: '삼척', region: '강원', address: '강원도 삼척시 3852 동해대로', note: '동해대로 3852 원더플주유소', lat: 37.323688041427, lng: 129.00825185709374, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/35990' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '상주', region: '경북', address: '경상북도 상주시 4207 경상대로', note: '경상대로 4207, 연꽃 참 한우', lat: 36.56778608269924, lng: 127.8621942443125, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/sangjusupercharger' , stalls: 12, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '제주 서귀포 - 롯데호텔', region: '제주', address: '제주특별자치도 서귀포시 35 중문관광로 72번길', note: '중문관광로 72번길 35, 롯데호텔 제주', lat: 33.24859943127331, lng: 126.41032986158476, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seogwiposupercharger' , stalls: 12, maxKw: null, teslaPrice: 339, otherPrice: null },
+  { name: '서울 강남 - 파르나스', region: '서울', address: '서울특별시 521 테헤란로 6164', note: '테헤란로 521, 그랜드 인터컨티넨탈 서울 파르나스 B4F', lat: 37.509194847542865, lng: 127.06132584117331, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seoulgangnamsupercharger' , stalls: 5, maxKw: null, teslaPrice: 339, otherPrice: null },
+  { name: '서울 구로 - G Tower', region: '서울', address: '서울특별시 38 디지털로26길', note: '디지털로26길 38, 지타워 B4F', lat: 37.47996818512058, lng: 126.89534090500588, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gurosupercharger' , stalls: 9, maxKw: null, teslaPrice: 339, otherPrice: null },
+  { name: '서울 금천 - 마리오아울렛', region: '서울', address: '서울특별시 23 디지털로9', note: '', lat: 37.47807301962545, lng: 126.88713677551051, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/geumcheonsupercharger' , stalls: 9, maxKw: null, teslaPrice: 339, otherPrice: 404 },
+  { name: '서울 서초 - 쌍용플래티넘', region: '서울', address: '서울특별시 18 서초중앙로 서초구', note: '서초중앙로 18, 쌍용플래티넘 B2F', lat: 37.48405338902754, lng: 127.01733973745542, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seoulseochosupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '서울 왕십리(5층)', region: '서울', address: '서울특별시 17 왕십리광장로', note: '왕십리광장로 17, 비트플렉스 5F', lat: 37.562727140714, lng: 127.033894190964, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seoulseongsusupercharger' , stalls: 6, maxKw: null, teslaPrice: 339, otherPrice: null },
+  { name: '서울 강남 - 센터필드', region: '서울', address: '서울특별시 231 테헤란로', note: '테헤란로 231 센터필드 B5F', lat: 37.50358205418571, lng: 127.04164724167455, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seolleungsupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '서울 압구정 - 안다즈', region: '서울', address: '서울특별시 854 논현로', note: '논현로 854, 안다즈 서울 강남 B4F', lat: 37.525418092797, lng: 127.02887026009083, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gangnnamsupercharger' , stalls: 4, maxKw: null, teslaPrice: 339, otherPrice: null },
+  { name: '서울 여의도 - IFC', region: '서울', address: '서울특별시 10 국제금융로 7326', note: '국제금융로 10 IFC 주차장 P5층 C6구역', lat: 37.525041576560504, lng: 126.92589589473786, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seoulyeouidosupercharger' , stalls: 4, maxKw: null, teslaPrice: 339, otherPrice: 400 },
+  { name: '서울 용산 - 그랜드하얏트', region: '서울', address: '서울특별시 322 소월로', note: '소월로 322, 그랜드 하얏트 서울 B2F', lat: 37.539444767461234, lng: 126.99708075146782, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seoulyongsansupercharger' , stalls: 4, maxKw: null, teslaPrice: 339, otherPrice: null },
+  { name: '서울 잠실 - 롯데월드타워', region: '서울', address: '서울특별시 300 올림픽로', note: '올림픽로 300, 롯데월드타워 B3F', lat: 37.51260447840551, lng: 127.10255558658325, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seouljamsilsupercharger' , stalls: 6, maxKw: null, teslaPrice: 339, otherPrice: null },
+  { name: '서울 종각 - 센트로폴리스 (지하6층 C13)', region: '서울', address: '서울특별시 서울특별시 5-1 공평동', note: '공평동 5-1, 센트로폴리스 지하6층 주차장', lat: 37.57187957811884, lng: 126.98359757806016, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31754' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 396 },
+  { name: '서울 여의도 - CCMM', region: '서울', address: '서울특별시 Seoul 101 여의공원로', note: '여의공원로 101, CCMM 빌딩 B6F', lat: 37.52925403869, lng: 126.92491085801, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31975' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '서울 김포공항 - 롯데몰', region: '서울', address: '서울특별시 38 하늘길', note: '하늘길 38, 롯데몰 김포공항점 P1F층 A15구역', lat: 37.5633661796519, lng: 126.803148162496, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seoulgangseosupercharger' , stalls: 4, maxKw: 120, teslaPrice: 339, otherPrice: null },
+  { name: '서울 잠실 - 롯데월드', region: '서울', address: '서울특별시 Seoul 240 올림픽로', note: '올림픽로 240, 롯데백화점 잠실점 B3F', lat: 37.51146661087409, lng: 127.10034052818551, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seoulsongpaolympicparksupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '서울 신림 - 타임스트림', region: '서울', address: '서울특별시 Seoul 330 신림로', note: '신림로 330, 타임스트림 B6F', lat: 37.48388636094257, lng: 126.93034045502553, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seoultimesstreamsupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '서울 강남 - 빗썸금융타워', region: '서울', address: '서울특별시 129 테헤란로', note: '테헤란로 129, 강남N타워 B4F', lat: 37.4999223606234, lng: 127.032411451482, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seoulteheransupercharger' , stalls: 4, maxKw: 120, teslaPrice: 339, otherPrice: null },
+  { name: '서울 강북 - 안토', region: '서울', address: '서울특별시', note: '삼양로 689, 파라스파라 RF/1F', lat: 37.66382169138598, lng: 127.009169019449, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gangbuksupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '서울 신사', region: '서울', address: '서울특별시 Seoul 652 강남대로', note: '강남대로 652, 신사스퀘어 B4F', lat: 37.5267558230172, lng: 127.039152029523, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gangnamsinsasupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 396 },
+  { name: '서울 청량리 (M5F층)', region: '서울', address: '서울특별시 214 왕산로', note: '왕산로 214, 롯데백화점 청량리점 M5F', lat: 37.58082967458468, lng: 127.0476836634231, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/Misasupercharger' , stalls: 3, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '성남 오리', region: '경기', address: '경기도 성남시 20 탄천상로151번길', note: '탄천상로 151번길 20, CGV 스퀘어 B4F', lat: 37.382543559705745, lng: 127.15233426157216, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/bundangsupercharger' , stalls: 6, maxKw: 120, teslaPrice: 339, otherPrice: null },
+  { name: '서울 성수 - D Tower', region: '서울', address: '서울특별시 83-21 왕십리로', note: '왕십리로 83-21, 서울포레스트D타워 B5F', lat: 37.544166761299, lng: 127.044249771592, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seongsudtowerq322' , stalls: 9, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '세종 어진 - AK플라자 (지하2층 14구역)', region: '세종', address: '세종시 20 다솜1로', note: '다솜 1로 20 KT&G 세종타워C B2F', lat: 36.4997, lng: 127.2564, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/sejongsupercharger' , stalls: 9, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '세종 대평', region: '세종', address: '세종특별자치시 세종특별자치시 29 종합운동장로', note: '', lat: 36.46820055995363, lng: 127.28152975161096, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31209' , stalls: 6, maxKw: null, teslaPrice: 339, otherPrice: 408 },
+  { name: '속초 설악 - 한화리조트 (워터피아주차장)', region: '강원', address: '강원도 속초시 88 미시령로2983번길', note: '미시령로2983번길 88 설악워터피아', lat: 38.2074232970338, lng: 128.526903218721, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/35418' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '속초 - 롯데리조트', region: '강원', address: '강원도 속초시 186 대포항길', note: '대포항길 186, 롯데리조트 속초 B3F', lat: 38.180717297287785, lng: 128.61320159917025, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/sokchogangwondosupercharger' , stalls: 7, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '서울 송파 - 소피텔', region: '서울', address: '서울특별시 209 잠실로', note: '잠실로 209, 소피텔 앰배서더 서울 B4F', lat: 37.51378610891105, lng: 127.106165424275, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/songpasupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '수원 영통 - 판타지움', region: '경기', address: '경기도 수원시 1566 덕영대로', note: '덕영대로 1566 지상주차장 2 3F', lat: 37.2451294218834, lng: 127.061899042807, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/SuwonYeongtongsupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '수원 - 롯데몰 (지하2층 K1)', region: '경기', address: '경기도 수원시 134 세화로', note: '세화로 134, 롯데몰 수원점 B2F', lat: 37.26449820456967, lng: 126.9985231516336, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/suwonsupercharger' , stalls: 4, maxKw: 119, teslaPrice: 339, otherPrice: null },
+  { name: '서울 수유 - 에피소드 수유', region: '서울', address: '서울특별시 Seoul 315 도봉로', note: '도봉로 315, 에피소드 수유 838 B4F', lat: 37.63693440988844, lng: 127.02330515998024, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/suyusupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '순천', region: '전남', address: '전라남도 순천시 640 조례동 540-964', note: '조례동, 호수공원 외식타운', lat: 34.9292183256846, lng: 127.498901621838, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/suncheonsupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '대전 신탄진', region: '대전', address: '대전광역시 490 신탄진로', note: '신탄진로 490, 대덕패션타운', lat: 36.47485472417273, lng: 127.4796164095806, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/sintanjinsupercharger' , stalls: 12, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '안동', region: '경북', address: '경상북도 안동시', note: '노리 212-1 안동노리카페', lat: 36.5389828267328, lng: 128.518141153901, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31726' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '안성', region: '경기', address: '경기도 안성시 833 안성맞춤대로', note: '안성맞춤대로 833, 안성축산업협동조합', lat: 37.14175538287641, lng: 127.25930753627605, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/anseongsupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '안양 평촌 (주차비 있음 7층)', region: '경기', address: '경기도 안양시 33 관평로170번길', note: '관평로170번기 33, CGV 평촌 7F', lat: 37.39305418239436, lng: 126.96226485597738, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/gyeonggianyangsupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '양산 - 오슬로파크', region: '경남', address: '경상남도 양산시 14 범구로', note: '범구로 14, 양산 오슬로 파크 B2F', lat: 35.32680019746542, lng: 129.01115193992922, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/Yangsansupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '양양 - 설해원', region: '강원', address: '강원도 양양군 230 공항로', note: '공항로 230, 설해원 리조트', lat: 38.05351753519729, lng: 128.66223509558932, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/yangyangsupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '여수 - 히든베이호텔', region: '전남', address: '전라남도 여수 496-25 신월로', note: '신월로 496-25, 여수 히든베이호텔', lat: 34.72142300120746, lng: 127.69890175475977, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/yeosusupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '여주 - 신세계프리미엄아울렛', region: '경기', address: '경기도 여주시 360 명품로', note: '명품로 360, 여주프리미엄아울렛', lat: 37.24139161292635, lng: 127.61219574661799, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/yeojusupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '인천 연수 - 더 스탈릿', region: '인천', address: '인천광역시 825-23 아암대로', note: '아암대로 825-23, 더 스탈릿', lat: 37.39628110804933, lng: 126.66322122506114, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/dongchunsupercharger' , stalls: 8, maxKw: null, teslaPrice: 339, otherPrice: null },
+  { name: '인천 송도 - 트리플스트리트', region: '인천', address: '인천광역시 33-4 송도과학로 16번길', note: '송도과학로 16번길 33-4, 트리플 스트리트 B2F', lat: 37.37999514170518, lng: 126.66099750370242, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/songdoincheonsupercharger' , stalls: 8, maxKw: null, teslaPrice: 339, otherPrice: 400 },
+  { name: '인천 영종 - 그랜드하얏트 West', region: '인천', address: '인천광역시 인천광역시 208 영종해안남로321번길 208', note: '영종해안남로321번길 208', lat: 37.44060223991513, lng: 126.45740694661126, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/incheonyeongjonggrandhyatthotelwestkr' , stalls: 3, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '완주', region: '전북', address: '전라북도 완주군 23 봉동읍 봉비로', note: '', lat: 35.96224065467041, lng: 127.23289615478289, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31832' , stalls: 8, maxKw: null, teslaPrice: 339, otherPrice: 408 },
+  { name: '서울 용산 - 드래곤시티 (지하3층 58구역)', region: '서울', address: '서울특별시 용산구 95 청파로 20길', note: '청파로 20길 95 용산 서울드래곤시티 지하3층', lat: 37.5318164676656, lng: 126.962764139611, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31871' , stalls: 12, maxKw: null, teslaPrice: 339, otherPrice: 417 },
+  { name: '용인 기흥 - 롯데프리미엄아울렛', region: '경기', address: '경기도 용인시 124 신고매로', note: '신고매로 124, 롯데프리미엄아울렛 기흥점 B3F', lat: 37.22517252218746, lng: 127.12182287105342, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/yonginsupercharger' , stalls: 6, maxKw: null, teslaPrice: 339, otherPrice: null },
+  { name: '용인 포곡', region: '경기', address: '경기도 용인시 1051 석성로', note: '석성로 1051 수하림 지상주차장', lat: 37.293101115700345, lng: 127.20219830178264, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31718' , stalls: 8, maxKw: null, teslaPrice: 339, otherPrice: 400 },
+  { name: '원주 - 오크밸리', region: '강원', address: '강원도 원주시 66 오크밸리1길', note: '오크밸리 1길 66, 오크밸리', lat: 37.434470076906024, lng: 127.81756132551133, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/wonjusupercharger' , stalls: 6, maxKw: 119, teslaPrice: 339, otherPrice: null },
+  { name: '음성 대소', region: '충북', address: '충청북도 음성군 25-18 대성로 77번길', note: '대성로 77번길 25-18', lat: 36.9728754903184, lng: 127.50088273206, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31723' , stalls: 8, maxKw: null, teslaPrice: 339, otherPrice: 400 },
+  { name: '의왕 - 롯데프리미엄아울렛', region: '경기', address: '경기도 의왕시 1 바라산로', note: '바라산로 1, 롯데프리미엄아울렛 의왕점 B1F', lat: 37.375616005115546, lng: 127.009447690386, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/euiwangsupercharger' , stalls: 3, maxKw: null, teslaPrice: 339, otherPrice: 408 },
+  { name: '의정부 - 우리나라', region: '경기', address: '경기도 의정부시 11 동일로128번', note: '동일로128번길 11, 이디야커피 후면 지상 주차장', lat: 37.70061467119393, lng: 127.05587587095918, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/Uijeongbu-Woorinara' , stalls: 6, maxKw: null, teslaPrice: 339, otherPrice: 408 },
+  { name: '인제 - 스피디움', region: '강원', address: '강원도 인제군 130 상하답로', note: '상하답로 130 인제스피디움', lat: 38.00285208225072, lng: 128.29535864950344, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/injeSupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '고양 일산 - 원마운트', region: '경기', address: '경기도 일산 300 한류월드로 300', note: '한류월드로 300', lat: 37.664554097950486, lng: 126.75452646872884, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/goyangilsanonemount' , stalls: 11, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '고양 일산 - N2Wash', region: '경기', address: '경기도 고양시 31 장항로', note: '장항로 31, N2WASH 일산전기차충전소', lat: 37.6296865662391, lng: 126.790765709178, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/ilsansupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '임실 - 임실치즈테마파크', region: '전북', address: '전라남도 임실군 50 성수면 도인2길', note: '도인2길', lat: 35.63311508767043, lng: 127.30122678617481, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/imsilcheesepark' , stalls: 6, maxKw: null, teslaPrice: 339, otherPrice: 408 },
+  { name: '장흥 - 정남진물과학관', region: '전남', address: '전라남도 장흥군 20 행원강변길', note: '행원강변길 20 정남진물과학관', lat: 34.6860668384226, lng: 126.900099815729, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/4005124' , stalls: 8, maxKw: null, teslaPrice: 339, otherPrice: 400 },
+  { name: '전주 - 효자몰 (주차비 있음 지하2층)', region: '전북', address: '전라북도 전주시 45 용머리로', note: '용머리로 45, 몰오브효자 B2F', lat: 35.8067794848131, lng: 127.115521549412, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/jeonjusupercharger' , stalls: 8, maxKw: null, teslaPrice: 339, otherPrice: 408 },
+  { name: '전주 - 미곡 로스터리', region: '전북', address: '전라북도 전주시 10 덕진구 금상길', note: '카페미곡로스터리', lat: 35.8415267330359, lng: 127.173842632811, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/jeonjusupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '제천', region: '충북', address: '충청북도 제천시 741 청풍호로', note: '청풍호로 741, 남제천IC 휴게소', lat: 37.173177061675815, lng: 128.21070543766643, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/jecheonsupercharger' , stalls: 8, maxKw: null, teslaPrice: 339, otherPrice: null },
+  { name: '진주 - 롯데몰', region: '경남', address: '경상남도 진주시 440 동진로', note: '동진로 440, 롯데몰 진주점 옥상', lat: 35.180265821001036, lng: 128.13979045382274, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/jinjusksupercharger' , stalls: 9, maxKw: null, teslaPrice: 339, otherPrice: 417 },
+  { name: '진천 - 뤁스퀘어', region: '충북', address: '충청북도 진천군 599-79 내촌리', note: '내촌리 599-79, 만나씨이에이', lat: 36.9428374146815, lng: 127.43197518454, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/jincheonsupercharger' , stalls: 8, maxKw: null, teslaPrice: 339, otherPrice: null },
+  { name: '창원', region: '경남', address: '경상남도 창원시 13 중앙대로100번길', note: '중앙대로100번길 13, CGV 창원상남 B2F', lat: 35.31215423031234, lng: 128.6725021628999, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/changwonsupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '천안 - 소노벨', region: '충남', address: '충청남도 천안시 200 종합휴양지로', note: '종합휴양지로 200, 소노벨 천안', lat: 36.75740499628105, lng: 127.22408070357226, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/3433' , stalls: 6, maxKw: null, teslaPrice: 339, otherPrice: null },
+  { name: '천안 - 중앙교회', region: '충남', address: '충청남도 천안 27 부대중앙길', note: '부대중앙길 27', lat: 36.841476678752095, lng: 127.14894029451382, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/cheonancentralchurch' , stalls: 6, maxKw: null, teslaPrice: 339, otherPrice: 408 },
+  { name: '청도', region: '경북', address: '경상북도 청도군 1376 새마을로', note: '새마을로 1376, Gam1376 카페', lat: 35.6839809696742, lng: 128.71878233032, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/cheongdosupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '인천 청라 - 스퀘어7', region: '인천', address: '인천광역시 76 청라루비로', note: '청라루비로 76, 스퀘어7', lat: 37.53209181020851, lng: 126.64120588432482, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/cheongnasupercharger' , stalls: 8, maxKw: null, teslaPrice: 339, otherPrice: 408 },
+  { name: '청주 청원 (지상 2 3층)', region: '충북', address: '충청북도 청주시 191 율량로', note: '율량로 191, 이안스퀘어 2F/3F', lat: 36.6652863281603, lng: 127.49927159465, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/cheongjusupercharger' , stalls: 8, maxKw: null, teslaPrice: 339, otherPrice: 408 },
+  { name: '춘천 - ENTA 2022', region: '강원', address: '강원도 춘천시 120 후석로', note: '후석로 120, 엔타2022 지하2층', lat: 37.863203963856286, lng: 127.7482602458034, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/chuncheonsupercharger' , stalls: 6, maxKw: null, teslaPrice: 339, otherPrice: 408 },
+  { name: '충주 - 홈마트', region: '충북', address: '충청북도 충주시 26 기업도시로', note: '기업도시로 26, 홈마트', lat: 37.001082694995, lng: 127.835172735496, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/chungjusupercharger' , stalls: 8, maxKw: null, teslaPrice: 339, otherPrice: null },
+  { name: '성남 판교 - 카카오아지트', region: '경기', address: '경기도 성남시 166 판교역로 463-420', note: '판교역로 166, 카카오 판교 아지트 B2F', lat: 37.39541713271851, lng: 127.11036420512991, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/superchargerseongnamakr' , stalls: 3, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '파주 - 뮌스터담', region: '경기', address: '경기도 파주시 113-175 운정로 113-175', note: '운정로 113-175', lat: 37.72677382072452, lng: 126.78412585756114, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/superchargerpajumunsterdam' , stalls: 8, maxKw: null, teslaPrice: 339, otherPrice: 404 },
+  { name: '성남 판교 - 디테라스 (주차비 있음 4층 C21)', region: '경기', address: '경기도 성남시 691 삼평동', note: '691 삼평동', lat: 37.40374013609216, lng: 127.10910013550354, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seongnamalphadome2supercharger' , stalls: 3, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '성남 판교 - 테크원', region: '경기', address: '경기도 성남시 534 백현동 463-420', note: '', lat: 37.39543330064149, lng: 127.11233150900603, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seongnamalphadome2supercharger' , stalls: 3, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '평창 - 휘닉스파크', region: '강원', address: '강원도 Pyeongchang-gun Bongpyeong-myeon 106 태기로', note: '', lat: 37.58134611756336, lng: 128.32740908253098, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/pyeongchangsupercharger' , stalls: 9, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '평택 송탄', region: '경기', address: '경기도 평택시 1409 청원로', note: '청원로 1409, 블루에너지', lat: 37.055099525434, lng: 127.107452249043, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/pyeongtaeksupercharger' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '포항', region: '강원', address: '경상북도 포항시 870 동해대로', note: '북구 흥해읍 동해대로 878, 포항오토파크', lat: 36.0780561712913, lng: 129.56973687334, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/pohangsupercharger' , stalls: 12, maxKw: null, teslaPrice: 339, otherPrice: null },
+  { name: '하남 - 스타필드', region: '경기', address: '경기도 하남시 750 미사대로', note: '미사대로 750, 스타필드 하남 4F', lat: 37.545512916608395, lng: 127.22367994072209, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/hanamsupercharger' , stalls: 6, maxKw: 120, teslaPrice: 339, otherPrice: null },
+  { name: '하동', region: '경남', address: '경상남도 하동군 426-12 진교리', note: '진교리 426-12', lat: 35.1555906084513, lng: 127.688100367243, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/hadongupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '함양', region: '경남', address: '경상남도 함양군 298 고운로', note: '고운로 298, 타이어프로 함양IC점', lat: 35.33691118099147, lng: 127.73062186929766, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/hamyangsupercharger' , stalls: 6, maxKw: 119, teslaPrice: 339, otherPrice: null },
+  { name: '화성 발안', region: '경기', address: '경기도 화성시 806 서해로', note: '서해로 806, 대야 에너지', lat: 37.1296388507345, lng: 126.90008590948, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/hwasungsupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '중앙역 환승 주차장', region: '경기', address: '경기도 안산시 237 광덕4로', note: '광덕4로 237, 안산 중앙역 환승 주차장', lat: 37.3151055697887, lng: 126.839766334732, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31762' , stalls: 8, maxKw: null, teslaPrice: 339, otherPrice: 408 },
+  { name: '성남 분당 - 라포르테블랑', region: '경기', address: '경기도 성남시 28 황새울로 311번길', note: '황새울로 311번길 28', lat: 37.3860202813955, lng: 127.120604527422, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31715' , stalls: 9, maxKw: 250, teslaPrice: 339, otherPrice: 396 },
+  { name: '부산 하단 - 아트몰링', region: '부산', address: '부산 부산광역시 1413 낙동남로', note: '낙동남로 1413, 하단 아트몰링 지하 5층', lat: 35.1067217516844, lng: 128.966333184454, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31739' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '천안 - 모다아울렛(지하 3층 C9구역)', region: '충남', address: '충청남도 천안시 196 공원로', note: '공원로 196 모다아울렛 천안아산점 지하3층 주차장 C9구역', lat: 36.798424837109295, lng: 127.10143636265975, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31815' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '공주 - 이인휴게소', region: '충남', address: '충청남도 공주시 32 논산천안고속도로', note: '', lat: 36.35266663811522, lng: 127.06971548776588, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/461003' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '공주 - 탄천휴게소', region: '충남', address: '충청남도 공주시 27 논산천안고속도로', note: '', lat: 36.3179561012356, lng: 127.07069012901, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/461102' , stalls: 8, maxKw: 325, teslaPrice: 339, otherPrice: 408 },
+  { name: '대전 유성 - DCC', region: '대전', address: '대전광역시 107 엑스포로', note: '엑스포로 107 대전컨벤션센터 서측 지상주차장', lat: 36.37513538590228, lng: 127.38932437431839, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/32978' , stalls: 10, maxKw: 250, teslaPrice: 339, otherPrice: 400 },
+  { name: '대전 - 모다아울렛', region: '기타', address: 'Daejeon 5 대정로', note: '대정로 5, 모다아울렛 대전점 옥상주차장', lat: 36.3126105754741, lng: 127.318515433001, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31719' , stalls: 4, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '화성 동탄 - 카페 아스타나', region: '경기', address: '경기도 화성시 1203-8 효행로', note: '효행로 1203-8', lat: 37.2182440955323, lng: 127.054322703949, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31704' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '서울 서초 - 에피소드서초', region: '서울', address: '서울특별시 서울특별시 1338-5 에피소드 서초 B5F 서초동', note: '서초동 1338-5', lat: 37.489966960585, lng: 127.029648131957, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/32447' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 396 },
+  { name: '서울 강동 - DM스퀘어', region: '서울', address: '서울특별시 35 고덕비즈밸리로 4', note: '', lat: 37.5678416323427, lng: 127.160385240031, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31707' , stalls: 9, maxKw: 250, teslaPrice: 339, otherPrice: 400 },
+  { name: '경기 가평 - 가평휴게소(춘천방향)', region: '경기', address: '경기도 가평군 51 미사리로 540번길 51', note: '미사리로540번길 51, 가평휴게소(춘천방향)', lat: 37.701929541611875, lng: 127.54682365381369, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/450961' , stalls: 3, maxKw: 250, teslaPrice: 339, otherPrice: 417 },
+  { name: '경기 가평 - 가평휴게소(서울방향)', region: '경기', address: '경기도 가평군 544 미사리로 544', note: '미사리로 544, 가평휴게소(서울방향)', lat: 37.701622357301176, lng: 127.54350122339451, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/451014' , stalls: 3, maxKw: null, teslaPrice: 339, otherPrice: 417 },
+  { name: '김해 - 진영복합휴게소', region: '경남', address: '경상남도 김해시 94-4 하계로96번길', note: '하계로96번길 94-4, 진영복합휴게소(부산방향)', lat: 35.27738158449638, lng: 128.71734772378963, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/447004' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '서울 고척 - 아이파크몰', region: '서울', address: '서울 서울특별시 49 경인로43길', note: '경인로43길 49 고척 아이파크몰 B1', lat: 37.498666972176224, lng: 126.85910418250997, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31866' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 412 },
+  { name: '구미 형곡', region: '경북', address: '경상북도 구미시 74-4 새마을로', note: '새마을로 74-4 460정육식당', lat: 36.1001694332916, lng: 128.325958244104, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31725' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 396 },
+  { name: '광주 - 유스퀘어', region: '광주', address: '광주광역시 904 무진대로', note: '', lat: 35.16040310400629, lng: 126.87931031267314, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31748' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '이천 - 테르메덴', region: '경기', address: '경기도 이천시 984 사실로', note: '사실로', lat: 37.19507109548797, lng: 127.44596994574883, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31728' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 400 },
+  { name: '제주 - 제주스토어', region: '제주', address: '제주도 제주시 2108 오라삼동', note: '', lat: 33.492671670394046, lng: 126.50687298933951, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/JejuStore' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: null },
+  { name: '공주 - 정안알밤휴게소(천안방향)', region: '충남', address: '충청남도 공주시 58 논산천안고속도로', note: '', lat: 36.5695272317411, lng: 127.115078652119, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/461152' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '공주 - 정안알밤휴게소(순천방향)', region: '충남', address: '충청남도 공주시 57 논산천안고속도로', note: '', lat: 36.57115105256033, lng: 127.112196438789, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/461153' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '서울 중랑 - 이노시티', region: '서울', address: '서울특별시 353 망우로 353', note: '망우로 353, 이노시티 지하4층 주차장', lat: 37.5982371182892, lng: 127.091528112457, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31835' , stalls: 4, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '서울 상암 (주차비 있음 9층 28구역)', region: '서울', address: '서울특별시 80 매봉산로', note: '매봉산로 80, 파크엠 지상9층', lat: 37.5785295751525, lng: 126.894286118, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/MapoSangAmsupercharger' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '하남 미사', region: '경기', address: '경기도 하남시 1143 망월동', note: '망월동 1143 하남종합운동장', lat: 37.5816045145693, lng: 127.195514124075, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31741' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '오산 - 모다아울렛 (신관 지상주차장)', region: '경기', address: '경기도 오산시 822-22 경기대로', note: '경기대로 822-22, 모다아울렛 오산동탄점 신관 지상주차장', lat: 37.192713645895296, lng: 127.04597544292338, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31740' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '평창 - 평창휴게소(인천방향)', region: '강원', address: '강원도 평창군 63 탑거리길', note: '', lat: 37.6107895550262, lng: 128.463372989684, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/32971' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '진주 - 모다아울렛', region: '경남', address: '경상남도 진주시 46 삼일로 95번길', note: '삼일로95번길 46 모다아울렛 진주점 본관 지상주차장', lat: 35.131868733267694, lng: 128.09850879534494, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31746' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 396 },
+  { name: 'Suwon-AK Plaza', region: '경기', address: '경기도 수원시 924 덕영대로', note: '덕영대로 924, AK플라자 수원점 지상4층 주차장', lat: 37.2655524309286, lng: 127.000689957099, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31859' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 412 },
+  { name: '청주 강서 (주차비 있음)', region: '충북', address: '충청북도 청주시 191 가포산로', note: '가포산로 191, 레인디어커피', lat: 36.6162272011867, lng: 127.421349846682, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/seocheongjureindeercoffee' , stalls: 12, maxKw: 250, teslaPrice: 339, otherPrice: 400 },
+  { name: '당진 행담도 - 모다아울렛', region: '충남', address: '충청남도 당진시 276 서해안고속도로', note: '서해안고속도로 276', lat: 36.9410263402903, lng: 126.809417141531, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/33026' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '음성 금왕', region: '충북', address: '충청북도 음성군 1356 대금로', note: '', lat: 36.957451320743, lng: 127.609828811228, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/33628' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 396 },
+  { name: '양양 - 물치항', region: '강원', address: '강원도 양양군 3594 동해대로', note: '', lat: 38.15350588374406, lng: 128.60712028367323, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/32985' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 400 },
+  { name: '원주 - AK플라자', region: '강원', address: '강원도 원주시 1 봉화로', note: '봉화로 1 AK플라자 원주점 지하 5층', lat: 37.34573045545508, lng: 127.9276491064738, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/34605' , stalls: 9, maxKw: 250, teslaPrice: 339, otherPrice: 412 },
+  { name: '광명 - 광명역 (지상 3층)', region: '경기', address: '경기도 광명시 310-1 일직동', note: '일직동 310-1', lat: 37.4155562726182, lng: 126.882608226235, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/34662' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '인천 서구 - 모다아울렛', region: '인천', address: '인천광역시 50 북항로32번안길', note: '북항로32번안길 50, 모다아울렛 인천점 지상4층', lat: 37.51004232778682, lng: 126.64770749600926, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/32562' , stalls: 4, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '인천 영종 - 그랜드하얏트 East', region: '인천', address: '인천광역시 인천광역시 208 영종해안남로 321번길', note: '영종해안남로 321번길 208', lat: 37.44060223991513, lng: 126.45740694661126, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/teslakrincheonyeongjonggrandhyatthoteleast' , stalls: 3, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '평택 - AK플라자', region: '경기', address: '경기도 평택시 51 평택로', note: '평택로 51, AK플라자 평택점 지상 4층 주차장', lat: 36.991141153299466, lng: 127.08500370097137, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/33019' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 400 },
+  { name: '서울 성수 - 팩토리얼 성수 (주차비 있음 지하2층)', region: '서울', address: '서울 서울특별시 314-11 성수동2가', note: '성수동2가 314-11 팩토리얼 성수 B2', lat: 37.5441714976058, lng: 127.054473446127, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/teslaseoulseongsub' , stalls: 3, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '서울 강남 - 건설회관', region: '서울', address: '서울특별시 강남구 711 언주로', note: '', lat: 37.51745529840666, lng: 127.03457954777078, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/59442' , stalls: 9, maxKw: 250, teslaPrice: 339, otherPrice: 396 },
+  { name: '태백 - 365 Safe Town (제2주차장)', region: '강원', address: '강원도 태백시 15 평화길', note: '', lat: 37.100491001509624, lng: 129.02461251953432, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/33633' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 404 },
+  { name: '속초 엑스포 공영 주차장', region: '강원', address: '강원도 속초시 1556-6 조양동', note: '조양동 1556-6, 속초 엑스포 공영 주차장', lat: 38.1915630301352, lng: 128.59109794546, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/32990' , stalls: 4, maxKw: null, teslaPrice: 339, otherPrice: 408 },
+  { name: '영월', region: '강원', address: '강원도 영월군 782 방절리 230887', note: '', lat: 37.1973762292613, lng: 128.452785489904, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/33632' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 400 },
+  { name: '용인 양지', region: '경기', address: '경기도 용인시 924 양지', note: '양지리 924 양지로지스틱스', lat: 37.21550692728138, lng: 127.27781681891572, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/34658' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 400 },
+  { name: '성남 분당 - 한국잡월드', region: '경기', address: '경기도 성남시 501 분당구 분당수서로 501', note: '', lat: 37.3784834384883, lng: 127.106286030845, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31782' , stalls: 8, maxKw: 250, teslaPrice: 339, otherPrice: 396 },
+  { name: '울산 - 모다아울렛', region: '울산', address: '울산광역시 78-6 진장유통로', note: '', lat: 35.57705151021915, lng: 129.35718755079682, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31864' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '여주 - 썬밸리호텔', region: '경기', address: '경기도 여주시 414 연양동', note: '연양동 414 여주 썬밸리호텔', lat: 37.29312533833915, lng: 127.66105145778131, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/31729' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 408 },
+  { name: '인천 연수 - 바다쏭', region: '인천', address: '인천광역시 연수구 16 능허대로', note: '', lat: 37.42954374180985, lng: 126.63611340023536, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/32543' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 400 }
 ];
 
 // ─── 상태 ───────────────────────────────────────
@@ -1024,6 +1115,10 @@ function getSorted(list) {
   if (state.sort === 'name-asc') return copy.sort((a,b) => a.name.localeCompare(b.name, 'ko'));
   if (state.sort === 'name-desc') return copy.sort((a,b) => b.name.localeCompare(a.name, 'ko'));
   if (state.sort === 'region') return copy.sort((a,b) => a.region.localeCompare(b.region, 'ko') || a.name.localeCompare(b.name, 'ko'));
+  if (state.sort === 'stalls-desc') return copy.sort((a,b) => (b.stalls ?? -1) - (a.stalls ?? -1));
+  if (state.sort === 'stalls-asc') return copy.sort((a,b) => (a.stalls ?? 9999) - (b.stalls ?? 9999));
+  if (state.sort === 'price-asc') return copy.sort((a,b) => (a.teslaPrice ?? 9999) - (b.teslaPrice ?? 9999));
+  if (state.sort === 'price-desc') return copy.sort((a,b) => (b.teslaPrice ?? -1) - (a.teslaPrice ?? -1));
   return copy; // default
 }
 
@@ -1042,6 +1137,9 @@ function switchTab(tab) {
   document.getElementById('tabDest').classList.toggle('active', tab === 'destination');
   document.getElementById('tabSc').classList.toggle('active', tab === 'supercharger');
 
+  // 테이블 모드 클래스 (컬럼 표시 제어)
+  document.getElementById('mainTable').classList.toggle('mode-sc', tab === 'supercharger');
+
   // 전화번호 필터 버튼: 슈퍼차저 탭에서는 숨김
   const hasPhoneBtn = document.getElementById('hasPhoneBtn');
   hasPhoneBtn.style.display = tab === 'supercharger' ? 'none' : '';
@@ -1057,7 +1155,9 @@ function switchTab(tab) {
 }
 
 // ─── 카카오 SDK 초기화 ────────────────────────────
-Kakao.init('a084ef81c2416a34d187bd4d972fefd7');
+if (typeof Kakao !== 'undefined' && !Kakao.isInitialized()) {
+  Kakao.init('a084ef81c2416a34d187bd4d972fefd7');
+}
 
 // ─── 디바이스 감지 ───────────────────────────────
 function isMobile() {
@@ -1066,24 +1166,42 @@ function isMobile() {
 
 // ─── 주소 → 좌표 변환 후 카카오 내비 실행 ─────────
 function openKakaoNavi(station) {
-  // 좌표가 있으면 직접 사용 (API 호출 불필요)
-  if (station.lat && station.lng) {
-    console.log('✅ 카카오 내비 시작:', { name: station.name, lat: station.lat, lng: station.lng });
-    try {
-      Kakao.Navi.start({
-        name: station.name,  // 주소 대신 충전소 이름 사용
-        x: station.lng,
-        y: station.lat,
-        coordType: 'wgs84'
-      });
-    } catch (err) {
-      console.error('카카오 내비 오류:', err);
-      alert('카카오 내비 연결 실패:\n' + err.message + '\n\n네이버 버튼을 이용해주세요.');
-    }
-  } else {
-    // 좌표 없는 충전소는 네이버로 연결
-    console.log('⚠️ 좌표 없음, 네이버로 연결:', station.name);
+  if (!station.lat || !station.lng) {
     alert('해당 충전소는 카카오 내비로 연결할 수 없습니다.\n네이버 버튼을 이용해주세요.');
+    return;
+  }
+
+  const appKey = 'a084ef81c2416a34d187bd4d972fefd7';
+  const param = encodeURIComponent(JSON.stringify({
+    name: station.name,
+    longitude: station.lng,
+    latitude: station.lat,
+    coordType: 'wgs84'
+  }));
+  const fallbackUrl = `https://map.kakao.com/link/to/${encodeURIComponent(station.name)},${station.lat},${station.lng}`;
+  const ua = navigator.userAgent;
+
+  // 1. SDK 방식 먼저 시도 (GitHub Pages 등 등록된 도메인에서 작동)
+  if (typeof Kakao !== 'undefined' && Kakao.isInitialized() && typeof Kakao.Navi !== 'undefined') {
+    try {
+      Kakao.Navi.start({ name: station.name, x: station.lng, y: station.lat, coordType: 'wgs84' });
+      return;
+    } catch (e) {
+      console.warn('Kakao SDK Navi 실패, 딥링크로 대체:', e);
+    }
+  }
+
+  // 2. 딥링크로 직접 카카오내비 앱 실행 (도메인 미등록 환경 포함)
+  if (/Android/i.test(ua)) {
+    // Android: intent URL — 앱 미설치시 fallback URL로 자동 이동
+    window.location.href = `intent://route?appkey=${appKey}&param=${param}#Intent;scheme=kakaonavi;package=com.locnall.KimGiSa;S.browser_fallback_url=${encodeURIComponent(fallbackUrl)};end`;
+  } else if (/iPhone|iPad|iPod/i.test(ua)) {
+    // iOS: 앱 scheme 시도 → 1.5초 내 앱 미실행시 카카오맵 웹으로
+    window.location.href = `kakaonavi://route?appkey=${appKey}&param=${param}`;
+    setTimeout(() => window.open(fallbackUrl, '_blank'), 1500);
+  } else {
+    // PC: 카카오맵 웹
+    window.open(fallbackUrl, '_blank');
   }
 }
 
@@ -1118,15 +1236,31 @@ function render() {
       // ── 슈퍼차저: 카카오 내비 (좌표 확보) + 네이버 지도
       tr.innerHTML = `
         <td class="row-num">${i + 1}</td>
-        <td><div class="name">${highlight(s.name, q)}</div></td>
+        <td><div class="name">
+          ${s.teslaUrl
+            ? `<a href="${s.teslaUrl}" target="_blank" rel="noopener" class="name-link">${highlight(s.name, q)}</a>`
+            : highlight(s.name, q)}
+          ${s.stalls != null ? `<span class="stalls-badge">${s.stalls}대${s.maxKw != null ? ` · ${s.maxKw}kW` : ''}${s.teslaPrice != null ? ` · ₩${s.teslaPrice}` : ''}</span>` : ''}
+        </div></td>
         <td><span class="region-badge" data-region="${s.region}">${s.region}</span></td>
         <td class="address">
           ${highlight(s.address, q)}
           ${s.note ? `<div class="detail">${highlight(s.note, q)}</div>` : ''}
         </td>
-        <td>${s.phone
+        <td class="col-dest">${s.phone
           ? `<a class="phone-link" href="tel:${s.phone}">📞 ${s.phone}</a>`
           : '<span class="no-data">—</span>'}</td>
+        <td class="col-sc stalls-cell">
+          ${s.stalls != null
+            ? `<span class="stalls-num">${s.stalls}대</span>` + (s.maxKw != null ? `<span class="stalls-kw">${s.maxKw}kW</span>` : '')
+            : '<span class="no-data">—</span>'}
+        </td>
+        <td class="col-sc price-cell">
+          ${s.teslaPrice != null
+            ? `<div><span class="price-label">Tesla</span><span class="price-tesla">₩${s.teslaPrice}/kWh</span></div>
+               ${s.otherPrice != null ? `<div><span class="price-label">타사</span><span class="price-other">₩${s.otherPrice}/kWh</span></div>` : ''}`
+            : '<span class="no-data">—</span>'}
+        </td>
         <td>
           <div class="map-btns">
             <a class="map-btn naver" href="${naverUrl}" target="_blank" rel="noopener">
@@ -1144,15 +1278,27 @@ function render() {
       // ── 데스티네이션: 기존 방식 (카카오 내비)
       tr.innerHTML = `
         <td class="row-num">${i + 1}</td>
-        <td><div class="name">${highlight(s.name, q)}</div></td>
+        <td><div class="name">
+          ${s.chargerUrl
+            ? `<a href="${s.chargerUrl}" target="_blank" rel="noopener" class="name-link">${highlight(s.name, q)}</a>`
+            : highlight(s.name, q)}
+          ${s.stalls != null ? `<span class="stalls-badge">${s.stalls}대${s.maxKw > 0 ? ` · ${s.maxKw}kW` : ''}</span>` : ''}
+        </div></td>
         <td><span class="region-badge" data-region="${s.region}">${s.region}</span></td>
         <td class="address">
           ${highlight(s.address, q)}
           ${s.detail ? `<div class="detail">${highlight(s.detail, q)}</div>` : ''}
         </td>
-        <td>${s.phone
+        <td class="col-dest stalls-cell">
+          ${s.stalls != null
+            ? `<span class="stalls-num">${s.stalls}대</span><span class="stalls-kw">${s.maxKw > 0 ? s.maxKw + 'kW' : '출력미확인'}</span>`
+            : '<span class="no-data">—</span>'}
+        </td>
+        <td class="col-dest">${s.phone
           ? `<a class="phone-link" href="tel:${s.phone}">📞 ${s.phone}</a>`
           : '<span class="no-data">—</span>'}</td>
+        <td class="col-sc"></td>
+        <td class="col-sc"></td>
         <td>
           <div class="map-btns">
             <a class="map-btn naver" href="${naverUrl}" target="_blank" rel="noopener">
@@ -1189,13 +1335,9 @@ function render() {
     tbody.querySelectorAll('.map-btn.kakao').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        if (isMobile()) {
-          const stationName = btn.dataset.name;
-          const station = stations.find(s => s.name === stationName);
-          if (station) openKakaoNavi(station);
-        } else {
-          alert('📱 모바일로 접속시 카카오내비로 연결됩니다.\n\n거리확인이 필요하시면 "네이버 버튼"을 클릭해주세요.');
-        }
+        const stationName = btn.dataset.name;
+        const station = stations.find(s => s.name === stationName);
+        if (station) openKakaoNavi(station);
       });
     });
   }
@@ -1205,13 +1347,9 @@ function render() {
     tbody.querySelectorAll('.map-btn.kakao').forEach(btn => {
       btn.addEventListener('click', (e) => {
         e.preventDefault();
-        if (isMobile()) {
-          const stationName = btn.dataset.name;
-          const station = superchargers.find(s => s.name === stationName);
-          if (station) openKakaoNavi(station);
-        } else {
-          alert('📱 모바일로 접속시 카카오내비로 연결됩니다.\n\n거리확인이 필요하시면 "네이버 버튼"을 클릭해주세요.');
-        }
+        const stationName = btn.dataset.name;
+        const station = superchargers.find(s => s.name === stationName);
+        if (station) openKakaoNavi(station);
       });
     });
   }
@@ -1251,6 +1389,12 @@ document.querySelectorAll('th[data-col]').forEach(th => {
       else state.sort = 'name-asc';
     } else if (col === 'region') {
       state.sort = 'region';
+    } else if (col === 'stalls') {
+      if (state.sort === 'stalls-desc') state.sort = 'stalls-asc';
+      else state.sort = 'stalls-desc';
+    } else if (col === 'price') {
+      if (state.sort === 'price-asc') state.sort = 'price-desc';
+      else state.sort = 'price-asc';
     } else return;
     document.querySelectorAll('.sort-btn').forEach(b => {
       b.classList.toggle('active', b.dataset.sort === state.sort);
@@ -1258,7 +1402,10 @@ document.querySelectorAll('th[data-col]').forEach(th => {
     render();
     // 표시
     const ind = document.getElementById(`ind-${col}`);
-    if (ind) ind.textContent = state.sort.endsWith('asc') ? '▲' : '▼';
+    if (ind) {
+      const isAsc = state.sort.endsWith('asc') || state.sort.endsWith('desc') && !state.sort.endsWith('asc');
+      ind.textContent = (state.sort.endsWith('asc')) ? '▲' : '▼';
+    }
   });
 });
 
