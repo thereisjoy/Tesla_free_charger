@@ -194,6 +194,76 @@
     .opp-grid { grid-template-columns: 1fr; }
     .scenario-row { grid-template-columns: 1fr; }
   }
+
+  /* ════ 오늘의 TOP 10 ════ */
+  .today-section {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px;
+  }
+  .today-box {
+    background: #0c0c12; border: 1px solid #1a1a22; border-radius: 14px;
+    padding: 20px; position: relative; overflow: hidden;
+  }
+  .today-box::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+    background: linear-gradient(90deg, #e31937, #ff6b6b);
+  }
+  .today-header {
+    display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px;
+  }
+  .today-title { font-size: 14px; font-weight: 700; color: #ccc; display: flex; align-items: center; gap: 8px; }
+  .today-badge {
+    background: #e31937; color: #fff; font-size: 10px; font-weight: 700;
+    padding: 2px 8px; border-radius: 20px; letter-spacing: 0.5px;
+  }
+  .today-count { font-size: 11px; color: #555; }
+
+  .today-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 7px 0; border-bottom: 1px solid #0f0f1a;
+    transition: background 0.15s;
+  }
+  .today-row:last-child { border-bottom: none; }
+  .today-row:hover { background: rgba(255,255,255,0.02); border-radius: 6px; }
+
+  .today-rank {
+    width: 22px; height: 22px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 800; flex-shrink: 0;
+  }
+  .r1 { background: #f59e0b; color: #000; }
+  .r2 { background: #9ca3af; color: #000; }
+  .r3 { background: #cd7f32; color: #fff; }
+  .rn { background: #1a1a24; color: #555; }
+
+  .today-name { font-size: 13px; color: #ccc; flex: 1; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .today-cnt { font-size: 13px; font-weight: 800; color: #e31937; min-width: 32px; text-align: right; }
+  .today-bar-bg { width: 60px; height: 5px; background: #1a1a24; border-radius: 3px; flex-shrink: 0; }
+  .today-bar-fill { height: 100%; border-radius: 3px; background: #e31937; }
+
+  .today-type {
+    font-size: 9px; font-weight: 700; padding: 1px 6px; border-radius: 10px;
+    flex-shrink: 0;
+  }
+  .tt-hotel { background: rgba(139,92,246,0.2); color: #a78bfa; }
+  .tt-office { background: rgba(59,130,246,0.2); color: #60a5fa; }
+  .tt-mall { background: rgba(34,197,94,0.2); color: #4ade80; }
+  .tt-culture { background: rgba(245,158,11,0.2); color: #fbbf24; }
+  .tt-other { background: rgba(107,114,128,0.2); color: #9ca3af; }
+
+  .today-empty { text-align: center; padding: 30px; color: #2a2a36; font-size: 13px; }
+  .today-summary {
+    display: flex; gap: 12px; margin-bottom: 14px;
+  }
+  .today-stat {
+    background: #0e0e18; border: 1px solid #1a1a22; border-radius: 8px;
+    padding: 8px 12px; flex: 1; text-align: center;
+  }
+  .today-stat .ts-val { font-size: 20px; font-weight: 800; color: #e31937; }
+  .today-stat .ts-lbl { font-size: 10px; color: #444; margin-top: 2px; }
+
+  @media (max-width: 800px) {
+    .today-section { grid-template-columns: 1fr; }
+  }
 </style>
 </head>
 <body>
@@ -265,6 +335,31 @@
       <div class="mon-value" id="mPartner">—</div>
       <div class="mon-sub">지도 클릭 → 주변 업체 연결 기회</div>
     </div>
+  </div>
+
+  <!-- ════ 오늘의 TOP 10 ════ -->
+  <div class="today-section">
+
+    <!-- 오늘의 인기 검색어 -->
+    <div class="today-box">
+      <div class="today-header">
+        <div class="today-title">🏆 오늘의 인기 검색어 TOP 10</div>
+        <span class="today-badge">TODAY</span>
+      </div>
+      <div class="today-summary" id="todaySearchSummary"></div>
+      <div id="todaySearchList"><div class="today-empty">⏳ 데이터 로딩 중...</div></div>
+    </div>
+
+    <!-- 오늘의 인기 충전소 -->
+    <div class="today-box">
+      <div class="today-header">
+        <div class="today-title">📍 오늘의 인기 충전소 TOP 10</div>
+        <span class="today-badge">TODAY</span>
+      </div>
+      <div class="today-summary" id="todayStationSummary"></div>
+      <div id="todayStationList"><div class="today-empty">⏳ 데이터 로딩 중...</div></div>
+    </div>
+
   </div>
 
   <!-- ── 차트 ── -->
@@ -545,6 +640,7 @@ function renderAll() {
   renderTables(hits);
   renderHeatmap(hits);
   renderBusinessInsights(hits);
+  renderTodayHighlights(hits);
 }
 
 // ── KPIs ──
@@ -1162,6 +1258,105 @@ function renderBusinessInsights(hits) {
 // renderTables 에서 stSorted를 전역으로 노출
 let stSorted_global = [];
 const _origFillTable = fillTable;
+
+// ════════════════════════════════════════
+// 오늘의 TOP 10 렌더
+// ════════════════════════════════════════
+function renderTodayHighlights(allHitsFiltered) {
+  // 오늘 날짜 (로컬 기준)
+  const now = new Date();
+  const todayStr = now.getFullYear() + '-' +
+    String(now.getMonth()+1).padStart(2,'0') + '-' +
+    String(now.getDate()).padStart(2,'0');
+
+  const todayHits = allHitsFiltered.filter(h => {
+    const ts = h.ts || '';
+    return ts.slice(0,10) === todayStr;
+  });
+
+  const allEvts = todayHits.flatMap(h => h.events || []);
+  const todayUV  = new Set(todayHits.map(h => h.vid)).size;
+  const todayPV  = todayHits.length;
+
+  // ── 인기 검색어 ──
+  const searchMap = {};
+  allEvts.filter(e => e.type === 'search').forEach(e => {
+    if (e.detail) searchMap[e.detail] = (searchMap[e.detail]||0)+1;
+  });
+  const searchTop  = Object.entries(searchMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const searchTotal = searchTop.reduce((a,b)=>a+b[1],0);
+
+  // 검색어 요약
+  document.getElementById('todaySearchSummary').innerHTML = `
+    <div class="today-stat"><div class="ts-val">${todayUV}</div><div class="ts-lbl">오늘 방문자</div></div>
+    <div class="today-stat"><div class="ts-val">${searchTotal}</div><div class="ts-lbl">오늘 검색</div></div>
+    <div class="today-stat"><div class="ts-val">${searchTop.length}</div><div class="ts-lbl">검색 키워드 수</div></div>
+  `;
+
+  const maxS = searchTop[0]?.[1] || 1;
+  if (searchTop.length === 0) {
+    document.getElementById('todaySearchList').innerHTML =
+      '<div class="today-empty">📭 오늘 검색 데이터가 없습니다</div>';
+  } else {
+    document.getElementById('todaySearchList').innerHTML = searchTop.map(([kw, cnt], i) => {
+      const rankClass = i===0?'r1':i===1?'r2':i===2?'r3':'rn';
+      const rankIcon  = i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
+      const pct = Math.round(cnt/searchTotal*100);
+      return `
+        <div class="today-row">
+          <div class="today-rank ${rankClass}">${rankIcon}</div>
+          <div class="today-name" title="${kw}">${kw}</div>
+          <div class="today-bar-bg"><div class="today-bar-fill" style="width:${Math.round(cnt/maxS*100)}%"></div></div>
+          <div class="today-cnt">${cnt}</div>
+          <span style="font-size:10px;color:#444;min-width:28px;text-align:right">${pct}%</span>
+        </div>`;
+    }).join('');
+  }
+
+  // ── 인기 충전소 ──
+  function classifyType(name) {
+    if (!name) return ['tt-other','기타'];
+    if (/워커힐|호텔|리조트|힐튼|포시즌|하얏트|신라|사보이/.test(name)) return ['tt-hotel','호텔'];
+    if (/아울렛|쇼핑몰|마트|이마트|코스트코|지하.*E|E\d/.test(name))     return ['tt-mall','쇼핑'];
+    if (/N타워|KT&G|센터필드|아지트|쌍용|플래티넘|빌딩|타워/.test(name)) return ['tt-office','업무'];
+    if (/사운즈|뮌스터|갤러리|아트|복합|문화/.test(name))                  return ['tt-culture','문화'];
+    return ['tt-other','기타'];
+  }
+
+  const stMap = {};
+  allEvts.filter(e => e.type?.startsWith('map_')).forEach(e => {
+    if (e.detail) stMap[e.detail] = (stMap[e.detail]||0)+1;
+  });
+  const stTop   = Object.entries(stMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const stTotal = stTop.reduce((a,b)=>a+b[1],0);
+
+  // 충전소 요약
+  document.getElementById('todayStationSummary').innerHTML = `
+    <div class="today-stat"><div class="ts-val">${stTotal}</div><div class="ts-lbl">오늘 지도 클릭</div></div>
+    <div class="today-stat"><div class="ts-val">${stTop.length}</div><div class="ts-lbl">클릭된 충전소</div></div>
+    <div class="today-stat"><div class="ts-val">${todayUV>0?Math.round(stTotal/todayUV*100):0}%</div><div class="ts-lbl">클릭 전환율</div></div>
+  `;
+
+  const maxC = stTop[0]?.[1] || 1;
+  if (stTop.length === 0) {
+    document.getElementById('todayStationList').innerHTML =
+      '<div class="today-empty">📭 오늘 충전소 클릭 데이터가 없습니다</div>';
+  } else {
+    document.getElementById('todayStationList').innerHTML = stTop.map(([name, cnt], i) => {
+      const rankClass = i===0?'r1':i===1?'r2':i===2?'r3':'rn';
+      const rankIcon  = i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
+      const [typeClass, typeLbl] = classifyType(name);
+      return `
+        <div class="today-row">
+          <div class="today-rank ${rankClass}">${rankIcon}</div>
+          <div class="today-name" title="${name}">${name}</div>
+          <span class="today-type ${typeClass}">${typeLbl}</span>
+          <div class="today-bar-bg"><div class="today-bar-fill" style="width:${Math.round(cnt/maxC*100)}%"></div></div>
+          <div class="today-cnt">${cnt}</div>
+        </div>`;
+    }).join('');
+  }
+}
 
 // ── 초기화 ──
 checkSetup();
