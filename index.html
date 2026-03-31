@@ -145,6 +145,48 @@
   .stats-bar .stat strong { color: #e31937; }
   .stats-bar .stat-divider { width: 1px; height: 14px; background: #2a2a2a; }
 
+  /* ── TOP 5 인기 충전소 ── */
+  .top5-section {
+    padding: 20px 40px 0;
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  .top5-card {
+    background: #111; border: 1px solid #1e1e1e; border-radius: 12px;
+    padding: 16px 18px; transition: border-color 0.2s;
+  }
+  .top5-card:hover { border-color: #333; }
+  .top5-header {
+    display: flex; align-items: center; gap: 8px;
+    font-size: 14px; font-weight: 700; color: #e5e5e5; margin-bottom: 12px;
+  }
+  .top5-badge {
+    background: #e31937; color: #fff; border-radius: 10px;
+    padding: 2px 8px; font-size: 10px; font-weight: 700; letter-spacing: 0.5px;
+  }
+  .top5-badge.weekly { background: #2563eb; }
+  .top5-list { display: flex; flex-direction: column; gap: 6px; }
+  .top5-empty { color: #444; font-size: 13px; text-align: center; padding: 16px 0; }
+  .top5-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 10px; border-radius: 8px; background: #0e0e0e;
+    transition: background 0.15s; cursor: default;
+  }
+  .top5-item:hover { background: #1a1a1a; }
+  .top5-rank {
+    width: 24px; height: 24px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700; flex-shrink: 0;
+  }
+  .top5-rank.r1 { background: linear-gradient(135deg,#ffd700,#ffb300); color: #000; }
+  .top5-rank.r2 { background: linear-gradient(135deg,#c0c0c0,#a0a0a0); color: #000; }
+  .top5-rank.r3 { background: linear-gradient(135deg,#cd7f32,#a0622e); color: #fff; }
+  .top5-rank.r4, .top5-rank.r5 { background: #222; color: #888; }
+  .top5-name { flex: 1; font-size: 13px; color: #ddd; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .top5-count { font-size: 12px; color: #e31937; font-weight: 700; flex-shrink: 0; }
+  .top5-bar-wrap { width: 50px; height: 4px; background: #1a1a1a; border-radius: 2px; flex-shrink: 0; overflow: hidden; }
+  .top5-bar { height: 100%; background: #e31937; border-radius: 2px; transition: width 0.4s ease; }
+  .top5-card:last-child .top5-bar { background: #2563eb; }
+
   /* 테이블 */
   .table-wrap { padding: 20px 40px 40px; overflow-x: auto; }
   table { width: 100%; border-collapse: collapse; min-width: 680px; }
@@ -450,6 +492,137 @@
   td.col-dest:not(.stalls-cell) { display: none !important; }
   #hasPhoneBtn { display: none !important; }
 
+  /* ══════════════════════════════════════
+     UX/UI 개선 추가 스타일
+  ══════════════════════════════════════ */
+
+  /* ── 페이드-인 애니메이션 ── */
+  @keyframes fadeSlideIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .fade-row { animation: fadeSlideIn 0.18s ease forwards; }
+
+  /* ── 뷰 토글 버튼 ── */
+  .view-toggle { display: flex; gap: 4px; }
+  .view-btn {
+    background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px;
+    padding: 5px 9px; color: #555; font-size: 12px; cursor: pointer;
+    transition: all 0.15s; display: flex; align-items: center; gap: 5px;
+    white-space: nowrap; -webkit-tap-highlight-color: transparent;
+  }
+  .view-btn:hover { border-color: #444; color: #bbb; }
+  .view-btn.active { background: #1e1e1e; border-color: #e31937; color: #fff; }
+
+  /* ── 그리드 카드 뷰 컨테이너 ── */
+  .card-grid-wrap {
+    padding: 16px 40px 40px;
+    display: none;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+  }
+  /* ── 스테이션 카드 ── */
+  .station-card {
+    background: #111; border: 1px solid #1e1e1e;
+    border-radius: 14px; padding: 16px;
+    transition: border-color 0.2s, transform 0.15s, box-shadow 0.2s;
+    cursor: default;
+    animation: fadeSlideIn 0.2s ease forwards;
+    opacity: 0;
+  }
+  .station-card:hover {
+    border-color: #2c2c2c;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 28px rgba(0,0,0,0.45);
+  }
+  .card-top {
+    display: flex; align-items: flex-start;
+    justify-content: space-between; gap: 8px; margin-bottom: 8px;
+  }
+  .card-name { font-weight: 700; font-size: 14px; color: #fff; line-height: 1.35; flex: 1; min-width: 0; }
+  .card-name a { color: #fff; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.2); text-underline-offset: 3px; }
+  .card-name a:hover { color: #e31937; text-decoration-color: #e31937; }
+  .card-addr { color: #888; font-size: 12px; line-height: 1.5; margin-bottom: 10px; }
+  .card-addr .detail { color: #555; font-size: 11px; margin-top: 2px; }
+  .card-meta { display: flex; align-items: center; gap: 6px; margin-bottom: 12px; flex-wrap: wrap; }
+  .card-stalls-badge {
+    display: inline-flex; align-items: center;
+    background: rgba(227,25,55,0.12); border: 1px solid rgba(227,25,55,0.25);
+    border-radius: 20px; padding: 3px 10px;
+    font-size: 11px; color: #ff8a96; font-weight: 600;
+  }
+  /* ── kW 칩 (카드 & 테이블 공통) ── */
+  .kw-chip {
+    display: inline-flex; align-items: center;
+    border-radius: 20px; padding: 3px 9px;
+    font-size: 11px; font-weight: 600;
+  }
+  .kw-chip.fast, .stalls-kw.fast { background: rgba(76,175,80,0.12); border: 1px solid rgba(76,175,80,0.3); color: #66bb6a; }
+  .kw-chip.mid,  .stalls-kw.mid  { background: rgba(255,193,7,0.12);  border: 1px solid rgba(255,193,7,0.3);  color: #ffc107; }
+  .kw-chip.slow, .stalls-kw.slow { background: rgba(128,128,128,0.1); border: 1px solid rgba(128,128,128,0.25); color: #888; }
+  /* 기존 .stalls-kw 오버라이드 */
+  .stalls-kw.fast { background: none; border: none; color: #66bb6a; }
+  .stalls-kw.mid  { background: none; border: none; color: #ffc107; }
+  .stalls-kw.slow { background: none; border: none; color: #777; }
+
+  /* ── 카드 액션 버튼 영역 ── */
+  .card-actions { display: flex; gap: 6px; }
+  .card-actions .map-btn { flex: 1; justify-content: center; padding: 8px 6px; font-size: 12px; }
+  .card-copy-btn {
+    background: #1a1a1a; border: 1px solid #2a2a2a; border-radius: 6px;
+    padding: 7px 10px; color: #555; font-size: 13px; cursor: pointer;
+    transition: all 0.15s; display: flex; align-items: center; flex-shrink: 0;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .card-copy-btn:hover { border-color: #555; color: #aaa; }
+
+  /* ── 테이블 행 인라인 복사 버튼 ── */
+  .addr-copy-wrap { display: flex; align-items: flex-start; gap: 6px; }
+  .inline-copy-btn {
+    background: none; border: 1px solid transparent; border-radius: 4px;
+    color: #333; font-size: 11px; cursor: pointer;
+    padding: 1px 5px; opacity: 0; flex-shrink: 0; margin-top: 1px;
+    transition: opacity 0.15s, border-color 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  tbody tr:hover .inline-copy-btn { opacity: 1; }
+  .inline-copy-btn:hover { border-color: #555; color: #aaa; }
+
+  /* ── 토스트 알림 ── */
+  .toast {
+    position: fixed; bottom: 80px; left: 50%;
+    transform: translateX(-50%) translateY(16px);
+    background: #222; border: 1px solid #333; border-radius: 10px;
+    padding: 10px 20px; color: #ddd; font-size: 13px;
+    opacity: 0; transition: opacity 0.22s, transform 0.22s;
+    pointer-events: none; z-index: 9999; white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  /* ── body 뷰 모드 클래스 제어 ── */
+  body.view-grid  .table-wrap      { display: none !important; }
+  body.view-grid  .card-grid-wrap  { display: grid !important; }
+  body.view-table .card-grid-wrap  { display: none !important; }
+
+  /* ── 슈퍼차저 요금 칩 (카드) ── */
+  .card-price-chip {
+    display: inline-flex; align-items: center;
+    background: rgba(227,25,55,0.1); border: 1px solid rgba(227,25,55,0.2);
+    border-radius: 20px; padding: 3px 9px;
+    font-size: 11px; color: #e31937; font-weight: 600;
+  }
+
+  @media (max-width: 768px) {
+    .view-toggle { display: none; }
+    .card-grid-wrap { padding: 10px 12px 40px; grid-template-columns: 1fr; }
+    .top5-section { grid-template-columns: 1fr; padding: 12px 16px 0; gap: 10px; }
+    .top5-card { padding: 12px 14px; }
+    .top5-header { font-size: 13px; }
+    .top5-item { padding: 6px 8px; }
+    .top5-name { font-size: 12px; }
+  }
+
 </style>
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
 </head>
@@ -481,7 +654,7 @@
     </svg>
     데스티네이션 <span class="tab-cnt" id="tabDestCnt">79</span>
   </button>
-  <button class="tab-btn" id="tabSc" onclick="switchTab('supercharger')" style="display:none">
+  <button class="tab-btn" id="tabSc" onclick="switchTab('supercharger')">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0">
       <path d="M13 2L4.5 13.5H11L10 22L19.5 10H13L13 2Z"/>
     </svg>
@@ -543,6 +716,16 @@
     <div class="tag-filter">
       <button class="tag-btn" id="hasPhoneBtn" title="전화번호 있는 곳만">📞 전화번호 있음</button>
     </div>
+    <div class="view-toggle">
+      <button class="view-btn active" id="viewTableBtn" title="테이블 보기">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="3" rx="1"/><rect x="3" y="9" width="18" height="3" rx="1"/><rect x="3" y="15" width="18" height="3" rx="1"/><rect x="3" y="21" width="18" height="3" rx="1" opacity=".5"/></svg>
+        테이블
+      </button>
+      <button class="view-btn" id="viewGridBtn" title="카드 보기">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="3" width="7.5" height="7.5" rx="1.5"/><rect x="3" y="13.5" width="7.5" height="7.5" rx="1.5"/><rect x="13.5" y="13.5" width="7.5" height="7.5" rx="1.5"/></svg>
+        카드
+      </button>
+    </div>
   </div>
 </div>
 
@@ -558,6 +741,18 @@
   <div class="stat" id="statRegion"></div>
 </div>
 
+
+<!-- ── 인기 충전소 TOP 5 ── -->
+<div class="top5-section" id="top5Section" style="display:none">
+  <div class="top5-card">
+    <div class="top5-header">🔥 오늘의 인기 충전소 TOP 5 <span class="top5-badge">TODAY</span></div>
+    <div id="top5Daily" class="top5-list"><div class="top5-empty">데이터 로딩 중...</div></div>
+  </div>
+  <div class="top5-card">
+    <div class="top5-header">📊 이번 주 인기 충전소 TOP 5 <span class="top5-badge weekly">WEEKLY</span></div>
+    <div id="top5Weekly" class="top5-list"><div class="top5-empty">데이터 로딩 중...</div></div>
+  </div>
+</div>
 
 <div class="table-wrap">
   <table id="mainTable">
@@ -585,7 +780,10 @@
   </div>
 </div>
 
+<div class="card-grid-wrap" id="cardGridWrap"></div>
+
 <button class="scroll-top" id="scrollTop" title="맨 위로">↑</button>
+<div class="toast" id="toast"></div>
 
 <script>
 const stations = [
@@ -1244,15 +1442,17 @@ function render() {
         </div></td>
         <td><span class="region-badge" data-region="${s.region}">${s.region}</span></td>
         <td class="address">
-          ${highlight(s.address, q)}
-          ${s.note ? `<div class="detail">${highlight(s.note, q)}</div>` : ''}
+          <div class="addr-copy-wrap">
+            <div>${highlight(s.address, q)}${s.note ? `<div class="detail">${highlight(s.note, q)}</div>` : ''}</div>
+            <button class="inline-copy-btn" data-addr="${s.address.replace(/"/g,'&quot;')}">복사</button>
+          </div>
         </td>
         <td class="col-dest">${s.phone
           ? `<a class="phone-link" href="tel:${s.phone}">📞 ${s.phone}</a>`
           : '<span class="no-data">—</span>'}</td>
         <td class="col-sc stalls-cell">
           ${s.stalls != null
-            ? `<span class="stalls-num">${s.stalls}대</span>` + (s.maxKw != null ? `<span class="stalls-kw">${s.maxKw}kW</span>` : '')
+            ? `<span class="stalls-num">${s.stalls}대</span>` + (s.maxKw != null ? `<span class="stalls-kw ${s.maxKw >= 100 ? 'fast' : s.maxKw >= 50 ? 'mid' : 'slow'}">${s.maxKw}kW</span>` : '')
             : '<span class="no-data">—</span>'}
         </td>
         <td class="col-sc price-cell">
@@ -1286,12 +1486,14 @@ function render() {
         </div></td>
         <td><span class="region-badge" data-region="${s.region}">${s.region}</span></td>
         <td class="address">
-          ${highlight(s.address, q)}
-          ${s.detail ? `<div class="detail">${highlight(s.detail, q)}</div>` : ''}
+          <div class="addr-copy-wrap">
+            <div>${highlight(s.address, q)}${s.detail ? `<div class="detail">${highlight(s.detail, q)}</div>` : ''}</div>
+            <button class="inline-copy-btn" data-addr="${s.address.replace(/"/g,'&quot;')}">복사</button>
+          </div>
         </td>
         <td class="col-dest stalls-cell">
           ${s.stalls != null
-            ? `<span class="stalls-num">${s.stalls}대</span><span class="stalls-kw">${s.maxKw > 0 ? s.maxKw + 'kW' : '출력미확인'}</span>`
+            ? `<span class="stalls-num">${s.stalls}대</span><span class="stalls-kw ${s.maxKw > 0 ? (s.maxKw >= 100 ? 'fast' : s.maxKw >= 50 ? 'mid' : 'slow') : 'slow'}">${s.maxKw > 0 ? s.maxKw + 'kW' : '출력미확인'}</span>`
             : '<span class="no-data">—</span>'}
         </td>
         <td class="col-dest">${s.phone
@@ -1314,6 +1516,11 @@ function render() {
       `;
     }
     tbody.appendChild(tr);
+  });
+
+  // 인라인 주소 복사
+  tbody.querySelectorAll('.inline-copy-btn').forEach(btn => {
+    btn.addEventListener('click', e => { e.stopPropagation(); copyAddress(btn.dataset.addr); });
   });
 
   // 지역 배지 클릭 → 해당 지역 단독 선택 (토글)
@@ -1378,6 +1585,9 @@ function render() {
     const el = document.getElementById(`ind-${col}`);
     if (el) el.textContent = '';
   });
+
+  // 카드 그리드 동기화
+  renderCards();
 }
 
 // ─── 테이블 헤더 클릭 정렬 ────────────────────────
@@ -1416,12 +1626,253 @@ window.addEventListener('scroll', () => {
 });
 scrollTopBtn.addEventListener('click', () => window.scrollTo({ top: 0, behavior: 'smooth' }));
 
+// ══════════════════════════════════════════════════
+// ── UX/UI 개선 기능 추가 ────────────────────────
+// ══════════════════════════════════════════════════
+
+// ── 토스트 알림 ──────────────────────────────────
+let _toastTimer = null;
+function showToast(msg) {
+  const el = document.getElementById('toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.classList.add('show');
+  clearTimeout(_toastTimer);
+  _toastTimer = setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// ── 주소 복사 ─────────────────────────────────────
+function copyAddress(addr) {
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(addr).then(() => showToast('📋 주소 복사됨')).catch(() => fallbackCopy(addr));
+  } else {
+    fallbackCopy(addr);
+  }
+}
+function fallbackCopy(addr) {
+  const el = document.createElement('textarea');
+  el.value = addr; el.style.position = 'fixed'; el.style.opacity = '0';
+  document.body.appendChild(el); el.select();
+  try { document.execCommand('copy'); showToast('📋 주소 복사됨'); } catch(e) {}
+  document.body.removeChild(el);
+}
+
+// ── kW 클래스 헬퍼 ───────────────────────────────
+function getKwClass(kw) {
+  if (!kw || kw <= 0) return 'slow';
+  if (kw >= 100) return 'fast';
+  if (kw >= 22) return 'mid';
+  return 'slow';
+}
+
+// ── 카드 그리드 렌더 ─────────────────────────────
+function renderCards() {
+  const cardWrap = document.getElementById('cardGridWrap');
+  if (!cardWrap) return;
+  const q = state.query.trim().toLowerCase();
+  const isSc = state.activeTab === 'supercharger';
+  const data = getActiveData();
+
+  let filtered = data.filter(s => {
+    const matchRegion = state.regions.size === 0 || state.regions.has(s.region);
+    const matchPhone = !state.phoneOnly || !!s.phone;
+    const matchQ = !q ||
+      s.name.toLowerCase().includes(q) ||
+      s.address.toLowerCase().includes(q) ||
+      (s.region || '').toLowerCase().includes(q) ||
+      (isSc ? (s.note || '').toLowerCase().includes(q)
+             : (s.detail || '').toLowerCase().includes(q) || (s.phone || '').includes(q));
+    return matchRegion && matchPhone && matchQ;
+  });
+
+  const sorted = getSorted(filtered);
+  cardWrap.innerHTML = '';
+
+  sorted.forEach((s, i) => {
+    const naverQuery = encodeURIComponent((s.region + ' ' + s.address).trim());
+    const naverUrl = `https://map.naver.com/v5/search/${naverQuery}`;
+    const kwVal = s.maxKw || 0;
+    const kwClass = getKwClass(kwVal);
+    const kwText = kwVal > 0 ? kwVal + 'kW' : (isSc ? '' : '출력미확인');
+
+    const card = document.createElement('div');
+    card.className = 'station-card';
+    card.style.animationDelay = (i * 0.02) + 's';
+
+    const nameHtml = isSc
+      ? (s.teslaUrl ? `<a href="${s.teslaUrl}" target="_blank" rel="noopener">${highlight(s.name, q)}</a>` : highlight(s.name, q))
+      : (s.chargerUrl ? `<a href="${s.chargerUrl}" target="_blank" rel="noopener">${highlight(s.name, q)}</a>` : highlight(s.name, q));
+
+    let metaHtml = '';
+    if (s.stalls != null) metaHtml += `<span class="card-stalls-badge">⚡ ${s.stalls}대</span>`;
+    if (kwText) metaHtml += `<span class="kw-chip ${kwClass}">${kwText}</span>`;
+    if (isSc && s.teslaPrice != null) metaHtml += `<span class="card-price-chip">₩${s.teslaPrice}/kWh</span>`;
+
+    const addrExtra = isSc ? s.note : s.detail;
+    const copyAddr = s.address.replace(/"/g, '&quot;');
+
+    card.innerHTML = `
+      <div class="card-top">
+        <div class="card-name">${nameHtml}</div>
+        <span class="region-badge" data-region="${s.region}" style="cursor:pointer;flex-shrink:0">${s.region}</span>
+      </div>
+      <div class="card-addr">
+        ${highlight(s.address, q)}
+        ${addrExtra ? `<div class="detail">${highlight(addrExtra, q)}</div>` : ''}
+      </div>
+      ${metaHtml ? `<div class="card-meta">${metaHtml}</div>` : ''}
+      <div class="card-actions">
+        <button class="card-copy-btn" data-addr="${copyAddr}" title="주소 복사">📋</button>
+        <a class="map-btn naver" href="${naverUrl}" target="_blank" rel="noopener">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
+          네이버
+        </a>
+        <button class="map-btn kakao" data-name="${s.name}" ${isSc ? 'data-tab="sc"' : ''}>
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.477 3 2 6.477 2 10.545c0 2.549 1.522 4.793 3.838 6.185-.16.615-.613 2.22-.703 2.563-.11.43.158.425.328.307.135-.092 2.143-1.44 3.01-2.02.482.067.979.103 1.527.103 5.523 0 10-3.477 10-7.545C22 6.477 17.523 3 12 3z"/></svg>
+          카카오
+        </button>
+      </div>
+    `;
+    cardWrap.appendChild(card);
+  });
+
+  // 지역 배지
+  cardWrap.querySelectorAll('.region-badge').forEach(badge => {
+    badge.addEventListener('click', () => {
+      const r = badge.dataset.region;
+      state.regions.has(r) ? state.regions.delete(r) : state.regions.add(r);
+      syncFilterBtns(); render();
+    });
+  });
+  // 복사 버튼
+  cardWrap.querySelectorAll('.card-copy-btn').forEach(btn => {
+    btn.addEventListener('click', () => copyAddress(btn.dataset.addr));
+  });
+  // 카카오 내비
+  cardWrap.querySelectorAll('.map-btn.kakao').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.preventDefault();
+      const nm = btn.dataset.name;
+      const st = btn.dataset.tab === 'sc'
+        ? superchargers.find(s => s.name === nm)
+        : stations.find(s => s.name === nm);
+      if (st) openKakaoNavi(st);
+    });
+  });
+}
+
+// ── 뷰 모드 초기화 ──────────────────────────────
+document.body.classList.add('view-table');
+
+document.getElementById('viewTableBtn').addEventListener('click', () => {
+  document.body.classList.remove('view-grid');
+  document.body.classList.add('view-table');
+  document.getElementById('viewTableBtn').classList.add('active');
+  document.getElementById('viewGridBtn').classList.remove('active');
+});
+
+document.getElementById('viewGridBtn').addEventListener('click', () => {
+  document.body.classList.remove('view-table');
+  document.body.classList.add('view-grid');
+  document.getElementById('viewGridBtn').classList.add('active');
+  document.getElementById('viewTableBtn').classList.remove('active');
+  renderCards(); // 그리드로 전환 시 즉시 렌더
+});
+
 // 초기 렌더
 document.getElementById('tabDestCnt').textContent = stations.length;
 document.getElementById('tabScCnt').textContent = superchargers.length;
 document.getElementById('headerCount').textContent = '전체 ' + stations.length + '개';
 document.getElementById('totalCount').textContent = stations.length;
 render();
+
+// ═══════════════════════════════════════════════════
+// ─── TOP 5 인기 충전소 (Firebase 기반) ────────────
+// ═══════════════════════════════════════════════════
+(function(){
+  const TOP5_DB = 'https://tesla-charger-analytics-default-rtdb.firebaseio.com';
+  const CACHE_KEY = 'tsla_top5_cache';
+  const CACHE_TTL = 5 * 60 * 1000; // 5분
+
+  function getToday() {
+    const d = new Date();
+    return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0') + '-' + String(d.getDate()).padStart(2,'0');
+  }
+  function getWeekAgo() {
+    const d = new Date(); d.setDate(d.getDate() - 7);
+    return d.getTime();
+  }
+
+  function countStations(hits, filterFn) {
+    const map = {};
+    Object.values(hits).forEach(h => {
+      if (!filterFn(h)) return;
+      const evts = h.events || [];
+      evts.forEach(e => {
+        if ((e.type === 'map_naver' || e.type === 'map_kakao') && e.detail) {
+          map[e.detail] = (map[e.detail] || 0) + 1;
+        }
+      });
+    });
+    return Object.entries(map).sort((a,b) => b[1] - a[1]).slice(0, 5);
+  }
+
+  function renderTop5(containerId, data) {
+    const el = document.getElementById(containerId);
+    if (!data || data.length === 0) {
+      el.innerHTML = '<div class="top5-empty">아직 데이터가 없습니다</div>';
+      return;
+    }
+    const maxCount = data[0][1];
+    el.innerHTML = data.map(([name, count], i) => {
+      const pct = Math.round(count / maxCount * 100);
+      return `<div class="top5-item">
+        <div class="top5-rank r${i+1}">${i < 3 ? ['🥇','🥈','🥉'][i] : i+1}</div>
+        <div class="top5-name">${name}</div>
+        <div class="top5-count">${count}회</div>
+        <div class="top5-bar-wrap"><div class="top5-bar" style="width:${pct}%"></div></div>
+      </div>`;
+    }).join('');
+  }
+
+  async function loadTop5() {
+    // 캐시 확인
+    try {
+      const cached = JSON.parse(sessionStorage.getItem(CACHE_KEY));
+      if (cached && Date.now() - cached.ts < CACHE_TTL) {
+        document.getElementById('top5Section').style.display = '';
+        renderTop5('top5Daily', cached.daily);
+        renderTop5('top5Weekly', cached.weekly);
+        return;
+      }
+    } catch(e) {}
+
+    try {
+      const res = await fetch(TOP5_DB + '/hits.json');
+      if (!res.ok) throw new Error('fetch failed');
+      const hits = await res.json();
+      if (!hits) throw new Error('no data');
+
+      const today = getToday();
+      const weekAgoTs = getWeekAgo();
+
+      const daily = countStations(hits, h => h.ts && h.ts.startsWith(today));
+      const weekly = countStations(hits, h => h.tsUnix && h.tsUnix >= weekAgoTs);
+
+      document.getElementById('top5Section').style.display = '';
+      renderTop5('top5Daily', daily);
+      renderTop5('top5Weekly', weekly);
+
+      // 캐시 저장
+      try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), daily, weekly })); } catch(e) {}
+    } catch(e) {
+      // 실패 시 섹션 숨김
+      document.getElementById('top5Section').style.display = 'none';
+    }
+  }
+
+  loadTop5();
+})();
 
 // ═══════════════════════════════════════════════════
 // ─── ANALYTICS TRACKING (Silent) ─────────────────
