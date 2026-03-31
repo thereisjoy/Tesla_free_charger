@@ -1,0 +1,70 @@
+name: Tesla 충전소 데이터 자동 동기화
+
+on:
+  schedule:
+    # 매주 수요일 03:00 KST = 화요일 18:00 UTC
+    - cron: '0 18 * * 2'
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Dry run (변경사항 감지만, 커밋 안 함)'
+        required: false
+        default: 'false'
+        type: boolean
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 저장소 체크아웃
+        uses: actions/checkout@v4
+
+      - name: Python 설치
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: 의존성 설치
+        run: pip install requests
+
+      - name: Tesla 데이터 동기화
+        id: sync
+        run: python scripts/sync_tesla_data.py
+
+      - name: 변경 내역 출력
+        if: always()
+        run: |
+          echo "has_changes : ${{ steps.sync.outputs.has_changes }}"
+          echo "summary     : ${{ steps.sync.outputs.changes_summary }}"
+          echo "error       : ${{ steps.sync.outputs.error }}"
+
+      - name: 변경사항 커밋 & 푸시
+        if: |
+          steps.sync.outputs.has_changes == 'true' &&
+          github.event.inputs.dry_run != 'true'
+        run: |
+          git config --local user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --local user.name  "github-actions[bot]"
+          git add index.html
+          git commit -m "$(cat <<'EOF'
+          auto: Tesla 충전소 데이터 동기화 $(date +'%Y-%m-%d')
+
+          ${{ steps.sync.outputs.changes_summary }}
+
+          Co-authored-by: github-actions[bot] <41898282+github-actions[bot]@users.noreply.github.com>
+          EOF
+          )"
+          git push
+
+      - name: 변경사항 없음 알림
+        if: steps.sync.outputs.has_changes == 'false'
+        run: echo "✅ 이번 주 변경사항 없음. index.html 유지."
+
+      - name: Fetch 실패 알림
+        if: steps.sync.outputs.error != ''
+        run: |
+          echo "⚠️ 오류 발생: ${{ steps.sync.outputs.error }}"
+          echo "다음 수요일에 자동 재시도됩니다."
