@@ -1414,7 +1414,7 @@ function render() {
       : '<span class="type-badge dest">데스티네이션</span>';
     const kwVal = s.maxKw || 0;
     const kwClass = kwVal >= 100 ? 'fast' : kwVal >= 50 ? 'mid' : 'slow';
-    const kwText = kwVal > 0 ? kwVal + 'kW' : (isSc ? '' : '출력미확인');
+    const kwText = kwVal > 0 ? (isSc ? kwVal + 'kW' : '~' + kwVal + 'kW') : (isSc ? '' : '출력미확인');
 
     tr.innerHTML = `
       <td class="row-num">${i + 1}</td>
@@ -1614,7 +1614,7 @@ function renderCards() {
     const isSc = s.type === 'sc';
     const kwVal = s.maxKw || 0;
     const kwClass = getKwClass(kwVal);
-    const kwText = kwVal > 0 ? kwVal + 'kW' : (isSc ? '' : '출력미확인');
+    const kwText = kwVal > 0 ? (isSc ? kwVal + 'kW' : '~' + kwVal + 'kW') : (isSc ? '' : '출력미확인');
 
     const card = document.createElement('div');
     card.className = 'station-card';
