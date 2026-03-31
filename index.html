@@ -1753,7 +1753,7 @@ render();
       return `<div class="top5-item">
         <div class="top5-rank r${i+1}">${i < 3 ? ['🥇','🥈','🥉'][i] : i+1}</div>
         <div class="top5-name">${name}</div>
-        <div class="top5-count">${count}회</div>
+        <div class="top5-count" style="display:none">${count}회</div>
         <div class="top5-bar-wrap"><div class="top5-bar" style="width:${pct}%"></div></div>
       </div>`;
     }).join('');
