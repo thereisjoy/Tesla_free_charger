@@ -9,7 +9,7 @@
 <meta property="og:type"        content="website">
 <meta property="og:url"         content="https://thereisjoy.github.io/Tesla_free_charger/">
 <meta property="og:title"       content="Tesla 충전소">
-<meta property="og:description" content="전국 79개 Tesla 충전소 위치 안내 및 카카오·네이버 내비게이션 바로 연결">
+<meta property="og:description" content="전국 254개 Tesla 충전소(데스티네이션+슈퍼차저) 위치 안내 및 카카오·네이버 내비게이션 바로 연결">
 <meta property="og:image"       content="https://thereisjoy.github.io/Tesla_free_charger/og-image.png">
 <meta property="og:image:width"  content="1200">
 <meta property="og:image:height" content="630">
@@ -18,7 +18,7 @@
 <!-- 트위터 카드 -->
 <meta name="twitter:card"        content="summary_large_image">
 <meta name="twitter:title"       content="Tesla 충전소">
-<meta name="twitter:description" content="전국 79개 Tesla 충전소 위치 안내 및 카카오·네이버 내비게이션 바로 연결">
+<meta name="twitter:description" content="전국 254개 Tesla 충전소(데스티네이션+슈퍼차저) 위치 안내 및 카카오·네이버 내비게이션 바로 연결">
 <meta name="twitter:image"       content="https://thereisjoy.github.io/Tesla_free_charger/og-image.png">
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -215,11 +215,13 @@
   .name-link { color: #fff; text-decoration: underline; text-decoration-color: rgba(255,255,255,0.25); text-underline-offset: 3px; transition: color 0.15s, text-decoration-color 0.15s; }
   .name-link:hover { color: #e31937; text-decoration-color: #e31937; }
 
-  /* 탭별 컬럼 표시 제어 */
-  .col-sc { display: none; }
-  .col-dest { display: table-cell; }
-  #mainTable.mode-sc .col-sc { display: table-cell; }
-  #mainTable.mode-sc .col-dest { display: none; }
+  /* 충전소 유형 배지 */
+  .type-badge {
+    display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.3px;
+    padding: 2px 6px; border-radius: 4px; margin-left: 6px; vertical-align: middle; white-space: nowrap;
+  }
+  .type-badge.dest { background: rgba(76,175,80,0.15); color: #4caf50; border: 1px solid rgba(76,175,80,0.25); }
+  .type-badge.sc { background: rgba(227,25,55,0.15); color: #e31937; border: 1px solid rgba(227,25,55,0.25); }
 
   /* 충전기/요금 셀 스타일 */
   .stalls-cell { text-align: center; font-size: 13px; color: #ccc; }
@@ -423,23 +425,7 @@
     td:has(.name)                       { grid-area: td-name;   min-width: 0; }
     td:has(.region-badge)               { grid-area: td-region; align-self: start; padding-top: 2px; }
     td.address                          { grid-area: td-addr; }
-    /* td.stalls-cell — 모바일에서 숨김 처리됨 (배지로 대체) */
-    td.col-dest:not(.stalls-cell)       { grid-area: td-extra;  align-self: center; }
-    td.price-cell                       { grid-area: td-extra;  align-self: center; }
-
-    /* SC 탭: 이름+배지(요금포함) / 주소 / 버튼 */
-    #mainTable.mode-sc tbody tr {
-      grid-template-areas:
-        "td-name   td-region"
-        "td-addr   td-addr"
-        "td-map    td-map";
-    }
-    /* SC 모바일: price-cell 숨김 (배지에 포함됨) */
-    #mainTable.mode-sc td.price-cell { display: none; }
     td:has(.map-btns)                   { grid-area: td-map; }
-
-    /* col-sc 빈 셀(데스티네이션 행) — 이미 display:none이지만 명시 */
-    td.col-sc:not(.stalls-cell):not(.price-cell) { display: none; }
 
     /* ── 텍스트 스타일 ── */
     .name          { font-size: 15px; font-weight: 700; line-height: 1.3; display: flex; flex-wrap: wrap; align-items: center; gap: 5px; }
@@ -459,8 +445,8 @@
     .address       { font-size: 12px; color: #888; line-height: 1.5; margin-top: 2px; }
     .detail        { font-size: 11px; color: #666; margin-top: 1px; }
 
-    /* ── 충전기 정보 칸 — 모바일에서 숨김 (배지로 대체) ── */
-    td.stalls-cell { display: none !important; }
+    /* ── 충전기/전화번호 칸 — 모바일에서 숨김 (배지로 대체) ── */
+    td.stalls-cell, td.phone-cell { display: none !important; }
 
     /* ── 전화번호 ── */
     .phone-link { font-size: 12px; }
@@ -487,9 +473,7 @@
       right: max(16px, env(safe-area-inset-right));
     }
   }
-  /* ── 전화번호 열 숨김 ── */
-  th[data-col="phone"],
-  td.col-dest:not(.stalls-cell) { display: none !important; }
+  /* ── 전화번호 필터 숨김 ── */
   #hasPhoneBtn { display: none !important; }
 
   /* ══════════════════════════════════════
@@ -638,15 +622,18 @@
     </svg>
     <div>
       <h1 onclick="location.reload()" style="cursor:pointer">Tesla 충전소</h1>
-      <div class="subtitle" id="headerSubtitle">전국 데스티네이션 안내</div>
+      <div class="subtitle" id="headerSubtitle">전국 충전소 통합 안내</div>
     </div>
   </div>
   <div class="header-count" id="headerCount">전체 0개</div>
 </header>
 
-<!-- ── 탭 바 ── -->
+<!-- ── 유형 필터 바 ── -->
 <div class="tab-bar">
-  <button class="tab-btn active" id="tabDest" onclick="switchTab('destination')">
+  <button class="tab-btn active" id="tabAll" onclick="switchType('all')">
+    전체 <span class="tab-cnt" id="tabAllCnt">254</span>
+  </button>
+  <button class="tab-btn" id="tabDest" onclick="switchType('dest')">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0">
       <rect x="9" y="2" width="2.5" height="7" rx="1"/>
       <rect x="12.5" y="2" width="2.5" height="7" rx="1"/>
@@ -654,7 +641,7 @@
     </svg>
     데스티네이션 <span class="tab-cnt" id="tabDestCnt">79</span>
   </button>
-  <button class="tab-btn" id="tabSc" onclick="switchTab('supercharger')">
+  <button class="tab-btn" id="tabSc" onclick="switchType('sc')">
     <svg width="15" height="15" viewBox="0 0 24 24" fill="currentColor" style="flex-shrink:0">
       <path d="M13 2L4.5 13.5H11L10 22L19.5 10H13L13 2Z"/>
     </svg>
@@ -759,13 +746,11 @@
     <thead>
       <tr>
         <th style="width:36px"><div class="th-inner">#</div></th>
-        <th style="width:210px" data-col="name"><div class="th-inner">충전소명 <span class="sort-ind" id="ind-name"></span></div></th>
+        <th style="width:220px" data-col="name"><div class="th-inner">충전소명 <span class="sort-ind" id="ind-name"></span></div></th>
         <th style="width:72px" data-col="region"><div class="th-inner">지역 <span class="sort-ind" id="ind-region"></span></div></th>
         <th data-col="address"><div class="th-inner">주소</div></th>
-        <th class="col-dest" style="width:80px" data-col="destStalls"><div class="th-inner">충전기</div></th>
-        <th class="col-dest" style="width:130px" data-col="phone"><div class="th-inner">전화번호</div></th>
-        <th class="col-sc" style="width:72px" data-col="stalls"><div class="th-inner">충전기 <span class="sort-ind" id="ind-stalls"></span></div></th>
-        <th class="col-sc" style="width:115px" data-col="price"><div class="th-inner">요금(Tesla/타) <span class="sort-ind" id="ind-price"></span></div></th>
+        <th style="width:80px" data-col="stalls"><div class="th-inner">충전기 <span class="sort-ind" id="ind-stalls"></span></div></th>
+        <th style="width:130px" data-col="phone"><div class="th-inner">전화번호</div></th>
         <th style="width:110px"><div class="th-inner">지도</div></th>
       </tr>
     </thead>
@@ -1046,6 +1031,12 @@ const superchargers = [
   { name: '인천 연수 - 바다쏭', region: '인천', address: '인천광역시 연수구 16 능허대로', note: '', lat: 37.42954374180985, lng: 126.63611340023536, phone: '080-617-1399', teslaUrl: 'https://www.tesla.com/ko_KR/findus/location/supercharger/32543' , stalls: 6, maxKw: 250, teslaPrice: 339, otherPrice: 400 }
 ];
 
+// ─── 통합 데이터 ────────────────────────────────
+const allStations = [
+  ...stations.map(s => ({ ...s, type: 'dest' })),
+  ...superchargers.map(s => ({ ...s, type: 'sc' }))
+];
+
 // ─── 상태 ───────────────────────────────────────
 let state = {
   query: '',
@@ -1053,12 +1044,14 @@ let state = {
   sort: 'default',
   phoneOnly: false,
   acFocusIdx: -1,
-  activeTab: 'destination', // 'destination' | 'supercharger'
+  typeFilter: 'all', // 'all' | 'dest' | 'sc'
 };
 
-// ─── 활성 탭 데이터 ────────────────────────────
+// ─── 활성 데이터 ────────────────────────────────
 function getActiveData() {
-  return state.activeTab === 'supercharger' ? superchargers : stations;
+  if (state.typeFilter === 'dest') return allStations.filter(s => s.type === 'dest');
+  if (state.typeFilter === 'sc') return allStations.filter(s => s.type === 'sc');
+  return allStations;
 }
 // ─── 헬퍼 ───────────────────────────────────────
 function highlight(text, q) {
@@ -1320,31 +1313,15 @@ function getSorted(list) {
   return copy; // default
 }
 
-// ─── 탭 전환 ─────────────────────────────────────
-function switchTab(tab) {
-  state.activeTab = tab;
+// ─── 유형 필터 전환 ──────────────────────────────
+function switchType(type) {
+  state.typeFilter = type;
   state.regions = new Set();
-  state.query = '';
-  state.sort = 'default';
-  state.phoneOnly = false;
-  searchInput.value = '';
-  clearBtn.style.display = 'none';
-  closeAc();
 
-  // 탭 버튼 활성화
-  document.getElementById('tabDest').classList.toggle('active', tab === 'destination');
-  document.getElementById('tabSc').classList.toggle('active', tab === 'supercharger');
-
-  // 테이블 모드 클래스 (컬럼 표시 제어)
-  document.getElementById('mainTable').classList.toggle('mode-sc', tab === 'supercharger');
-
-  // 전화번호 필터 버튼: 슈퍼차저 탭에서는 숨김
-  const hasPhoneBtn = document.getElementById('hasPhoneBtn');
-  hasPhoneBtn.style.display = tab === 'supercharger' ? 'none' : '';
-  hasPhoneBtn.classList.remove('active');
-
-  // 정렬 버튼 초기화
-  document.querySelectorAll('.sort-btn').forEach(b => b.classList.toggle('active', b.dataset.sort === 'default'));
+  // 버튼 활성화
+  document.getElementById('tabAll').classList.toggle('active', type === 'all');
+  document.getElementById('tabDest').classList.toggle('active', type === 'dest');
+  document.getElementById('tabSc').classList.toggle('active', type === 'sc');
 
   // 지역 필터 재생성
   buildRegionFilters();
@@ -1408,7 +1385,6 @@ function render() {
   const q = state.query.trim().toLowerCase();
   const tbody = document.getElementById('tableBody');
   tbody.innerHTML = '';
-  const isSc = state.activeTab === 'supercharger';
   const data = getActiveData();
 
   let filtered = data.filter(s => {
@@ -1418,8 +1394,9 @@ function render() {
       s.name.toLowerCase().includes(q) ||
       s.address.toLowerCase().includes(q) ||
       (s.region || '').toLowerCase().includes(q) ||
-      (isSc ? (s.note || '').toLowerCase().includes(q)
-             : (s.detail || '').toLowerCase().includes(q) || (s.phone || '').includes(q));
+      (s.note || '').toLowerCase().includes(q) ||
+      (s.detail || '').toLowerCase().includes(q) ||
+      (s.phone || '').includes(q);
     return matchRegion && matchPhone && matchQ;
   });
 
@@ -1429,92 +1406,53 @@ function render() {
     const naverQuery = encodeURIComponent((s.region + ' ' + s.address).trim());
     const naverUrl = `https://map.naver.com/v5/search/${naverQuery}`;
     const tr = document.createElement('tr');
+    const isSc = s.type === 'sc';
+    const linkUrl = isSc ? s.teslaUrl : s.chargerUrl;
+    const extraInfo = isSc ? s.note : s.detail;
+    const typeBadge = isSc
+      ? '<span class="type-badge sc">슈퍼차저</span>'
+      : '<span class="type-badge dest">데스티네이션</span>';
+    const kwVal = s.maxKw || 0;
+    const kwClass = kwVal >= 100 ? 'fast' : kwVal >= 50 ? 'mid' : 'slow';
+    const kwText = kwVal > 0 ? kwVal + 'kW' : (isSc ? '' : '출력미확인');
 
-    if (isSc) {
-      // ── 슈퍼차저: 카카오 내비 (좌표 확보) + 네이버 지도
-      tr.innerHTML = `
-        <td class="row-num">${i + 1}</td>
-        <td><div class="name">
-          ${s.teslaUrl
-            ? `<a href="${s.teslaUrl}" target="_blank" rel="noopener" class="name-link">${highlight(s.name, q)}</a>`
-            : highlight(s.name, q)}
-          ${s.stalls != null ? `<span class="stalls-badge">${s.stalls}대${s.maxKw != null ? ` · ${s.maxKw}kW` : ''}${s.teslaPrice != null ? ` · ₩${s.teslaPrice}` : ''}</span>` : ''}
-        </div></td>
-        <td><span class="region-badge" data-region="${s.region}">${s.region}</span></td>
-        <td class="address">
-          <div class="addr-copy-wrap">
-            <div>${highlight(s.address, q)}${s.note ? `<div class="detail">${highlight(s.note, q)}</div>` : ''}</div>
-            <button class="inline-copy-btn" data-addr="${s.address.replace(/"/g,'&quot;')}">복사</button>
-          </div>
-        </td>
-        <td class="col-dest">${s.phone
-          ? `<a class="phone-link" href="tel:${s.phone}">📞 ${s.phone}</a>`
-          : '<span class="no-data">—</span>'}</td>
-        <td class="col-sc stalls-cell">
-          ${s.stalls != null
-            ? `<span class="stalls-num">${s.stalls}대</span>` + (s.maxKw != null ? `<span class="stalls-kw ${s.maxKw >= 100 ? 'fast' : s.maxKw >= 50 ? 'mid' : 'slow'}">${s.maxKw}kW</span>` : '')
-            : '<span class="no-data">—</span>'}
-        </td>
-        <td class="col-sc price-cell">
-          ${s.teslaPrice != null
-            ? `<div><span class="price-label">Tesla</span><span class="price-tesla">₩${s.teslaPrice}/kWh</span></div>
-               ${s.otherPrice != null ? `<div><span class="price-label">타사</span><span class="price-other">₩${s.otherPrice}/kWh</span></div>` : ''}`
-            : '<span class="no-data">—</span>'}
-        </td>
-        <td>
-          <div class="map-btns">
-            <a class="map-btn naver" href="${naverUrl}" target="_blank" rel="noopener">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
-              네이버
-            </a>
-            <button class="map-btn kakao" data-name="${s.name}" data-tab="sc">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.477 3 2 6.477 2 10.545c0 2.549 1.522 4.793 3.838 6.185-.16.615-.613 2.22-.703 2.563-.11.43.158.425.328.307.135-.092 2.143-1.44 3.01-2.02.482.067.979.103 1.527.103 5.523 0 10-3.477 10-7.545C22 6.477 17.523 3 12 3z"/></svg>
-              카카오
-            </button>
-          </div>
-        </td>
-      `;
-    } else {
-      // ── 데스티네이션: 기존 방식 (카카오 내비)
-      tr.innerHTML = `
-        <td class="row-num">${i + 1}</td>
-        <td><div class="name">
-          ${s.chargerUrl
-            ? `<a href="${s.chargerUrl}" target="_blank" rel="noopener" class="name-link">${highlight(s.name, q)}</a>`
-            : highlight(s.name, q)}
-          ${s.stalls != null ? `<span class="stalls-badge">${s.stalls}대${s.maxKw > 0 ? ` · ${s.maxKw}kW` : ''}</span>` : ''}
-        </div></td>
-        <td><span class="region-badge" data-region="${s.region}">${s.region}</span></td>
-        <td class="address">
-          <div class="addr-copy-wrap">
-            <div>${highlight(s.address, q)}${s.detail ? `<div class="detail">${highlight(s.detail, q)}</div>` : ''}</div>
-            <button class="inline-copy-btn" data-addr="${s.address.replace(/"/g,'&quot;')}">복사</button>
-          </div>
-        </td>
-        <td class="col-dest stalls-cell">
-          ${s.stalls != null
-            ? `<span class="stalls-num">${s.stalls}대</span><span class="stalls-kw ${s.maxKw > 0 ? (s.maxKw >= 100 ? 'fast' : s.maxKw >= 50 ? 'mid' : 'slow') : 'slow'}">${s.maxKw > 0 ? s.maxKw + 'kW' : '출력미확인'}</span>`
-            : '<span class="no-data">—</span>'}
-        </td>
-        <td class="col-dest">${s.phone
-          ? `<a class="phone-link" href="tel:${s.phone}">📞 ${s.phone}</a>`
-          : '<span class="no-data">—</span>'}</td>
-        <td class="col-sc"></td>
-        <td class="col-sc"></td>
-        <td>
-          <div class="map-btns">
-            <a class="map-btn naver" href="${naverUrl}" target="_blank" rel="noopener">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
-              네이버
-            </a>
-            <button class="map-btn kakao" data-name="${s.name}">
-              <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.477 3 2 6.477 2 10.545c0 2.549 1.522 4.793 3.838 6.185-.16.615-.613 2.22-.703 2.563-.11.43.158.425.328.307.135-.092 2.143-1.44 3.01-2.02.482.067.979.103 1.527.103 5.523 0 10-3.477 10-7.545C22 6.477 17.523 3 12 3z"/></svg>
-              카카오
-            </button>
-          </div>
-        </td>
-      `;
-    }
+    tr.innerHTML = `
+      <td class="row-num">${i + 1}</td>
+      <td><div class="name">
+        ${linkUrl
+          ? `<a href="${linkUrl}" target="_blank" rel="noopener" class="name-link">${highlight(s.name, q)}</a>`
+          : highlight(s.name, q)}
+        ${typeBadge}
+        ${s.stalls != null ? `<span class="stalls-badge">${s.stalls}대${kwText ? ` · ${kwText}` : ''}${isSc && s.teslaPrice != null ? ` · ₩${s.teslaPrice}` : ''}</span>` : ''}
+      </div></td>
+      <td><span class="region-badge" data-region="${s.region}">${s.region}</span></td>
+      <td class="address">
+        <div class="addr-copy-wrap">
+          <div>${highlight(s.address, q)}${extraInfo ? `<div class="detail">${highlight(extraInfo, q)}</div>` : ''}</div>
+          <button class="inline-copy-btn" data-addr="${s.address.replace(/"/g,'&quot;')}">복사</button>
+        </div>
+      </td>
+      <td class="stalls-cell">
+        ${s.stalls != null
+          ? `<span class="stalls-num">${s.stalls}대</span><span class="stalls-kw ${kwClass}">${kwText || '—'}</span>`
+          : '<span class="no-data">—</span>'}
+      </td>
+      <td class="phone-cell">${s.phone
+        ? `<a class="phone-link" href="tel:${s.phone}">📞 ${s.phone}</a>`
+        : '<span class="no-data">—</span>'}</td>
+      <td>
+        <div class="map-btns">
+          <a class="map-btn naver" href="${naverUrl}" target="_blank" rel="noopener">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
+            네이버
+          </a>
+          <button class="map-btn kakao" data-name="${s.name}" data-type="${s.type}">
+            <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.477 3 2 6.477 2 10.545c0 2.549 1.522 4.793 3.838 6.185-.16.615-.613 2.22-.703 2.563-.11.43.158.425.328.307.135-.092 2.143-1.44 3.01-2.02.482.067.979.103 1.527.103 5.523 0 10-3.477 10-7.545C22 6.477 17.523 3 12 3z"/></svg>
+            카카오
+          </button>
+        </div>
+      </td>
+    `;
     tbody.appendChild(tr);
   });
 
@@ -1527,39 +1465,20 @@ function render() {
   tbody.querySelectorAll('.region-badge').forEach(badge => {
     badge.addEventListener('click', () => {
       const r = badge.dataset.region;
-      if (state.regions.has(r)) {
-        state.regions.delete(r);
-      } else {
-        state.regions.add(r);
-      }
+      state.regions.has(r) ? state.regions.delete(r) : state.regions.add(r);
       syncFilterBtns();
       render();
     });
   });
 
-  // 카카오 내비 버튼 클릭 (데스티네이션)
-  if (!isSc) {
-    tbody.querySelectorAll('.map-btn.kakao').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const stationName = btn.dataset.name;
-        const station = stations.find(s => s.name === stationName);
-        if (station) openKakaoNavi(station);
-      });
+  // 카카오 내비 버튼 클릭 (통합)
+  tbody.querySelectorAll('.map-btn.kakao').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const station = allStations.find(s => s.name === btn.dataset.name && s.type === btn.dataset.type);
+      if (station) openKakaoNavi(station);
     });
-  }
-
-  // 카카오 내비 버튼 클릭 (슈퍼차저)
-  if (isSc) {
-    tbody.querySelectorAll('.map-btn.kakao').forEach(btn => {
-      btn.addEventListener('click', (e) => {
-        e.preventDefault();
-        const stationName = btn.dataset.name;
-        const station = superchargers.find(s => s.name === stationName);
-        if (station) openKakaoNavi(station);
-      });
-    });
-  }
+  });
 
   // 통계 업데이트
   const visible = sorted.length;
@@ -1567,6 +1486,7 @@ function render() {
   const regionSet = new Set(sorted.map(s => s.region));
 
   document.getElementById('visibleCount').textContent = visible;
+  document.getElementById('totalCount').textContent = data.length;
   document.getElementById('headerCount').textContent = `${visible}개`;
   document.getElementById('statPhone').innerHTML =
     `전화번호 있음 <strong>${withPhone}</strong>개`;
@@ -1581,7 +1501,7 @@ function render() {
   }
 
   // 테이블 컬럼 헤더 정렬 표시 초기화
-  ['name','region','address','phone'].forEach(col => {
+  ['name','region','address','phone','stalls'].forEach(col => {
     const el = document.getElementById(`ind-${col}`);
     if (el) el.textContent = '';
   });
@@ -1670,7 +1590,6 @@ function renderCards() {
   const cardWrap = document.getElementById('cardGridWrap');
   if (!cardWrap) return;
   const q = state.query.trim().toLowerCase();
-  const isSc = state.activeTab === 'supercharger';
   const data = getActiveData();
 
   let filtered = data.filter(s => {
@@ -1680,8 +1599,9 @@ function renderCards() {
       s.name.toLowerCase().includes(q) ||
       s.address.toLowerCase().includes(q) ||
       (s.region || '').toLowerCase().includes(q) ||
-      (isSc ? (s.note || '').toLowerCase().includes(q)
-             : (s.detail || '').toLowerCase().includes(q) || (s.phone || '').includes(q));
+      (s.note || '').toLowerCase().includes(q) ||
+      (s.detail || '').toLowerCase().includes(q) ||
+      (s.phone || '').includes(q);
     return matchRegion && matchPhone && matchQ;
   });
 
@@ -1691,6 +1611,7 @@ function renderCards() {
   sorted.forEach((s, i) => {
     const naverQuery = encodeURIComponent((s.region + ' ' + s.address).trim());
     const naverUrl = `https://map.naver.com/v5/search/${naverQuery}`;
+    const isSc = s.type === 'sc';
     const kwVal = s.maxKw || 0;
     const kwClass = getKwClass(kwVal);
     const kwText = kwVal > 0 ? kwVal + 'kW' : (isSc ? '' : '출력미확인');
@@ -1699,9 +1620,14 @@ function renderCards() {
     card.className = 'station-card';
     card.style.animationDelay = (i * 0.02) + 's';
 
-    const nameHtml = isSc
-      ? (s.teslaUrl ? `<a href="${s.teslaUrl}" target="_blank" rel="noopener">${highlight(s.name, q)}</a>` : highlight(s.name, q))
-      : (s.chargerUrl ? `<a href="${s.chargerUrl}" target="_blank" rel="noopener">${highlight(s.name, q)}</a>` : highlight(s.name, q));
+    const linkUrl = isSc ? s.teslaUrl : s.chargerUrl;
+    const nameHtml = linkUrl
+      ? `<a href="${linkUrl}" target="_blank" rel="noopener">${highlight(s.name, q)}</a>`
+      : highlight(s.name, q);
+
+    const typeBadge = isSc
+      ? '<span class="type-badge sc">슈퍼차저</span>'
+      : '<span class="type-badge dest">데스티네이션</span>';
 
     let metaHtml = '';
     if (s.stalls != null) metaHtml += `<span class="card-stalls-badge">⚡ ${s.stalls}대</span>`;
@@ -1713,7 +1639,7 @@ function renderCards() {
 
     card.innerHTML = `
       <div class="card-top">
-        <div class="card-name">${nameHtml}</div>
+        <div class="card-name">${nameHtml} ${typeBadge}</div>
         <span class="region-badge" data-region="${s.region}" style="cursor:pointer;flex-shrink:0">${s.region}</span>
       </div>
       <div class="card-addr">
@@ -1727,7 +1653,7 @@ function renderCards() {
           <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M16.273 12.845L7.376 0H0v24h7.727V11.155L16.624 24H24V0h-7.727z"/></svg>
           네이버
         </a>
-        <button class="map-btn kakao" data-name="${s.name}" ${isSc ? 'data-tab="sc"' : ''}>
+        <button class="map-btn kakao" data-name="${s.name}" data-type="${s.type}">
           <svg width="11" height="11" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3C6.477 3 2 6.477 2 10.545c0 2.549 1.522 4.793 3.838 6.185-.16.615-.613 2.22-.703 2.563-.11.43.158.425.328.307.135-.092 2.143-1.44 3.01-2.02.482.067.979.103 1.527.103 5.523 0 10-3.477 10-7.545C22 6.477 17.523 3 12 3z"/></svg>
           카카오
         </button>
@@ -1748,15 +1674,12 @@ function renderCards() {
   cardWrap.querySelectorAll('.card-copy-btn').forEach(btn => {
     btn.addEventListener('click', () => copyAddress(btn.dataset.addr));
   });
-  // 카카오 내비
+  // 카카오 내비 (통합)
   cardWrap.querySelectorAll('.map-btn.kakao').forEach(btn => {
     btn.addEventListener('click', e => {
       e.preventDefault();
-      const nm = btn.dataset.name;
-      const st = btn.dataset.tab === 'sc'
-        ? superchargers.find(s => s.name === nm)
-        : stations.find(s => s.name === nm);
-      if (st) openKakaoNavi(st);
+      const station = allStations.find(s => s.name === btn.dataset.name && s.type === btn.dataset.type);
+      if (station) openKakaoNavi(station);
     });
   });
 }
@@ -1780,10 +1703,11 @@ document.getElementById('viewGridBtn').addEventListener('click', () => {
 });
 
 // 초기 렌더
+document.getElementById('tabAllCnt').textContent = allStations.length;
 document.getElementById('tabDestCnt').textContent = stations.length;
 document.getElementById('tabScCnt').textContent = superchargers.length;
-document.getElementById('headerCount').textContent = '전체 ' + stations.length + '개';
-document.getElementById('totalCount').textContent = stations.length;
+document.getElementById('headerCount').textContent = '전체 ' + allStations.length + '개';
+document.getElementById('totalCount').textContent = allStations.length;
 render();
 
 // ═══════════════════════════════════════════════════
