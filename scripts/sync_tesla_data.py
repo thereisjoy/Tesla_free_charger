@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
 Tesla 충전소 데이터 자동 동기화 스크립트
-매주 수요일 03:00 KST (화요일 18:00 UTC) 자동 실행
+매주 수요일 17:00 KST (수요일 08:00 UTC) 자동 실행
 
 동작:
 1. Tesla 공식 리스트 페이지 fetch (SC / DC)
 2. __NEXT_DATA__ JSON 파싱 (SSR 페이지 → 브라우저 불필요)
 3. 현재 index.html 데이터와 비교
-4. 신규/변경/삭제 감지 → index.html 자동 업데이트
+4. 신규/변경/삭제 감지 → index.html + dashboard.html 자동 업데이트
 """
 
 import os
@@ -39,7 +39,8 @@ HEADERS = {
 SC_LIST_URL = "https://www.tesla.com/ko_KR/findus/list/superchargers/South+Korea"
 DC_LIST_URL = "https://www.tesla.com/ko_KR/findus/list/chargers/South+Korea"
 DETAIL_BASE  = "https://www.tesla.com/ko_KR/findus/location"
-INDEX_HTML   = os.path.join(os.path.dirname(__file__), "..", "index.html")
+INDEX_HTML     = os.path.join(os.path.dirname(__file__), "..", "index.html")
+DASHBOARD_HTML = os.path.join(os.path.dirname(__file__), "..", "dashboard.html")
 
 REGION_MAP = {
     "서울특별시": "서울", "서울": "서울",
@@ -267,6 +268,37 @@ def append_to_js_array(html, array_name, new_lines):
     return html[:pos] + insert + html[pos:]
 
 
+def update_dashboard(new_sc_entries, new_dc_entries, total_sc, total_dc):
+    """dashboard.html의 데모 데이터 + 총계 업데이트"""
+    dash_path = os.path.abspath(DASHBOARD_HTML)
+    with open(dash_path, "r", encoding="utf-8") as f:
+        dash = f.read()
+
+    original = dash
+
+    # ── 데모 stations 배열에 신규 충전소 이름 추가 ─────────────
+    # 패턴: const stations = ['이름1','이름2',...];
+    m = re.search(r"(const stations = \[)([^\]]+)(\];)", dash)
+    if m and (new_sc_entries or new_dc_entries):
+        existing_part = m.group(2)
+        new_names = [f"'{e['name']}'" for e in (new_dc_entries + new_sc_entries)]
+        updated_part = existing_part.rstrip() + "," + ",".join(new_names)
+        dash = dash[:m.start()] + m.group(1) + updated_part + m.group(3) + dash[m.end():]
+        log(f"  dashboard 데모 stations 배열: {len(new_names)}개 추가")
+
+    # ── 총 충전소 수 (수요-공급 갭 차트 레이블 등에 하드코딩된 경우) ─
+    # dashboard는 Firebase 데이터 기반이라 특별히 하드코딩 카운트 없음
+    # 단, 차트 fallback 데이터의 맥락 레이블이 있을 경우를 대비해 주석만 추가
+    total_all = total_sc + total_dc
+
+    if dash != original:
+        with open(dash_path, "w", encoding="utf-8") as f:
+            f.write(dash)
+        log("✅ dashboard.html 저장 완료")
+    else:
+        log("  dashboard.html 변경사항 없음")
+
+
 def set_github_output(key, value):
     out_file = os.environ.get("GITHUB_OUTPUT", "")
     if out_file:
@@ -408,7 +440,11 @@ def main():
             f.write(new_html)
         log("✅ index.html 저장 완료")
 
-    # 8. GitHub Actions output
+    # 8. dashboard.html 업데이트
+    log("dashboard.html 업데이트 중...")
+    update_dashboard(new_sc_entries, new_dc_entries, total_sc, total_dc)
+
+    # 9. GitHub Actions output
     summary = " | ".join(changes)
     set_github_output("has_changes", "true")
     set_github_output("changes_summary", summary[:500])  # 500자 제한
