@@ -332,6 +332,9 @@
     <div class="kpi-card"><div class="label">지도 클릭</div><div class="value" id="kMapClk">—</div><div class="sub">네이버 + 카카오</div></div>
     <div class="kpi-card"><div class="label">검색 사용율</div><div class="value" id="kSearch">—</div><div class="sub">%</div></div>
     <div class="kpi-card"><div class="label">평균 인터랙션</div><div class="value" id="kEvt">—</div><div class="sub">회/세션</div></div>
+    <div class="kpi-card"><div class="label">이탈률</div><div class="value" id="kBounce">—</div><div class="sub">%</div></div>
+    <div class="kpi-card highlight"><div class="label">실시간 접속</div><div class="value" id="kRealtime">—</div><div class="sub">최근 5분</div></div>
+    <div class="kpi-card"><div class="label">첫 인터랙션</div><div class="value" id="kFirstAct">—</div><div class="sub">초</div></div>
   </div>
 
   <!-- ── 수익화 지표 ── -->
@@ -376,6 +379,36 @@
       <div id="todayStationList"><div class="today-empty">⏳ 데이터 로딩 중...</div></div>
     </div>
 
+  </div>
+
+  <!-- ══ 유입 채널 분석 ══ -->
+  <div class="chart-box full" style="margin-bottom:16px">
+    <div class="chart-title">📡 유입 채널별 성과 비교 <span class="tip">— 마케팅 ROI 판단</span></div>
+    <div id="channelTable"></div>
+  </div>
+
+  <!-- ══ 신규 vs 재방문 ══ -->
+  <div class="chart-grid" style="margin-bottom:16px">
+    <div class="chart-box">
+      <div class="chart-title">🆕 신규 방문자</div>
+      <div id="newUserStats"></div>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">🔄 재방문 방문자</div>
+      <div id="returnUserStats"></div>
+    </div>
+  </div>
+
+  <!-- ══ 디바이스 전환율 + 세션 깊이 ══ -->
+  <div class="chart-grid" style="margin-bottom:16px">
+    <div class="chart-box">
+      <div class="chart-title">📱 디바이스별 전환율 <span class="tip">— 광고 포맷 최적화</span></div>
+      <canvas id="chartDeviceConv" style="max-height:200px"></canvas>
+    </div>
+    <div class="chart-box">
+      <div class="chart-title">📊 세션 깊이 분포 <span class="tip">— 고관여 사용자 비율</span></div>
+      <canvas id="chartSessionDepth" style="max-height:200px"></canvas>
+    </div>
   </div>
 
   <!-- ── 차트 ── -->
@@ -631,6 +664,14 @@ function generateDemoData() {
     if (Math.random()>0.4) evts.push({type:'map_naver', detail: stations[Math.floor(Math.random()*stations.length)]});
     if (Math.random()>0.6) evts.push({type:'map_kakao', detail: stations[Math.floor(Math.random()*stations.length)]});
     if (Math.random()>0.5) evts.push({type:'filter', detail: ['서울','경기','제주','인천','부산'][Math.floor(Math.random()*5)]});
+    if (Math.random()>0.7) evts.push({type:'tab', detail: ['all','dest','sc'][Math.floor(Math.random()*3)]});
+    if (Math.random()>0.8) evts.push({type:'ac_select', detail: stations[Math.floor(Math.random()*stations.length)]});
+    if (Math.random()>0.85) evts.push({type:'copy_addr', detail: '서울시 강남구'});
+    if (Math.random()>0.9) evts.push({type:'phone_call', detail: '02-1234-5678'});
+    if (Math.random()>0.8) evts.push({type:'badge_region', detail: ['서울','경기','제주'][Math.floor(Math.random()*3)]});
+    if (Math.random()>0.6) evts.push({type:'scroll_depth', detail: [25,50,75,100][Math.floor(Math.random()*4)]});
+    const durVal = Math.floor(Math.random()*300 + 10);
+    const isBounce = evts.length === 0 && durVal < 10;
     hits.push({
       vid: 'v_demo_' + Math.floor(Math.random()*300),
       ts: d.toISOString(), tsUnix: t,
@@ -642,8 +683,12 @@ function generateDemoData() {
       isReturn: Math.random() > 0.55,
       country: '대한민국', cc: 'KR',
       city: cities[Math.floor(Math.random()*cities.length)],
-      dur: Math.floor(Math.random()*300 + 10),
-      events: evts, evtCnt: evts.length, final: Math.random()>0.3
+      dur: durVal,
+      events: evts, evtCnt: evts.length, final: Math.random()>0.3,
+      firstActMs: evts.length ? Math.floor(Math.random()*8000+500) : null,
+      bounce: isBounce,
+      maxScroll: Math.floor(Math.random()*101),
+      resultCnt: Math.floor(Math.random()*250+1)
     });
   }
   return hits;
@@ -656,6 +701,10 @@ function renderAll() {
   const hits = getFiltered();
   renderKPIs(hits);
   renderMonetization(hits);
+  renderChannelAnalysis(hits);
+  renderNewVsReturn(hits);
+  renderDeviceConversion(hits);
+  renderSessionDepth(hits);
   renderCharts(hits);
   renderHourlyChart(hits);
   renderWeekdayChart(hits);
@@ -701,6 +750,20 @@ function renderKPIs(hits) {
   document.getElementById('kMapClk').textContent = mapClicks.toLocaleString();
   document.getElementById('kSearch').textContent = searchRate;
   document.getElementById('kEvt').textContent = avgEvt;
+
+  // 이탈률: 이벤트 0개 + 체류 10초 미만
+  const bounced = hits.filter(h => (h.evtCnt||0)===0 && (h.dur||0)<10).length;
+  const bounceRate = pv ? Math.round(bounced/pv*100) : 0;
+  document.getElementById('kBounce').textContent = bounceRate;
+
+  // 실시간 접속: 최근 5분 내 고유 vid
+  const rt = new Set(allHits.filter(h => h.tsUnix > Date.now()-5*60*1000).map(h=>h.vid)).size;
+  document.getElementById('kRealtime').textContent = rt;
+
+  // 첫 인터랙션까지 시간
+  const fam = hits.filter(h => h.firstActMs > 0).map(h => h.firstActMs);
+  const avgFirstAct = fam.length ? (fam.reduce((a,b)=>a+b,0)/fam.length/1000).toFixed(1) : '—';
+  document.getElementById('kFirstAct').textContent = avgFirstAct;
 }
 
 // ── 수익화 ──
@@ -727,6 +790,136 @@ function renderMonetization(hits) {
   document.getElementById('mRevSub').textContent = `일 ${dailyUV}명 × 30일 × CPM ₩${cpm.toLocaleString()}`;
   document.getElementById('mScore').textContent = score + '/100';
   document.getElementById('mPartner').textContent = partnerGrade + '등급';
+}
+
+// ══ 유입 채널 분석 ══
+function renderChannelAnalysis(hits) {
+  const el = document.getElementById('channelTable');
+  if (!el) return;
+  const chMap = {};
+  hits.forEach(h => {
+    let ch = h.ref || 'direct';
+    try { ch = ch === 'direct' ? 'direct' : new URL(ch).hostname.replace('www.',''); } catch(e){}
+    if (!chMap[ch]) chMap[ch] = { hits:[], vids:new Set() };
+    chMap[ch].hits.push(h);
+    if (h.vid) chMap[ch].vids.add(h.vid);
+  });
+  const sorted = Object.entries(chMap).sort((a,b) => b[1].vids.size - a[1].vids.size).slice(0,8);
+  if (!sorted.length) { el.innerHTML = '<div style="color:#333;text-align:center;padding:20px">데이터 없음</div>'; return; }
+  const rows = sorted.map(([ch, d]) => {
+    const uv = d.vids.size;
+    const durs = d.hits.filter(h=>h.dur>0).map(h=>h.dur);
+    const avgDur = durs.length ? Math.round(durs.reduce((a,b)=>a+b,0)/durs.length) : 0;
+    const evts = d.hits.flatMap(h=>h.events||[]);
+    const evtPerS = uv ? (evts.length/uv).toFixed(1) : '0';
+    const mapC = new Set(d.hits.filter(h=>(h.events||[]).some(e=>e.type?.startsWith('map_'))).map(h=>h.vid)).size;
+    const mapRate = uv ? Math.round(mapC/uv*100) : 0;
+    const retC = d.hits.filter(h=>h.isReturn).length;
+    const retRate = d.hits.length ? Math.round(retC/d.hits.length*100) : 0;
+    return `<tr>
+      <td style="color:#aaa;font-weight:600;text-align:left;max-width:140px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${ch}</td>
+      <td style="color:#e31937;font-weight:700">${uv}</td>
+      <td>${avgDur}s</td>
+      <td>${evtPerS}</td>
+      <td style="color:${mapRate>=30?'#4caf50':mapRate>=15?'#f59e0b':'#666'};font-weight:700">${mapRate}%</td>
+      <td>${retRate}%</td>
+    </tr>`;
+  }).join('');
+  el.innerHTML = `<table class="daily-table"><thead><tr>
+    <th style="text-align:left">채널</th><th>UV</th><th>체류</th><th>이벤트/UV</th><th>지도클릭률</th><th>재방문률</th>
+  </tr></thead><tbody>${rows}</tbody></table>`;
+}
+
+// ══ 신규 vs 재방문 비교 ══
+function renderNewVsReturn(hits) {
+  const newEl = document.getElementById('newUserStats');
+  const retEl = document.getElementById('returnUserStats');
+  if (!newEl || !retEl) return;
+  function calcStats(arr) {
+    const uv = new Set(arr.map(h=>h.vid)).size;
+    const durs = arr.filter(h=>h.dur>0).map(h=>h.dur);
+    const avgDur = durs.length ? Math.round(durs.reduce((a,b)=>a+b,0)/durs.length) : 0;
+    const evts = arr.flatMap(h=>h.events||[]);
+    const mapC = new Set(arr.filter(h=>(h.events||[]).some(e=>e.type?.startsWith('map_'))).map(h=>h.vid)).size;
+    const mapRate = uv ? Math.round(mapC/uv*100) : 0;
+    const searchC = new Set(arr.filter(h=>(h.events||[]).some(e=>e.type==='search')).map(h=>h.vid)).size;
+    const searchRate = uv ? Math.round(searchC/uv*100) : 0;
+    const evtPer = uv ? (evts.length/uv).toFixed(1) : '0';
+    return { uv, avgDur, mapRate, searchRate, evtPer };
+  }
+  const newHits = hits.filter(h => !h.isReturn);
+  const retHits = hits.filter(h => h.isReturn);
+  const ns = calcStats(newHits), rs = calcStats(retHits);
+  function card(s, color) {
+    return `<div style="padding:8px 0">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div><div style="color:#444;font-size:11px">UV</div><div style="color:${color};font-size:22px;font-weight:700">${s.uv}</div></div>
+        <div><div style="color:#444;font-size:11px">체류시간</div><div style="color:#ccc;font-size:22px;font-weight:700">${s.avgDur}<span style="font-size:12px;color:#555">s</span></div></div>
+        <div><div style="color:#444;font-size:11px">지도클릭률</div><div style="color:${s.mapRate>=30?'#4caf50':'#888'};font-size:22px;font-weight:700">${s.mapRate}%</div></div>
+        <div><div style="color:#444;font-size:11px">검색사용률</div><div style="color:#888;font-size:22px;font-weight:700">${s.searchRate}%</div></div>
+        <div><div style="color:#444;font-size:11px">이벤트/UV</div><div style="color:#888;font-size:22px;font-weight:700">${s.evtPer}</div></div>
+      </div>
+    </div>`;
+  }
+  newEl.innerHTML = card(ns, '#3b82f6');
+  retEl.innerHTML = card(rs, '#f59e0b');
+}
+
+// ══ 디바이스별 전환율 ══
+function renderDeviceConversion(hits) {
+  if (charts.devConv) { charts.devConv.destroy(); delete charts.devConv; }
+  const devs = ['mobile','desktop','tablet'];
+  const convData = devs.map(d => {
+    const dh = hits.filter(h=>h.device===d);
+    const uv = new Set(dh.map(h=>h.vid)).size;
+    const mc = new Set(dh.filter(h=>(h.events||[]).some(e=>e.type?.startsWith('map_'))).map(h=>h.vid)).size;
+    return uv ? Math.round(mc/uv*100) : 0;
+  });
+  const canvas = document.getElementById('chartDeviceConv');
+  if (!canvas) return;
+  charts.devConv = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: ['모바일','데스크톱','태블릿'],
+      datasets: [{ data: convData, backgroundColor: ['#e31937','#3b82f6','#f59e0b'], borderRadius: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false, indexAxis: 'y',
+      plugins: { legend:{display:false}, datalabels:{display:false} },
+      scales: {
+        x: { ticks:{color:'#444',callback:v=>v+'%'}, grid:{color:'#111'}, max: Math.max(100, ...convData)+10 },
+        y: { ticks:{color:'#888',font:{size:12}}, grid:{display:false} }
+      }
+    }
+  });
+}
+
+// ══ 세션 깊이 분포 ══
+function renderSessionDepth(hits) {
+  if (charts.sesDepth) { charts.sesDepth.destroy(); delete charts.sesDepth; }
+  const buckets = [0,0,0,0,0,0]; // 0, 1, 2, 3, 4, 5+
+  hits.forEach(h => {
+    const c = h.evtCnt || (h.events||[]).length || 0;
+    buckets[Math.min(c, 5)]++;
+  });
+  const canvas = document.getElementById('chartSessionDepth');
+  if (!canvas) return;
+  const colors = buckets.map((_,i) => i===0 ? '#333' : i<=2 ? 'rgba(227,25,55,0.4)' : '#e31937');
+  charts.sesDepth = new Chart(canvas, {
+    type: 'bar',
+    data: {
+      labels: ['0','1','2','3','4','5+'],
+      datasets: [{ data: buckets, backgroundColor: colors, borderRadius: 4 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend:{display:false}, datalabels:{display:false} },
+      scales: {
+        x: { title:{display:true,text:'이벤트 수',color:'#444',font:{size:10}}, ticks:{color:'#444'}, grid:{display:false} },
+        y: { title:{display:true,text:'세션 수',color:'#444',font:{size:10}}, ticks:{color:'#444'}, grid:{color:'#111'}, beginAtZero:true }
+      }
+    }
+  });
 }
 
 // ── 차트 ──
