@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Tesla Charger Analytics - Admin Dashboard</title>
 <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2.2.0/dist/chartjs-plugin-datalabels.min.js"></script>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   body { font-family: 'Apple SD Gothic Neo','Malgun Gothic',sans-serif; background: #060608; color: #e0e0e0; min-height: 100vh; }
@@ -102,6 +103,21 @@
   .chart-title { font-size: 14px; font-weight: 600; color: #888; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
   .chart-title .tip { font-size: 11px; color: #444; font-weight: 400; }
   canvas { max-height: 260px; }
+  #chartDaily { max-height: 360px !important; }
+
+  /* 일별 수치 요약 테이블 */
+  .daily-table { width:100%; border-collapse:collapse; font-size:12px; margin-top:16px; }
+  .daily-table th { color:#444; font-weight:600; padding:7px 12px; text-align:center; border-bottom:1px solid #1a1a22; letter-spacing:.5px; font-size:11px; text-transform:uppercase; }
+  .daily-table td { color:#666; padding:6px 12px; text-align:center; border-bottom:1px solid #0e0e14; transition:background .15s; }
+  .daily-table tbody tr:hover td { background:#0f0f1a; }
+  .daily-table td.pv { color:#e31937; font-weight:700; font-size:13px; }
+  .daily-table td.uv { color:#3b82f6; font-weight:700; font-size:13px; }
+  .daily-table td.date { color:#555; font-size:12px; }
+  .daily-table tr.today-row td { background:#0d0d1e; }
+  .daily-table tr.today-row td.date { color:#e0e0e0; font-weight:700; }
+  .daily-badge { margin-left:auto; font-size:12px; font-weight:700; display:flex; gap:14px; }
+  .daily-badge .b-pv { color:#e31937; }
+  .daily-badge .b-uv { color:#3b82f6; }
 
   /* ── 테이블 섹션 ── */
   .table-grid {
@@ -365,8 +381,11 @@
   <!-- ── 차트 ── -->
   <div class="chart-grid">
     <div class="chart-box full">
-      <div class="chart-title">📊 일별 방문 추이 <span class="tip">— 광고 최적 시기 파악</span></div>
+      <div class="chart-title">📊 일별 방문 추이 <span class="tip">— 광고 최적 시기 파악</span>
+        <span class="daily-badge"><span class="b-pv" id="dailyBadgePV"></span><span class="b-uv" id="dailyBadgeUV"></span></span>
+      </div>
       <canvas id="chartDaily"></canvas>
+      <div id="dailySummaryTable"></div>
     </div>
     <div class="chart-box">
       <div class="chart-title">📱 디바이스 분포 <span class="tip">— 광고 포맷 결정</span></div>
@@ -481,6 +500,9 @@
 </div><!-- /container -->
 
 <script>
+// datalabels 전역 등록 해제 → daily chart에서만 명시적으로 사용
+Chart.unregister(ChartDataLabels);
+
 // ═══════════════════════════════════════
 // CONFIG
 // ═══════════════════════════════════════
@@ -731,21 +753,84 @@ function renderCharts(hits) {
     }
   });
   const days = Object.keys(dailyPV).sort();
+  const showLabels = days.length <= 20; // 날짜 많으면 숫자 겹침 방지
+
   charts.daily = new Chart(document.getElementById('chartDaily'), {
     type: 'line',
+    plugins: [ChartDataLabels],
     data: {
       labels: days.map(d => d.slice(5)),
       datasets: [
         { label: 'PV', data: days.map(d => dailyPV[d]),
-          borderColor: '#e31937', backgroundColor: 'rgba(227,25,55,0.1)',
-          fill: true, tension: 0.3, pointRadius: 3 },
+          borderColor: '#e31937', backgroundColor: 'rgba(227,25,55,0.12)',
+          fill: true, tension: 0.35, pointRadius: 6, pointHoverRadius: 9,
+          pointBackgroundColor: '#e31937', borderWidth: 2 },
         { label: 'UV', data: days.map(d => dailyUVmap[d]?.size || 0),
           borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0)',
-          fill: false, tension: 0.3, pointRadius: 3, borderDash: [5,3] }
+          fill: false, tension: 0.35, pointRadius: 6, pointHoverRadius: 9,
+          pointBackgroundColor: '#3b82f6', borderDash: [5,3], borderWidth: 2 }
       ]
     },
-    options: { ...defaultOpts, plugins: { ...defaultOpts.plugins, legend: { display: true, labels: { color: '#888', font: { size: 11 } } } } }
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: {
+        legend: { display: true, labels: { color: '#888', font: { size: 12 }, padding: 20 } },
+        tooltip: {
+          callbacks: {
+            title: (items) => items[0].label + '일',
+            afterBody: (items) => {
+              const d = days[items[0].dataIndex];
+              const pv = dailyPV[d]||0, uv = dailyUVmap[d]?.size||0;
+              return [`PV/UV 비율: ${uv ? (pv/uv).toFixed(1) : '-'}x`];
+            }
+          }
+        },
+        datalabels: {
+          display: showLabels ? (ctx) => ctx.dataset.data[ctx.dataIndex] > 0 : false,
+          align: (ctx) => ctx.datasetIndex === 0 ? 'top' : 'bottom',
+          anchor: 'center',
+          offset: 8,
+          color: (ctx) => ctx.datasetIndex === 0 ? '#e31937' : '#3b82f6',
+          font: { size: 11, weight: '700' },
+          formatter: (v) => v > 0 ? v : null
+        }
+      },
+      scales: {
+        x: { ticks: { color: '#555', font: { size: 11 } }, grid: { color: '#111116' } },
+        y: { ticks: { color: '#555', font: { size: 11 } }, grid: { color: '#111116' }, beginAtZero: true }
+      }
+    }
   });
+
+  // 일별 수치 배지 + 요약 표
+  const totalPV = days.reduce((s,d) => s+(dailyPV[d]||0), 0);
+  const totalUV = new Set(hits.filter(h=>h.vid).map(h=>h.vid)).size;
+  const bPV = document.getElementById('dailyBadgePV');
+  const bUV = document.getElementById('dailyBadgeUV');
+  if (bPV) bPV.textContent = `PV 합계 ${totalPV.toLocaleString()}`;
+  if (bUV) bUV.textContent = `UV 합계 ${totalUV.toLocaleString()}`;
+
+  const todayKST2 = new Date(Date.now()+9*3600*1000).toISOString().slice(0,10);
+  const tableEl = document.getElementById('dailySummaryTable');
+  if (tableEl && days.length) {
+    const rows = [...days].reverse().map(d => {
+      const pv = dailyPV[d]||0, uv = dailyUVmap[d]?.size||0;
+      const isToday = d === todayKST2;
+      return `<tr${isToday?' class="today-row"':''}>
+        <td class="date">${d.slice(5)}${isToday?' <span style="color:#e31937;font-size:10px">TODAY</span>':''}</td>
+        <td class="pv">${pv}</td>
+        <td class="uv">${uv}</td>
+        <td style="color:#444;font-size:11px">${uv?(pv/uv).toFixed(1):'-'}</td>
+        <td style="color:#333;font-size:10px">${'▓'.repeat(Math.min(Math.round(pv/Math.max(...Object.values(dailyPV))*10),10))}</td>
+      </tr>`;
+    }).join('');
+    tableEl.innerHTML = `<table class="daily-table">
+      <thead><tr>
+        <th>날짜</th><th style="color:#e31937">PV</th><th style="color:#3b82f6">UV</th><th>PV/UV</th><th>비율</th>
+      </tr></thead>
+      <tbody>${rows}</tbody>
+    </table>`;
+  }
 
   // 디바이스
   const devMap = {};
@@ -756,7 +841,7 @@ function renderCharts(hits) {
       data: Object.values(devMap),
       backgroundColor: ['#e31937','#3b82f6','#f59e0b'],
     }]},
-    options: { responsive: true, plugins: { legend: { labels: { color: '#666' } } } }
+    options: { responsive: true, plugins: { legend: { labels: { color: '#666' } }, datalabels: { display: false } } }
   });
 
   // 지역
@@ -769,7 +854,7 @@ function renderCharts(hits) {
       label: '방문', data: regionSorted.map(r=>r[1]),
       backgroundColor: '#e31937', borderRadius: 4,
     }]},
-    options: { ...defaultOpts, indexAxis: 'y', plugins: { legend: { display: false } } }
+    options: { ...defaultOpts, indexAxis: 'y', plugins: { legend: { display: false }, datalabels: { display: false } } }
   });
 
   // 브라우저
@@ -781,7 +866,7 @@ function renderCharts(hits) {
       data: Object.values(brMap),
       backgroundColor: ['#4caf50','#3b82f6','#f59e0b','#e31937','#8b5cf6'],
     }]},
-    options: { responsive: true, plugins: { legend: { labels: { color: '#666' } } } }
+    options: { responsive: true, plugins: { legend: { labels: { color: '#666' } }, datalabels: { display: false } } }
   });
 
   // OS
@@ -793,7 +878,7 @@ function renderCharts(hits) {
       data: Object.values(osMap),
       backgroundColor: ['#3b82f6','#e31937','#4caf50','#f59e0b','#8b5cf6','#666'],
     }]},
-    options: { responsive: true, plugins: { legend: { labels: { color: '#666' } } } }
+    options: { responsive: true, plugins: { legend: { labels: { color: '#666' } }, datalabels: { display: false } } }
   });
 }
 
