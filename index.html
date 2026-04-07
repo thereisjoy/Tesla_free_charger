@@ -1836,7 +1836,7 @@ render();
     const btn = document.getElementById('top5RefreshBtn');
     if (btn) btn.classList.add('spinning');
     try {
-      const res = await fetch(`${TOP5_DB}/hits.json?limitToLast=600`);
+      const res = await fetch(`${TOP5_DB}/hits.json?orderBy=%22%24key%22&limitToLast=600`);
       if (!res.ok) throw 0;
       const hits = await res.json();
       if (!hits) throw 0;

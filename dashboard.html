@@ -938,7 +938,8 @@ function renderCharts(hits) {
   // 일별 추이 (PV + UV + 이벤트 + 이탈률 + 평균체류)
   const dailyPV = {}, dailyUVmap = {}, dailyEvt = {}, dailyBounce = {}, dailyDur = {}, dailyMapClkD = {};
   hits.forEach(h => {
-    const d = h.ts?.slice(0,10);
+    const ts = h.tsUnix || (h.ts ? new Date(h.ts).getTime() : 0);
+    const d = ts ? new Date(ts + 9*3600*1000).toISOString().slice(0,10) : null;
     if (!d) return;
     dailyPV[d] = (dailyPV[d]||0) + 1;
     if (!dailyUVmap[d]) dailyUVmap[d] = new Set();
@@ -1199,8 +1200,9 @@ function renderHourlyChart(hits) {
   const hourUV = Array.from({length:24}, () => new Set());
 
   hits.forEach(h => {
-    const d = new Date(h.tsUnix || new Date(h.ts).getTime());
-    const hr = d.getHours();
+    const ts = h.tsUnix || (h.ts ? new Date(h.ts).getTime() : 0);
+    if (!ts) return;
+    const hr = new Date(ts + 9*3600*1000).getUTCHours(); // KST
     hourData[hr]++;
     if (h.vid) hourUV[hr].add(h.vid);
   });
@@ -1276,8 +1278,9 @@ function renderWeekdayChart(hits) {
   const dayUV = Array.from({length:7}, () => new Set());
 
   hits.forEach(h => {
-    const d = new Date(h.tsUnix || new Date(h.ts).getTime());
-    const wd = d.getDay();
+    const ts = h.tsUnix || (h.ts ? new Date(h.ts).getTime() : 0);
+    if (!ts) return;
+    const wd = new Date(ts + 9*3600*1000).getUTCDay(); // KST
     dayData[wd]++;
     if (h.vid) dayUV[wd].add(h.vid);
   });
@@ -1331,8 +1334,10 @@ function renderHeatmap(hits) {
   const grid = Array.from({length:7}, ()=>Array(24).fill(0));
 
   hits.forEach(h => {
-    const d = new Date(h.tsUnix || new Date(h.ts).getTime());
-    grid[d.getDay()][d.getHours()]++;
+    const ts = h.tsUnix || (h.ts ? new Date(h.ts).getTime() : 0);
+    if (!ts) return;
+    const kd = new Date(ts + 9*3600*1000);
+    grid[kd.getUTCDay()][kd.getUTCHours()]++; // KST
   });
 
   const maxVal = Math.max(1, ...grid.flat());
