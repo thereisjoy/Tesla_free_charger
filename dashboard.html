@@ -935,18 +935,29 @@ function renderCharts(hits) {
               y: { ticks: { color: '#444', font: { size: 10 } }, grid: { color: '#1a1a22' } } }
   };
 
-  // 일별 추이 (PV + UV)
-  const dailyPV = {}, dailyUVmap = {};
+  // 일별 추이 (PV + UV + 이벤트 + 이탈률 + 평균체류)
+  const dailyPV = {}, dailyUVmap = {}, dailyEvt = {}, dailyBounce = {}, dailyDur = {}, dailyMapClkD = {};
   hits.forEach(h => {
     const d = h.ts?.slice(0,10);
-    if (d) {
-      dailyPV[d] = (dailyPV[d]||0) + 1;
-      if (!dailyUVmap[d]) dailyUVmap[d] = new Set();
-      if (h.vid) dailyUVmap[d].add(h.vid);
+    if (!d) return;
+    dailyPV[d] = (dailyPV[d]||0) + 1;
+    if (!dailyUVmap[d]) dailyUVmap[d] = new Set();
+    if (h.vid) dailyUVmap[d].add(h.vid);
+    dailyEvt[d] = (dailyEvt[d]||0) + (h.evtCnt||0);
+    if (h.final) {
+      if (!dailyBounce[d]) dailyBounce[d] = {bounced:0, total:0};
+      dailyBounce[d].total++;
+      if (h.bounce || (h.evtCnt||0) === 0) dailyBounce[d].bounced++;
     }
+    if (h.dur > 0) {
+      if (!dailyDur[d]) dailyDur[d] = {sum:0, cnt:0};
+      dailyDur[d].sum += h.dur; dailyDur[d].cnt++;
+    }
+    const mc = (h.events||[]).filter(e => e.type === 'map_naver' || e.type === 'map_kakao').length;
+    dailyMapClkD[d] = (dailyMapClkD[d]||0) + mc;
   });
   const days = Object.keys(dailyPV).sort();
-  const showLabels = days.length <= 20; // 날짜 많으면 숫자 겹침 방지
+  const showLabels = days.length <= 20;
 
   charts.daily = new Chart(document.getElementById('chartDaily'), {
     type: 'line',
@@ -955,34 +966,51 @@ function renderCharts(hits) {
       labels: days.map(d => d.slice(5)),
       datasets: [
         { label: 'PV', data: days.map(d => dailyPV[d]),
-          borderColor: '#e31937', backgroundColor: 'rgba(227,25,55,0.12)',
-          fill: true, tension: 0.35, pointRadius: 6, pointHoverRadius: 9,
-          pointBackgroundColor: '#e31937', borderWidth: 2 },
+          borderColor: '#e31937', backgroundColor: 'rgba(227,25,55,0.10)',
+          fill: true, tension: 0.35, pointRadius: 5, pointHoverRadius: 8,
+          pointBackgroundColor: '#e31937', borderWidth: 2, yAxisID: 'y' },
         { label: 'UV', data: days.map(d => dailyUVmap[d]?.size || 0),
           borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0)',
-          fill: false, tension: 0.35, pointRadius: 6, pointHoverRadius: 9,
-          pointBackgroundColor: '#3b82f6', borderDash: [5,3], borderWidth: 2 }
+          fill: false, tension: 0.35, pointRadius: 5, pointHoverRadius: 8,
+          pointBackgroundColor: '#3b82f6', borderDash: [5,3], borderWidth: 2, yAxisID: 'y' },
+        { label: '이벤트', data: days.map(d => dailyEvt[d]||0),
+          borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0)',
+          fill: false, tension: 0.35, pointRadius: 4, pointHoverRadius: 7,
+          pointBackgroundColor: '#10b981', borderDash: [2,2], borderWidth: 1.5, yAxisID: 'y' },
+        { label: '지도클릭', data: days.map(d => dailyMapClkD[d]||0),
+          borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0)',
+          fill: false, tension: 0.35, pointRadius: 4, pointHoverRadius: 7,
+          pointBackgroundColor: '#f59e0b', borderDash: [3,3], borderWidth: 1.5, yAxisID: 'y' }
       ]
     },
     options: {
       responsive: true, maintainAspectRatio: false,
       plugins: {
-        legend: { display: true, labels: { color: '#888', font: { size: 12 }, padding: 20 } },
+        legend: { display: true, labels: { color: '#888', font: { size: 11 }, padding: 16,
+          generateLabels: (chart) => chart.data.datasets.map((ds, i) => ({
+            text: ds.label, fillStyle: ds.borderColor, strokeStyle: ds.borderColor,
+            lineWidth: 2, hidden: !chart.isDatasetVisible(i), datasetIndex: i
+          }))
+        }},
         tooltip: {
           callbacks: {
             title: (items) => items[0].label + '일',
             afterBody: (items) => {
               const d = days[items[0].dataIndex];
               const pv = dailyPV[d]||0, uv = dailyUVmap[d]?.size||0;
-              return [`PV/UV 비율: ${uv ? (pv/uv).toFixed(1) : '-'}x`];
+              const b = dailyBounce[d];
+              const dur = dailyDur[d];
+              const lines = [`PV/UV: ${uv ? (pv/uv).toFixed(1) : '-'}x`];
+              if (b && b.total) lines.push(`이탈률: ${Math.round(b.bounced/b.total*100)}%`);
+              if (dur && dur.cnt) lines.push(`평균 체류: ${Math.round(dur.sum/dur.cnt)}초`);
+              return lines;
             }
           }
         },
         datalabels: {
-          display: showLabels ? (ctx) => ctx.dataset.data[ctx.dataIndex] > 0 : false,
+          display: showLabels ? (ctx) => ctx.datasetIndex < 2 && ctx.dataset.data[ctx.dataIndex] > 0 : false,
           align: (ctx) => ctx.datasetIndex === 0 ? 'top' : 'bottom',
-          anchor: 'center',
-          offset: 8,
+          anchor: 'center', offset: 6,
           color: (ctx) => ctx.datasetIndex === 0 ? '#e31937' : '#3b82f6',
           font: { size: 11, weight: '700' },
           formatter: (v) => v > 0 ? v : null
@@ -995,31 +1023,51 @@ function renderCharts(hits) {
     }
   });
 
-  // 일별 수치 배지 + 요약 표
+  // 일별 수치 배지 + 요약 표 (확장)
   const totalPV = days.reduce((s,d) => s+(dailyPV[d]||0), 0);
   const totalUV = new Set(hits.filter(h=>h.vid).map(h=>h.vid)).size;
   const bPV = document.getElementById('dailyBadgePV');
   const bUV = document.getElementById('dailyBadgeUV');
-  if (bPV) bPV.textContent = `PV 합계 ${totalPV.toLocaleString()}`;
-  if (bUV) bUV.textContent = `UV 합계 ${totalUV.toLocaleString()}`;
+  if (bPV) bPV.textContent = `PV ${totalPV.toLocaleString()}`;
+  if (bUV) bUV.textContent = `UV ${totalUV.toLocaleString()}`;
 
   const todayKST2 = new Date(Date.now()+9*3600*1000).toISOString().slice(0,10);
+  const maxPVval = Math.max(...Object.values(dailyPV), 1);
   const tableEl = document.getElementById('dailySummaryTable');
   if (tableEl && days.length) {
     const rows = [...days].reverse().map(d => {
       const pv = dailyPV[d]||0, uv = dailyUVmap[d]?.size||0;
+      const evts = dailyEvt[d]||0;
+      const mc = dailyMapClkD[d]||0;
+      const b = dailyBounce[d];
+      const bounceStr = b && b.total ? Math.round(b.bounced/b.total*100) + '%' : '-';
+      const dur = dailyDur[d];
+      const durStr = dur && dur.cnt ? Math.round(dur.sum/dur.cnt) + 's' : '-';
       const isToday = d === todayKST2;
+      const bar = '▓'.repeat(Math.min(Math.round(pv/maxPVval*10),10));
       return `<tr${isToday?' class="today-row"':''}>
         <td class="date">${d.slice(5)}${isToday?' <span style="color:#e31937;font-size:10px">TODAY</span>':''}</td>
         <td class="pv">${pv}</td>
         <td class="uv">${uv}</td>
         <td style="color:#444;font-size:11px">${uv?(pv/uv).toFixed(1):'-'}</td>
-        <td style="color:#333;font-size:10px">${'▓'.repeat(Math.min(Math.round(pv/Math.max(...Object.values(dailyPV))*10),10))}</td>
+        <td style="color:#10b981;font-size:11px;font-weight:600">${evts}</td>
+        <td style="color:#f59e0b;font-size:11px;font-weight:600">${mc}</td>
+        <td style="color:#888;font-size:11px">${bounceStr}</td>
+        <td style="color:#888;font-size:11px">${durStr}</td>
+        <td style="color:#333;font-size:10px">${bar}</td>
       </tr>`;
     }).join('');
     tableEl.innerHTML = `<table class="daily-table">
       <thead><tr>
-        <th>날짜</th><th style="color:#e31937">PV</th><th style="color:#3b82f6">UV</th><th>PV/UV</th><th>비율</th>
+        <th>날짜</th>
+        <th style="color:#e31937">PV</th>
+        <th style="color:#3b82f6">UV</th>
+        <th>PV/UV</th>
+        <th style="color:#10b981">이벤트</th>
+        <th style="color:#f59e0b">지도클릭</th>
+        <th>이탈률</th>
+        <th>체류시간</th>
+        <th>비율</th>
       </tr></thead>
       <tbody>${rows}</tbody>
     </table>`;
