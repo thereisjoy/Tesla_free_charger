@@ -1610,14 +1610,13 @@ const _origFillTable = fillTable;
 // ════════════════════════════════════════
 function renderTodayHighlights(allHitsFiltered) {
   // 오늘 날짜 (로컬 기준)
-  const now = new Date();
-  const todayStr = now.getFullYear() + '-' +
-    String(now.getMonth()+1).padStart(2,'0') + '-' +
-    String(now.getDate()).padStart(2,'0');
+  // KST 기준 오늘 (UTC+9)
+  const todayStr = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
 
   const todayHits = allHitsFiltered.filter(h => {
-    const ts = h.ts || '';
-    return ts.slice(0,10) === todayStr;
+    if (!h.tsUnix && !h.ts) return false;
+    const kst = new Date((h.tsUnix || new Date(h.ts).getTime()) + 9*3600*1000).toISOString().slice(0,10);
+    return kst === todayStr;
   });
 
   const allEvts = todayHits.flatMap(h => h.events || []);
