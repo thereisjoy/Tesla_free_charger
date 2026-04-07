@@ -1282,6 +1282,7 @@ function updateAutocomplete() {
   acBox.querySelectorAll('.ac-item').forEach(item => {
     item.addEventListener('mousedown', () => {
       const name = item.dataset.name;
+      if(typeof trackEvt==='function') trackEvt('ac_select', name);
       searchInput.value = name;
       state.query = name;
       state.regions = new Set();
@@ -1315,6 +1316,7 @@ function getSorted(list) {
 
 // ─── 유형 필터 전환 ──────────────────────────────
 function switchType(type) {
+  if(typeof trackEvt==='function') trackEvt('tab', type);
   state.typeFilter = type;
   state.regions = new Set();
 
@@ -1458,7 +1460,7 @@ function render() {
 
   // 인라인 주소 복사
   tbody.querySelectorAll('.inline-copy-btn').forEach(btn => {
-    btn.addEventListener('click', e => { e.stopPropagation(); copyAddress(btn.dataset.addr); });
+    btn.addEventListener('click', e => { e.stopPropagation(); if(typeof trackEvt==='function') trackEvt('copy_addr', btn.dataset.addr); copyAddress(btn.dataset.addr); });
   });
 
   // 지역 배지 클릭 → 해당 지역 단독 선택 (토글)
@@ -1488,6 +1490,7 @@ function render() {
   document.getElementById('visibleCount').textContent = visible;
   document.getElementById('totalCount').textContent = data.length;
   document.getElementById('headerCount').textContent = `${visible}개`;
+  if(typeof _lastResultCnt!=='undefined') _lastResultCnt = visible;
   document.getElementById('statPhone').innerHTML =
     `전화번호 있음 <strong>${withPhone}</strong>개`;
   document.getElementById('statRegion').innerHTML = `<strong>${regionSet.size}</strong>개 지역`;
@@ -1898,7 +1901,31 @@ render();
     }
     const sb = e.target.closest('.sort-btn');
     if (sb) trackEvt('sort', sb.dataset.sort);
+    // 전화 클릭
+    const pl = e.target.closest('.phone-link');
+    if (pl) trackEvt('phone_call', pl.textContent.trim());
+    // Tesla 공식 링크
+    const tl = e.target.closest('a.name');
+    if (tl && tl.href?.includes('tesla.com')) trackEvt('tesla_link', tl.textContent.trim());
+    // 지역 배지 클릭
+    const rb = e.target.closest('.region-badge');
+    if (rb) trackEvt('badge_region', rb.textContent.trim());
+    // 테이블 헤더 정렬
+    const th = e.target.closest('th[data-col]');
+    if (th) trackEvt('th_sort', th.dataset.col);
   });
+
+  // 스크롤 깊이 추적
+  let _maxScroll = 0, _scrollMarks = {};
+  window.addEventListener('scroll', function() {
+    const h = document.documentElement, b = document.body;
+    const pct = Math.round((h.scrollTop || b.scrollTop) / ((h.scrollHeight || b.scrollHeight) - h.clientHeight) * 100) || 0;
+    if (pct > _maxScroll) _maxScroll = pct;
+    [25,50,75,100].forEach(m => { if (pct >= m && !_scrollMarks[m]) { _scrollMarks[m] = true; trackEvt('scroll_depth', m); } });
+  }, {passive:true});
+
+  // 검색 결과 수 (render()에서 갱신)
+  let _lastResultCnt = null;
 
   // geo 데이터 세션 캐시 (같은 세션 내 중복 호출 방지)
   let geoCache = null;
@@ -1930,7 +1957,11 @@ render();
       country: geo.country_name||'', cc: geo.cc||'',
       region: geo.region||'', city: geo.city||'', org: geo.org||'',
       dur: Math.round((Date.now()-T0)/1000),
-      events: final ? interactions : [], evtCnt: interactions.length, final: !!final
+      events: final ? interactions : [], evtCnt: interactions.length, final: !!final,
+      firstActMs: interactions.length ? interactions[0].t - T0 : null,
+      bounce: final && interactions.length === 0,
+      maxScroll: _maxScroll,
+      resultCnt: _lastResultCnt
     };
     localStorage.setItem('tsla_ret', '1');
     const url = tok ? `${DB_URL}/hits.json?auth=${tok}` : `${DB_URL}/hits.json`;
@@ -1954,7 +1985,11 @@ render();
         country: geo.country_name||'', cc: geo.cc||'',
         region: geo.region||'', city: geo.city||'', org: geo.org||'',
         dur: Math.round((Date.now()-T0)/1000),
-        events: interactions, evtCnt: interactions.length, final: true
+        events: interactions, evtCnt: interactions.length, final: true,
+        firstActMs: interactions.length ? interactions[0].t - T0 : null,
+        bounce: interactions.length === 0,
+        maxScroll: _maxScroll,
+        resultCnt: _lastResultCnt
       }));
     }
   });
