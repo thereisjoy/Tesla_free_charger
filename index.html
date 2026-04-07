@@ -1803,6 +1803,25 @@ render();
 // ═══════════════════════════════════════════════════
 (function(){
   const DB_URL = 'https://tesla-charger-analytics-default-rtdb.firebaseio.com';
+  const FB_KEY = 'AIzaSyDovLKo3djdRbs963vqKdbj-geRWyzMTrg';
+
+  // 익명 인증 토큰 (세션 캐시, 55분 유효)
+  async function getAuthToken() {
+    try {
+      const c = sessionStorage.getItem('tsla_tok');
+      if (c) { const p = JSON.parse(c); if (p.exp > Date.now()) return p.tok; }
+      const r = await fetch(`https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=${FB_KEY}`, {
+        method: 'POST', headers: {'Content-Type':'application/json'},
+        body: JSON.stringify({returnSecureToken: true})
+      });
+      const d = await r.json();
+      if (d.idToken) {
+        sessionStorage.setItem('tsla_tok', JSON.stringify({tok: d.idToken, exp: Date.now() + 55*60*1000}));
+        return d.idToken;
+      }
+    } catch(e) {}
+    return null;
+  }
 
   function getVid() {
     let v = localStorage.getItem('tsla_vid');
@@ -1900,7 +1919,7 @@ render();
 
   async function sendHit(final) {
     if (DB_URL.includes('HERE')) return;
-    const geo = await fetchGeo();
+    const [geo, tok] = await Promise.all([fetchGeo(), getAuthToken()]);
     const d = {
       vid, sid,
       ts: new Date().toISOString(), tsUnix: Date.now(),
@@ -1914,17 +1933,21 @@ render();
       events: final ? interactions : [], evtCnt: interactions.length, final: !!final
     };
     localStorage.setItem('tsla_ret', '1');
-    try { await fetch(DB_URL+'/hits.json',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}); } catch(e){}
+    const url = tok ? `${DB_URL}/hits.json?auth=${tok}` : `${DB_URL}/hits.json`;
+    try { await fetch(url,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(d)}); } catch(e){}
   }
 
-  // geo 먼저 fetch 후 2.5초 뒤 초기 hit 전송 (geo 누락 방지)
-  fetchGeo().then(() => setTimeout(() => sendHit(false), 2500));
+  // geo + 인증 토큰 미리 fetch 후 2.5초 뒤 초기 hit 전송
+  Promise.all([fetchGeo(), getAuthToken()]).then(() => setTimeout(() => sendHit(false), 2500));
 
   document.addEventListener('visibilitychange', function() {
     if (document.visibilityState === 'hidden' && !DB_URL.includes('HERE')) {
-      // beacon에도 캐시된 geo/device 포함 → "-" 누락 데이터 방지
       const geo = geoCache || {};
-      navigator.sendBeacon(DB_URL+'/hits.json', JSON.stringify({
+      const tokCache = sessionStorage.getItem('tsla_tok');
+      let tok = null;
+      try { const p = JSON.parse(tokCache); if (p?.exp > Date.now()) tok = p.tok; } catch(e) {}
+      const url = tok ? `${DB_URL}/hits.json?auth=${tok}` : `${DB_URL}/hits.json`;
+      navigator.sendBeacon(url, JSON.stringify({
         vid, sid,
         ts: new Date().toISOString(), tsUnix: Date.now(),
         ref, device, browser, os,
