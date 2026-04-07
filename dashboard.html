@@ -658,10 +658,21 @@ function renderKPIs(hits) {
   const searchRate = uv ? Math.round(searchSessions / uv * 100) : 0;
   const avgEvt = uv ? (allEvts.length / uv).toFixed(1) : 0;
 
+  // 오늘 방문자 (KST 기준)
+  const todayKST = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
+  const todayUV = new Set(hits.filter(h => {
+    const d = h.ts ? new Date(new Date(h.ts).getTime() + 9*3600*1000).toISOString().slice(0,10) : '';
+    return d === todayKST;
+  }).map(h => h.vid)).size;
+
+  // geo 데이터 완성도
+  const geoOk = hits.filter(h => h.city || h.region || h.country).length;
+  const geoCoverage = pv ? Math.round(geoOk / pv * 100) : 0;
+
   document.getElementById('kUV').textContent = uv.toLocaleString();
-  document.getElementById('kUVsub').textContent = `일평균 ${Math.round(uv/dayRange)}명`;
+  document.getElementById('kUVsub').textContent = `오늘 ${todayUV}명 · 일평균 ${Math.round(uv/dayRange)}명`;
   document.getElementById('kPV').textContent = pv.toLocaleString();
-  document.getElementById('kPVsub').textContent = `UV당 ${uv?(pv/uv).toFixed(1):'0'}회`;
+  document.getElementById('kPVsub').textContent = `UV당 ${uv?(pv/uv).toFixed(1):'0'}회 · geo ${geoCoverage}%`;
   document.getElementById('kDur').textContent = avgDur;
   document.getElementById('kReturn').textContent = returnRate;
   document.getElementById('kMobile').textContent = mobileRate;
@@ -709,22 +720,31 @@ function renderCharts(hits) {
               y: { ticks: { color: '#444', font: { size: 10 } }, grid: { color: '#1a1a22' } } }
   };
 
-  // 일별 추이
-  const dailyMap = {};
+  // 일별 추이 (PV + UV)
+  const dailyPV = {}, dailyUVmap = {};
   hits.forEach(h => {
     const d = h.ts?.slice(0,10);
-    if (d) dailyMap[d] = (dailyMap[d]||0) + 1;
+    if (d) {
+      dailyPV[d] = (dailyPV[d]||0) + 1;
+      if (!dailyUVmap[d]) dailyUVmap[d] = new Set();
+      if (h.vid) dailyUVmap[d].add(h.vid);
+    }
   });
-  const days = Object.keys(dailyMap).sort();
+  const days = Object.keys(dailyPV).sort();
   charts.daily = new Chart(document.getElementById('chartDaily'), {
     type: 'line',
     data: {
       labels: days.map(d => d.slice(5)),
-      datasets: [{ label: 'PV', data: days.map(d => dailyMap[d]),
-        borderColor: '#e31937', backgroundColor: 'rgba(227,25,55,0.1)',
-        fill: true, tension: 0.3, pointRadius: 2 }]
+      datasets: [
+        { label: 'PV', data: days.map(d => dailyPV[d]),
+          borderColor: '#e31937', backgroundColor: 'rgba(227,25,55,0.1)',
+          fill: true, tension: 0.3, pointRadius: 3 },
+        { label: 'UV', data: days.map(d => dailyUVmap[d]?.size || 0),
+          borderColor: '#3b82f6', backgroundColor: 'rgba(59,130,246,0)',
+          fill: false, tension: 0.3, pointRadius: 3, borderDash: [5,3] }
+      ]
     },
-    options: { ...defaultOpts, plugins: { ...defaultOpts.plugins, legend: { display: false } } }
+    options: { ...defaultOpts, plugins: { ...defaultOpts.plugins, legend: { display: true, labels: { color: '#888', font: { size: 11 } } } } }
   });
 
   // 디바이스
