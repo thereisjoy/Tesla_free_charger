@@ -762,7 +762,7 @@
 <div class="top5-section" id="top5Section" style="display:none">
   <div class="top5-live-bar">
     <span class="top5-live-dot"></span>
-    <span class="top5-live-txt">실시간 인기 · KST 기준 · 5분마다 자동 갱신</span>
+    <span class="top5-live-txt">실시간 인기 · KST 기준 · 1분마다 자동 갱신</span>
     <span class="top5-live-time" id="top5UpdatedTime"></span>
     <button class="top5-refresh-btn" id="top5RefreshBtn" title="지금 갱신">↺</button>
   </div>
@@ -1762,7 +1762,7 @@ render();
 (function(){
   const TOP5_DB = 'https://tesla-charger-analytics-default-rtdb.firebaseio.com';
   const CACHE_KEY = 'tsla_top5v2';
-  const CACHE_TTL = 5 * 60 * 1000;
+  const CACHE_TTL = 1 * 60 * 1000;
 
   // KST 기준 오늘 날짜 (UTC+9)
   function getKSTToday() {
@@ -1804,7 +1804,7 @@ render();
         <div class="top5-rank r${i+1}">${['🥇','🥈','🥉'][i]||i+1}</div>
         <div class="top5-name" title="${name}">${name}</div>
         <div class="top5-bar-wrap"><div class="top5-bar" style="width:${Math.round(cnt/max*100)}%"></div></div>
-        <div class="top5-count">${cnt}</div>
+        <div class="top5-count" style="display:none">${cnt}</div>
       </div>`).join('');
     if (clickable) {
       el.querySelectorAll('.top5-item.clickable').forEach(item =>
