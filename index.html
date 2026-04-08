@@ -635,8 +635,87 @@
     .top5-name { font-size: 12px; }
     .top5-live-bar { padding-bottom: 2px; }
     .top5-hint { display: none; }
+    .season-banner { padding: 8px 16px; font-size: 12px; }
+    .route-panel { padding: 10px 16px; gap: 8px; }
+    .route-select { min-width: 90px; font-size: 12px; }
   }
 
+  /* ── 즐겨찾기 버튼 ── */
+  .fav-btn {
+    background: none; border: none; cursor: pointer; padding: 2px 3px;
+    font-size: 14px; line-height: 1; border-radius: 4px; flex-shrink: 0;
+    opacity: 0.18; transition: opacity .15s, transform .15s; vertical-align: middle;
+  }
+  .fav-btn:hover { opacity: 0.6; }
+  .fav-btn.active { opacity: 1; filter: drop-shadow(0 0 4px #ffd700); }
+
+  /* ── 최근 검색 ── */
+  .recent-box {
+    position: absolute; top: 100%; left: 0; right: 0; z-index: 201;
+    background: #111; border: 1px solid #222; border-top: none;
+    border-radius: 0 0 10px 10px; padding: 10px 14px;
+  }
+  .recent-label { font-size: 10px; color: #444; margin-bottom: 7px; letter-spacing: .5px; }
+  .recent-chips { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; }
+  .recent-chip {
+    background: #161616; border: 1px solid #252525; border-radius: 20px;
+    padding: 4px 11px; font-size: 12px; color: #999; cursor: pointer; transition: all .15s;
+  }
+  .recent-chip:hover { border-color: #e31937; color: #e31937; }
+  .recent-clear { margin-left: auto; font-size: 10px; color: #2a2a2a; cursor: pointer; padding: 2px 4px; transition: color .15s; }
+  .recent-clear:hover { color: #555; }
+
+  /* ── 계절 배너 ── */
+  .season-banner {
+    background: linear-gradient(135deg, #0c1a0c 0%, #0e140e 100%);
+    border-bottom: 1px solid #152015;
+    padding: 9px 40px; display: flex; align-items: center; gap: 10px;
+    font-size: 13px; color: #7aaa7a;
+  }
+  .season-icon { font-size: 17px; flex-shrink: 0; }
+  .season-cta {
+    margin-left: auto; font-size: 11px; color: #4e7e4e; cursor: pointer;
+    white-space: nowrap; text-decoration: underline; text-underline-offset: 2px;
+  }
+  .season-cta:hover { color: #7aaa7a; }
+  .season-close {
+    background: none; border: none; color: #334433; cursor: pointer;
+    font-size: 15px; padding: 0 4px; line-height: 1; transition: color .15s;
+  }
+  .season-close:hover { color: #7aaa7a; }
+
+  /* ── 루트 플래너 ── */
+  .route-panel {
+    background: #0b0b12; border-bottom: 1px solid #17172a;
+    padding: 11px 40px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+  }
+  .route-label { font-size: 13px; color: #555; font-weight: 700; white-space: nowrap; }
+  .route-select {
+    background: #111; border: 1px solid #222; color: #bbb;
+    border-radius: 8px; padding: 6px 10px; font-size: 13px; cursor: pointer;
+    font-family: inherit; min-width: 108px; transition: border-color .15s;
+  }
+  .route-select:focus { border-color: #e31937; outline: none; color: #e5e5e5; }
+  .route-arrow { color: #444; font-size: 15px; }
+  .route-go {
+    background: #e31937; color: #fff; border: none; border-radius: 8px;
+    padding: 6px 16px; font-size: 13px; font-weight: 700;
+    cursor: pointer; font-family: inherit; transition: background .15s;
+  }
+  .route-go:hover { background: #c01530; }
+  .route-reset {
+    background: none; border: 1px solid #1e1e1e; color: #444; border-radius: 8px;
+    padding: 6px 12px; font-size: 12px; cursor: pointer; font-family: inherit; transition: all .15s;
+  }
+  .route-reset:hover { border-color: #444; color: #888; }
+  .route-info { font-size: 11px; color: #3a3a5a; margin-left: auto; }
+  .route-toggle {
+    background: none; border: 1px solid #1e1e1e; color: #444;
+    border-radius: 8px; padding: 5px 12px; font-size: 12px;
+    cursor: pointer; font-family: inherit; transition: all .15s; white-space: nowrap;
+  }
+  .route-toggle:hover { border-color: #555; color: #888; }
+  .route-toggle.active { border-color: #3b3b6b; color: #7b7bab; background: #0e0e1e; }
 </style>
 <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.2/kakao.min.js"></script>
 </head>
@@ -658,6 +737,14 @@
   <div class="header-count" id="headerCount">전체 0개</div>
 </header>
 
+<!-- ── 계절 배너 ── -->
+<div class="season-banner" id="seasonBanner" style="display:none">
+  <span class="season-icon"></span>
+  <span class="season-text"></span>
+  <span class="season-cta"></span>
+  <button class="season-close" onclick="document.getElementById('seasonBanner').style.display='none';sessionStorage.setItem('tsla_banner_dismissed','1')">✕</button>
+</div>
+
 <!-- ── 유형 필터 바 ── -->
 <div class="tab-bar">
   <button class="tab-btn active" id="tabAll" onclick="switchType('all')">
@@ -676,6 +763,9 @@
       <path d="M13 2L4.5 13.5H11L10 22L19.5 10H13L13 2Z"/>
     </svg>
     슈퍼차저 <span class="tab-cnt" id="tabScCnt">175</span>
+  </button>
+  <button class="tab-btn" id="tabFav" onclick="switchType('fav')">
+    ⭐ 즐겨찾기 <span class="tab-cnt" id="tabFavCnt">0</span>
   </button>
 </div>
 
@@ -733,6 +823,7 @@
     <div class="tag-filter">
       <button class="tag-btn" id="hasPhoneBtn" title="전화번호 있는 곳만">📞 전화번호 있음</button>
     </div>
+    <button class="route-toggle" id="routeToggleBtn" onclick="toggleRoutePlanner()" title="루트 플래너">🗺️ 루트 플래너</button>
     <div class="view-toggle">
       <button class="view-btn active" id="viewTableBtn" title="테이블 보기">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="3" rx="1"/><rect x="3" y="9" width="18" height="3" rx="1"/><rect x="3" y="15" width="18" height="3" rx="1"/><rect x="3" y="21" width="18" height="3" rx="1" opacity=".5"/></svg>
@@ -758,6 +849,17 @@
   <div class="stat" id="statRegion"></div>
 </div>
 
+
+<!-- ── 루트 플래너 ── -->
+<div class="route-panel" id="routePanel" style="display:none">
+  <span class="route-label">🗺️ 루트 플래너</span>
+  <select class="route-select" id="routeFrom"><option value="">출발 지역</option></select>
+  <span class="route-arrow">→</span>
+  <select class="route-select" id="routeTo"><option value="">도착 지역</option></select>
+  <button class="route-go" onclick="doRoute()">충전소 찾기</button>
+  <button class="route-reset" onclick="resetRoute()">초기화</button>
+  <span class="route-info" id="routeInfo"></span>
+</div>
 
 <!-- ── 실시간 인기 ── -->
 <div class="top5-section" id="top5Section" style="display:none">
@@ -1087,10 +1189,142 @@ let state = {
   typeFilter: 'all', // 'all' | 'dest' | 'sc'
 };
 
+// ══════════════════════════════════════════════
+// ── 즐겨찾기 ────────────────────────────────
+// ══════════════════════════════════════════════
+const FAV_KEY = 'tsla_favs';
+let favs = new Set();
+try { JSON.parse(localStorage.getItem(FAV_KEY)||'[]').forEach(k => favs.add(k)); } catch(e){}
+const favKey = s => s.name + '|' + s.type;
+
+function toggleFav(name, type) {
+  const k = name + '|' + type;
+  favs.has(k) ? favs.delete(k) : favs.add(k);
+  try { localStorage.setItem(FAV_KEY, JSON.stringify([...favs])); } catch(e){}
+  document.querySelectorAll(`.fav-btn[data-fk]`).forEach(b => {
+    if (b.dataset.fk === k) b.classList.toggle('active', favs.has(k));
+  });
+  updateFavTab();
+}
+function updateFavTab() {
+  const el = document.getElementById('tabFavCnt');
+  if (el) el.textContent = favs.size;
+}
+
+// ══════════════════════════════════════════════
+// ── 최근 검색 ───────────────────────────────
+// ══════════════════════════════════════════════
+const RECENT_KEY = 'tsla_recent';
+function getRecents() { try { return JSON.parse(localStorage.getItem(RECENT_KEY)||'[]'); } catch(e){ return []; } }
+function saveRecent(q) {
+  if (!q || q.length < 1) return;
+  let r = getRecents().filter(x => x !== q);
+  r.unshift(q); r = r.slice(0,5);
+  try { localStorage.setItem(RECENT_KEY, JSON.stringify(r)); } catch(e){}
+}
+function showRecentBox() {
+  const inp = document.getElementById('searchInput');
+  if (!inp || inp.value.trim()) { hideRecentBox(); return; }
+  const recents = getRecents();
+  if (!recents.length) { hideRecentBox(); return; }
+  let box = document.getElementById('recentBox');
+  if (!box) {
+    box = document.createElement('div');
+    box.id = 'recentBox';
+    box.className = 'recent-box';
+    document.querySelector('.search-wrapper').appendChild(box);
+  }
+  box.innerHTML = `<div class="recent-label">최근 검색</div>
+    <div class="recent-chips">
+      ${recents.map(r=>`<span class="recent-chip">${r}</span>`).join('')}
+      <span class="recent-clear">지우기</span>
+    </div>`;
+  box.querySelectorAll('.recent-chip').forEach(chip =>
+    chip.addEventListener('click', () => { inp.value = chip.textContent; inp.dispatchEvent(new Event('input',{bubbles:true})); hideRecentBox(); })
+  );
+  box.querySelector('.recent-clear').addEventListener('click', () => { localStorage.removeItem(RECENT_KEY); hideRecentBox(); });
+  box.style.display = '';
+}
+function hideRecentBox() {
+  const box = document.getElementById('recentBox');
+  if (box) box.style.display = 'none';
+}
+
+// ══════════════════════════════════════════════
+// ── 계절 배너 ───────────────────────────────
+// ══════════════════════════════════════════════
+function initSeasonBanner() {
+  if (sessionStorage.getItem('tsla_banner_dismissed')) return;
+  const month = new Date(Date.now()+9*3600*1000).getUTCMonth() + 1;
+  const banners = [
+    { months:[3,4,5], icon:'🌸', text:'봄 드라이브 특집 — 꽃구경 코스 근처 충전소 미리 확인하세요', cta:'경기·강원 충전소 보기', filter:['경기','강원'] },
+    { months:[6,7,8], icon:'🏖️', text:'여름 드라이브 특집 — 해수욕장 근처 무료 충전소 총정리', cta:'부산·제주 충전소 보기', filter:['부산','제주'] },
+    { months:[9,10,11], icon:'🍂', text:'가을 단풍 드라이브 — 강원·경북 충전소 총정리', cta:'강원 충전소 보기', filter:['강원','경북'] },
+    { months:[12,1,2], icon:'⛷️', text:'겨울 스키 시즌 — 리조트 데스티네이션 충전소 안내', cta:'리조트 충전소 보기', filter:['강원'] },
+  ];
+  const b = banners.find(x => x.months.includes(month));
+  if (!b) return;
+  const el = document.getElementById('seasonBanner');
+  if (!el) return;
+  el.querySelector('.season-icon').textContent = b.icon;
+  el.querySelector('.season-text').textContent = b.text;
+  const cta = el.querySelector('.season-cta');
+  cta.textContent = b.cta;
+  cta.addEventListener('click', () => {
+    state.regions = new Set(b.filter);
+    syncFilterBtns(); render();
+    el.style.display = 'none';
+    sessionStorage.setItem('tsla_banner_dismissed','1');
+  });
+  el.style.display = '';
+}
+
+// ══════════════════════════════════════════════
+// ── 루트 플래너 ─────────────────────────────
+// ══════════════════════════════════════════════
+function initRoutePlanner() {
+  const opts = regionOrder.filter(r => r !== '전체' && r !== '기타')
+    .map(r => `<option value="${r}">${r}</option>`).join('');
+  document.getElementById('routeFrom').innerHTML = '<option value="">출발 지역 선택</option>' + opts;
+  document.getElementById('routeTo').innerHTML   = '<option value="">도착 지역 선택</option>' + opts;
+}
+function toggleRoutePlanner() {
+  const panel = document.getElementById('routePanel');
+  const btn = document.getElementById('routeToggleBtn');
+  const open = panel.style.display === 'none' || panel.style.display === '';
+  panel.style.display = open ? '' : 'none';
+  btn.classList.toggle('active', open);
+  if (open) panel.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+function doRoute() {
+  const from = document.getElementById('routeFrom').value;
+  const to   = document.getElementById('routeTo').value;
+  if (!from && !to) return;
+  const sel = new Set([from, to].filter(Boolean));
+  state.regions = sel;
+  state.typeFilter = 'all';
+  document.getElementById('tabAll').classList.add('active');
+  document.getElementById('tabDest').classList.remove('active');
+  document.getElementById('tabSc').classList.remove('active');
+  document.getElementById('tabFav').classList.remove('active');
+  buildRegionFilters(); syncFilterBtns(); render();
+  const cnt = allStations.filter(s => sel.has(s.region)).length;
+  document.getElementById('routeInfo').textContent = `${[...sel].join(' → ')} 충전소 ${cnt}개`;
+  document.querySelector('.table-wrap')?.scrollIntoView({behavior:'smooth', block:'start'});
+}
+function resetRoute() {
+  state.regions = new Set();
+  syncFilterBtns(); buildRegionFilters(); render();
+  document.getElementById('routeFrom').value = '';
+  document.getElementById('routeTo').value   = '';
+  document.getElementById('routeInfo').textContent = '';
+}
+
 // ─── 활성 데이터 ────────────────────────────────
 function getActiveData() {
+  if (state.typeFilter === 'fav')  return allStations.filter(s => favs.has(favKey(s)));
   if (state.typeFilter === 'dest') return allStations.filter(s => s.type === 'dest');
-  if (state.typeFilter === 'sc') return allStations.filter(s => s.type === 'sc');
+  if (state.typeFilter === 'sc')   return allStations.filter(s => s.type === 'sc');
   return allStations;
 }
 // ─── 헬퍼 ───────────────────────────────────────
@@ -1246,6 +1480,13 @@ searchInput.addEventListener('input', () => {
   clearBtn.style.display = state.query ? 'flex' : 'none';
   updateAutocomplete();
   render();
+  clearTimeout(searchInput._recentTimer);
+  if (state.query.trim()) {
+    searchInput._recentTimer = setTimeout(() => saveRecent(state.query.trim()), 1000);
+    hideRecentBox();
+  } else {
+    showRecentBox();
+  }
 });
 
 searchInput.addEventListener('keydown', e => {
@@ -1270,8 +1511,8 @@ searchInput.addEventListener('keydown', e => {
   }
 });
 
-searchInput.addEventListener('focus', () => updateAutocomplete());
-searchInput.addEventListener('blur', () => setTimeout(closeAc, 150));
+searchInput.addEventListener('focus', () => { updateAutocomplete(); if (!state.query.trim()) showRecentBox(); });
+searchInput.addEventListener('blur', () => setTimeout(() => { closeAc(); hideRecentBox(); }, 180));
 
 function updateAcFocus(items) {
   items.forEach((item, i) => item.classList.toggle('focused', i === state.acFocusIdx));
@@ -1360,12 +1601,11 @@ function switchType(type) {
   state.typeFilter = type;
   state.regions = new Set();
 
-  // 버튼 활성화
   document.getElementById('tabAll').classList.toggle('active', type === 'all');
   document.getElementById('tabDest').classList.toggle('active', type === 'dest');
   document.getElementById('tabSc').classList.toggle('active', type === 'sc');
+  document.getElementById('tabFav').classList.toggle('active', type === 'fav');
 
-  // 지역 필터 재생성
   buildRegionFilters();
   syncFilterBtns();
   render();
@@ -1458,9 +1698,11 @@ function render() {
     const kwClass = kwVal >= 100 ? 'fast' : kwVal >= 50 ? 'mid' : 'slow';
     const kwText = kwVal > 0 ? (isSc ? kwVal + 'kW' : '~' + kwVal + 'kW') : (isSc ? '' : '출력미확인');
 
+    const fk = favKey(s);
     tr.innerHTML = `
       <td class="row-num">${i + 1}</td>
       <td><div class="name">
+        <button class="fav-btn${favs.has(fk)?' active':''}" data-fk="${fk}" data-name="${s.name.replace(/"/g,'&quot;')}" data-type="${s.type}" title="즐겨찾기">⭐</button>
         ${linkUrl
           ? `<a href="${linkUrl}" target="_blank" rel="noopener" class="name-link">${highlight(s.name, q)}</a>`
           : highlight(s.name, q)}
@@ -1496,6 +1738,14 @@ function render() {
       </td>
     `;
     tbody.appendChild(tr);
+  });
+
+  // 즐겨찾기 버튼
+  tbody.querySelectorAll('.fav-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleFav(btn.dataset.name, btn.dataset.type);
+    });
   });
 
   // 인라인 주소 복사
@@ -1751,7 +2001,12 @@ document.getElementById('tabDestCnt').textContent = stations.length;
 document.getElementById('tabScCnt').textContent = superchargers.length;
 document.getElementById('headerCount').textContent = '전체 ' + allStations.length + '개';
 document.getElementById('totalCount').textContent = allStations.length;
+updateFavTab();
 render();
+
+// 초기화: 계절 배너, 루트 플래너
+initSeasonBanner();
+initRoutePlanner();
 
 // ═══════════════════════════════════════════════════
 // ─── TOP 5 인기 충전소 (Firebase 기반) ────────────
