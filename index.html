@@ -635,7 +635,9 @@
     .top5-name { font-size: 12px; }
     .top5-live-bar { padding-bottom: 2px; }
     .top5-hint { display: none; }
-    .season-banner { padding: 8px 16px; font-size: 12px; }
+    .season-slide { padding: 8px 16px; font-size: 12px; flex-wrap: wrap; gap: 6px; }
+    .banner-count { display: none; }
+    .banner-prev { display: none; }
     .route-panel { padding: 10px 16px; gap: 8px; }
     .route-select { min-width: 90px; font-size: 12px; }
   }
@@ -667,20 +669,47 @@
 
   /* ── 계절 배너 ── */
   .season-banner {
-    background: linear-gradient(135deg, #0c1a0c 0%, #0e140e 100%);
-    border-bottom: 1px solid #152015;
-    padding: 9px 40px; display: flex; align-items: center; gap: 10px;
-    font-size: 13px; color: #7aaa7a;
+    border-bottom: 1px solid #1a1a1a;
+    padding: 0; overflow: hidden; position: relative;
+    font-size: 13px;
+  }
+  .season-slide {
+    display: flex; align-items: center; gap: 10px;
+    padding: 9px 40px;
+    transition: opacity .3s ease, transform .3s ease;
+  }
+  .season-slide.fade-out { opacity: 0; transform: translateX(-12px); pointer-events: none; position: absolute; }
+  .season-slide.fade-in  { animation: slideIn .3s ease forwards; }
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateX(12px); }
+    to   { opacity: 1; transform: translateX(0); }
   }
   .season-icon { font-size: 17px; flex-shrink: 0; }
+  .season-text { color: #7aaa7a; }
   .season-cta {
-    margin-left: auto; font-size: 11px; color: #4e7e4e; cursor: pointer;
+    font-size: 11px; color: #4e7e4e; cursor: pointer;
     white-space: nowrap; text-decoration: underline; text-underline-offset: 2px;
+    transition: color .15s;
   }
   .season-cta:hover { color: #7aaa7a; }
+  .banner-nav {
+    margin-left: auto; display: flex; align-items: center; gap: 6px; flex-shrink: 0;
+  }
+  .banner-dots { display: flex; gap: 4px; align-items: center; }
+  .banner-dot {
+    width: 5px; height: 5px; border-radius: 50%; background: #2a3a2a;
+    cursor: pointer; transition: background .2s, transform .2s;
+  }
+  .banner-dot.active { background: #5a8a5a; transform: scale(1.3); }
+  .banner-next, .banner-prev {
+    background: none; border: none; color: #3a5a3a; cursor: pointer;
+    font-size: 16px; padding: 0 3px; line-height: 1; transition: color .15s;
+  }
+  .banner-next:hover, .banner-prev:hover { color: #7aaa7a; }
+  .banner-count { font-size: 10px; color: #334433; white-space: nowrap; }
   .season-close {
     background: none; border: none; color: #334433; cursor: pointer;
-    font-size: 15px; padding: 0 4px; line-height: 1; transition: color .15s;
+    font-size: 15px; padding: 0 4px 0 0; line-height: 1; transition: color .15s; flex-shrink: 0;
   }
   .season-close:hover { color: #7aaa7a; }
 
@@ -739,10 +768,18 @@
 
 <!-- ── 계절 배너 ── -->
 <div class="season-banner" id="seasonBanner" style="display:none">
-  <span class="season-icon"></span>
-  <span class="season-text"></span>
-  <span class="season-cta"></span>
-  <button class="season-close" onclick="document.getElementById('seasonBanner').style.display='none';sessionStorage.setItem('tsla_banner_dismissed','1')">✕</button>
+  <div class="season-slide" id="seasonSlide">
+    <span class="season-icon" id="bannerIcon"></span>
+    <span class="season-text" id="bannerText"></span>
+    <span class="season-cta" id="bannerCta"></span>
+    <div class="banner-nav">
+      <div class="banner-dots" id="bannerDots"></div>
+      <button class="banner-prev" id="bannerPrev" title="이전">‹</button>
+      <button class="banner-next" id="bannerNext" title="다음">›</button>
+      <span class="banner-count" id="bannerCount"></span>
+    </div>
+    <button class="season-close" id="bannerClose" title="오늘 하루 닫기">✕</button>
+  </div>
 </div>
 
 <!-- ── 유형 필터 바 ── -->
@@ -1251,32 +1288,139 @@ function hideRecentBox() {
 }
 
 // ══════════════════════════════════════════════
-// ── 계절 배너 ───────────────────────────────
+// ── 계절 배너 (멀티 슬라이드 순환) ─────────────
 // ══════════════════════════════════════════════
 function initSeasonBanner() {
-  if (sessionStorage.getItem('tsla_banner_dismissed')) return;
+  // 오늘 날짜 기준 오늘 닫기 여부 확인 (KST)
+  const todayStr = new Date(Date.now()+9*3600*1000).toISOString().slice(0,10);
+  if (localStorage.getItem('tsla_banner_closed') === todayStr) return;
+
   const month = new Date(Date.now()+9*3600*1000).getUTCMonth() + 1;
-  const banners = [
-    { months:[3,4,5], icon:'🌸', text:'봄 드라이브 특집 — 꽃구경 코스 근처 충전소 미리 확인하세요', cta:'경기·강원 충전소 보기', filter:['경기','강원'] },
-    { months:[6,7,8], icon:'🏖️', text:'여름 드라이브 특집 — 해수욕장 근처 무료 충전소 총정리', cta:'부산·제주 충전소 보기', filter:['부산','제주'] },
-    { months:[9,10,11], icon:'🍂', text:'가을 단풍 드라이브 — 강원·경북 충전소 총정리', cta:'강원 충전소 보기', filter:['강원','경북'] },
-    { months:[12,1,2], icon:'⛷️', text:'겨울 스키 시즌 — 리조트 데스티네이션 충전소 안내', cta:'리조트 충전소 보기', filter:['강원'] },
-  ];
-  const b = banners.find(x => x.months.includes(month));
-  if (!b) return;
+
+  // ── 시즌별 배너 목록 (각 시즌 4~5개) ──
+  const allBanners = {
+    spring: [ // 3,4,5월
+      { icon:'🌸', text:'봄 드라이브 특집 — 경기·강원 벚꽃 명소 근처 충전소 미리 확인!', cta:'경기·강원 보기', filter:['경기','강원'], type:null },
+      { icon:'🌿', text:'남도 봄 나들이 — 전남·전북 드라이브 코스 충전소 총정리', cta:'전남·전북 보기', filter:['전남','전북'], type:null },
+      { icon:'🌼', text:'수도권 근교 드라이브 — 인천·경기 호텔 데스티네이션 충전소', cta:'인천·경기 보기', filter:['인천','경기'], type:null },
+      { icon:'⚡', text:'봄 장거리 여행 준비 — 고속도로 슈퍼차저 노선 미리 확인', cta:'슈퍼차저만 보기', filter:null, type:'sc' },
+      { icon:'🏨', text:'봄 여행 숙소 픽업 — 리조트·호텔 데스티네이션 무료 충전', cta:'데스티네이션 보기', filter:null, type:'dest' },
+    ],
+    summer: [ // 6,7,8월
+      { icon:'🏖️', text:'여름 드라이브 특집 — 부산·제주 해수욕장 근처 충전소 총정리', cta:'부산·제주 보기', filter:['부산','제주'], type:null },
+      { icon:'🌊', text:'동해안 드라이브 — 강원 해변 근처 슈퍼차저·데스티네이션', cta:'강원 보기', filter:['강원'], type:null },
+      { icon:'🍦', text:'여름 나들이 근교 드라이브 — 서울·경기·인천 충전소 확인', cta:'수도권 보기', filter:['서울','경기','인천'], type:null },
+      { icon:'⚡', text:'여름 휴가 장거리 — 고속도로 슈퍼차저로 빠르게 충전하세요', cta:'슈퍼차저만 보기', filter:null, type:'sc' },
+      { icon:'🏨', text:'여름 휴가 리조트 — 수영장·호텔 데스티네이션 무료 충전', cta:'데스티네이션 보기', filter:null, type:'dest' },
+    ],
+    autumn: [ // 9,10,11월
+      { icon:'🍂', text:'단풍 드라이브 특집 — 강원·경북 명소 근처 충전소 총정리', cta:'강원·경북 보기', filter:['강원','경북'], type:null },
+      { icon:'🏔️', text:'가을 산행 드라이브 — 국립공원 근처 충전소 안내', cta:'강원·경남·전남 보기', filter:['강원','경남','전남'], type:null },
+      { icon:'🎑', text:'추석 귀성길 준비 — 고속도로 슈퍼차저 위치 미리 확인', cta:'슈퍼차저만 보기', filter:null, type:'sc' },
+      { icon:'🍁', text:'남도 가을 여행 — 전남·전북 드라이브 충전소 가이드', cta:'전남·전북 보기', filter:['전남','전북'], type:null },
+      { icon:'🏨', text:'가을 여행 호텔 스테이 — 데스티네이션 충전으로 편리하게', cta:'데스티네이션 보기', filter:null, type:'dest' },
+    ],
+    winter: [ // 12,1,2월
+      { icon:'⛷️', text:'스키 시즌 특집 — 강원 리조트 데스티네이션 충전소 안내', cta:'강원 보기', filter:['강원'], type:null },
+      { icon:'❄️', text:'겨울 드라이브 — 실내 데스티네이션 충전소에서 따뜻하게', cta:'데스티네이션 보기', filter:null, type:'dest' },
+      { icon:'🎉', text:'연말연시 장거리 — 전국 슈퍼차저로 빠르게 이동하세요', cta:'슈퍼차저만 보기', filter:null, type:'sc' },
+      { icon:'🏨', text:'겨울 온천·리조트 여행 — 호텔 데스티네이션 충전 총정리', cta:'충남·강원 보기', filter:['충남','강원'], type:null },
+      { icon:'🌨️', text:'제주 겨울 여행 — 제주도 전체 충전소 지도 한눈에 보기', cta:'제주 보기', filter:['제주'], type:null },
+    ],
+  };
+
+  const seasonKey = [3,4,5].includes(month) ? 'spring'
+    : [6,7,8].includes(month) ? 'summer'
+    : [9,10,11].includes(month) ? 'autumn'
+    : 'winter';
+
+  const banners = allBanners[seasonKey];
   const el = document.getElementById('seasonBanner');
-  if (!el) return;
-  el.querySelector('.season-icon').textContent = b.icon;
-  el.querySelector('.season-text').textContent = b.text;
-  const cta = el.querySelector('.season-cta');
-  cta.textContent = b.cta;
-  cta.addEventListener('click', () => {
-    state.regions = new Set(b.filter);
-    syncFilterBtns(); render();
-    el.style.display = 'none';
-    sessionStorage.setItem('tsla_banner_dismissed','1');
+  if (!el || !banners.length) return;
+
+  let idx = 0;
+  let autoTimer = null;
+
+  function renderSlide(newIdx, direction) {
+    idx = ((newIdx % banners.length) + banners.length) % banners.length;
+    const b = banners[idx];
+    const slide = document.getElementById('seasonSlide');
+
+    // 슬라이드 전환 애니메이션
+    slide.classList.remove('fade-in');
+    void slide.offsetWidth; // reflow
+    slide.classList.add('fade-in');
+
+    document.getElementById('bannerIcon').textContent = b.icon;
+    document.getElementById('bannerText').textContent = b.text;
+    document.getElementById('bannerCta').textContent = b.cta;
+    document.getElementById('bannerCount').textContent = `${idx+1}/${banners.length}`;
+
+    // 배너 배경색 시즌별 변경
+    const colors = { spring: ['#0c1a0c','#152015'], summer: ['#0a131a','#0d1820'], autumn: ['#1a0f06','#1e1208'], winter: ['#0a0e1a','#0e1220'] };
+    const [bg1, bg2] = colors[seasonKey];
+    const textColors = { spring:'#7aaa7a', summer:'#5a9aaa', autumn:'#aa8a5a', winter:'#7a8aaa' };
+    const borderColors = { spring:'#152015', summer:'#0d1e28', autumn:'#2a1a08', winter:'#121830' };
+    el.style.background = `linear-gradient(135deg, ${bg1} 0%, ${bg2} 100%)`;
+    el.style.borderBottomColor = borderColors[seasonKey];
+    document.getElementById('bannerText').style.color = textColors[seasonKey];
+    document.getElementById('bannerCta').style.color = textColors[seasonKey];
+
+    // 도트 업데이트
+    const dots = document.getElementById('bannerDots');
+    dots.innerHTML = banners.map((_,i) =>
+      `<span class="banner-dot${i===idx?' active':''}" data-i="${i}"></span>`
+    ).join('');
+    dots.querySelectorAll('.banner-dot').forEach(d => {
+      d.addEventListener('click', () => { resetTimer(); renderSlide(+d.dataset.i); });
+    });
+  }
+
+  function nextSlide() { renderSlide(idx + 1); }
+  function prevSlide() { renderSlide(idx - 1); }
+
+  function resetTimer() {
+    clearInterval(autoTimer);
+    autoTimer = setInterval(nextSlide, 8000);
+  }
+
+  // CTA 클릭: 필터 적용 후 다음 배너로 이동 (닫지 않음)
+  document.getElementById('bannerCta').addEventListener('click', () => {
+    const b = banners[idx];
+    if (b.type === 'sc') {
+      switchType('sc');
+    } else if (b.type === 'dest') {
+      switchType('dest');
+    } else if (b.filter) {
+      state.typeFilter = 'all';
+      state.regions = new Set(b.filter);
+      syncFilterBtns(); render();
+      document.getElementById('tabAll').classList.add('active');
+      document.getElementById('tabDest').classList.remove('active');
+      document.getElementById('tabSc').classList.remove('active');
+      document.getElementById('tabFav').classList.remove('active');
+      buildRegionFilters();
+    }
+    document.querySelector('.table-wrap, #cardGridWrap')?.scrollIntoView({behavior:'smooth', block:'start'});
+    resetTimer();
+    nextSlide();
   });
+
+  // 이전/다음 버튼
+  document.getElementById('bannerNext').addEventListener('click', () => { resetTimer(); nextSlide(); });
+  document.getElementById('bannerPrev').addEventListener('click', () => { resetTimer(); prevSlide(); });
+
+  // 닫기 버튼: 오늘 하루 닫기
+  document.getElementById('bannerClose').addEventListener('click', () => {
+    el.style.display = 'none';
+    clearInterval(autoTimer);
+    localStorage.setItem('tsla_banner_closed', todayStr);
+  });
+
+  // 초기 렌더 + 자동 순환 시작
   el.style.display = '';
+  renderSlide(0);
+  autoTimer = setInterval(nextSlide, 8000);
 }
 
 // ══════════════════════════════════════════════
@@ -2268,10 +2412,13 @@ initRoutePlanner();
       trackEvt('route_planner_use', from + '→' + to);
     }
     // 시즌 배너 CTA 클릭
-    const sc = e.target.closest('.season-cta, .season-banner a');
+    const sc = e.target.closest('#bannerCta');
     if (sc) trackEvt('season_banner_cta', sc.textContent.trim());
+    // 시즌 배너 이전/다음
+    const sn = e.target.closest('#bannerNext, #bannerPrev');
+    if (sn) trackEvt('season_banner_nav', sn.id === 'bannerNext' ? 'next' : 'prev');
     // 시즌 배너 닫기
-    const sx = e.target.closest('.season-close');
+    const sx = e.target.closest('#bannerClose');
     if (sx) trackEvt('season_banner_close', '');
     // 카드 뷰 전환
     const gv = e.target.closest('#viewGridBtn');
