@@ -973,7 +973,7 @@ function renderCharts(hits) {
   };
 
   // 일별 추이 (PV + UV + 이벤트 + 이탈률 + 평균체류)
-  const dailyPV = {}, dailyUVmap = {}, dailyEvt = {}, dailyBounce = {}, dailyDur = {}, dailyMapClkD = {};
+  const dailyPV = {}, dailyUVmap = {}, dailyEvt = {}, dailyBounce = {}, dailyDur = {}, dailyMapClkD = {}, dailyNaverD = {}, dailyKakaoD = {};
   hits.forEach(h => {
     const ts = h.tsUnix || (h.ts ? new Date(h.ts).getTime() : 0);
     const d = ts ? new Date(ts + 9*3600*1000).toISOString().slice(0,10) : null;
@@ -991,8 +991,10 @@ function renderCharts(hits) {
       if (!dailyDur[d]) dailyDur[d] = {sum:0, cnt:0};
       dailyDur[d].sum += h.dur; dailyDur[d].cnt++;
     }
-    const mc = (h.events||[]).filter(e => e.type === 'map_naver' || e.type === 'map_kakao').length;
-    dailyMapClkD[d] = (dailyMapClkD[d]||0) + mc;
+    (h.events||[]).forEach(e => {
+      if (e.type === 'map_naver') dailyNaverD[d] = (dailyNaverD[d]||0) + 1;
+      if (e.type === 'map_kakao') dailyKakaoD[d] = (dailyKakaoD[d]||0) + 1;
+    });
   });
   const days = Object.keys(dailyPV).sort();
   const showLabels = days.length <= 20;
@@ -1015,10 +1017,14 @@ function renderCharts(hits) {
           borderColor: '#10b981', backgroundColor: 'rgba(16,185,129,0)',
           fill: false, tension: 0.35, pointRadius: 4, pointHoverRadius: 7,
           pointBackgroundColor: '#10b981', borderDash: [2,2], borderWidth: 1.5, yAxisID: 'y' },
-        { label: '지도클릭', data: days.map(d => dailyMapClkD[d]||0),
-          borderColor: '#f59e0b', backgroundColor: 'rgba(245,158,11,0)',
+        { label: '네이버지도', data: days.map(d => dailyNaverD[d]||0),
+          borderColor: '#03c75a', backgroundColor: 'rgba(3,199,90,0)',
           fill: false, tension: 0.35, pointRadius: 4, pointHoverRadius: 7,
-          pointBackgroundColor: '#f59e0b', borderDash: [3,3], borderWidth: 1.5, yAxisID: 'y' }
+          pointBackgroundColor: '#03c75a', borderDash: [3,3], borderWidth: 1.5, yAxisID: 'y' },
+        { label: '카카오지도', data: days.map(d => dailyKakaoD[d]||0),
+          borderColor: '#f9e000', backgroundColor: 'rgba(249,224,0,0)',
+          fill: false, tension: 0.35, pointRadius: 4, pointHoverRadius: 7,
+          pointBackgroundColor: '#f9e000', borderDash: [4,2], borderWidth: 1.5, yAxisID: 'y' }
       ]
     },
     options: {
@@ -1076,7 +1082,8 @@ function renderCharts(hits) {
     const rows = [...days].reverse().map(d => {
       const pv = dailyPV[d]||0, uv = dailyUVmap[d]?.size||0;
       const evts = dailyEvt[d]||0;
-      const mc = dailyMapClkD[d]||0;
+      const naver = dailyNaverD[d]||0;
+      const kakao = dailyKakaoD[d]||0;
       const b = dailyBounce[d];
       const bounceStr = b && b.total ? Math.round(b.bounced/b.total*100) + '%' : '-';
       const dur = dailyDur[d];
@@ -1089,7 +1096,8 @@ function renderCharts(hits) {
         <td class="uv">${uv}</td>
         <td style="color:#444;font-size:11px">${uv?(pv/uv).toFixed(1):'-'}</td>
         <td style="color:#10b981;font-size:11px;font-weight:600">${evts}</td>
-        <td style="color:#f59e0b;font-size:11px;font-weight:600">${mc}</td>
+        <td style="color:#03c75a;font-size:11px;font-weight:600">${naver}</td>
+        <td style="color:#f9e000;font-size:11px;font-weight:600">${kakao}</td>
         <td style="color:#888;font-size:11px">${bounceStr}</td>
         <td style="color:#888;font-size:11px">${durStr}</td>
         <td style="color:#333;font-size:10px">${bar}</td>
@@ -1102,7 +1110,8 @@ function renderCharts(hits) {
         <th style="color:#3b82f6">UV</th>
         <th>PV/UV</th>
         <th style="color:#10b981">이벤트</th>
-        <th style="color:#f59e0b">지도클릭</th>
+        <th style="color:#03c75a">N지도</th>
+        <th style="color:#f9e000">K지도</th>
         <th>이탈률</th>
         <th>체류시간</th>
         <th>비율</th>
@@ -1812,17 +1821,21 @@ function renderTodayHighlights(allHitsFiltered) {
   }
 
   const stMap = {};
+  let todayNaver = 0, todayKakao = 0;
   allEvts.filter(e => e.type?.startsWith('map_')).forEach(e => {
     if (e.detail) stMap[e.detail] = (stMap[e.detail]||0)+1;
+    if (e.type === 'map_naver') todayNaver++;
+    if (e.type === 'map_kakao') todayKakao++;
   });
   const stTop   = Object.entries(stMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
-  const stTotal = stTop.reduce((a,b)=>a+b[1],0);
+  const stTotal = todayNaver + todayKakao;
 
   // 충전소 요약
   document.getElementById('todayStationSummary').innerHTML = `
-    <div class="today-stat"><div class="ts-val">${stTotal}</div><div class="ts-lbl">오늘 지도 클릭</div></div>
-    <div class="today-stat"><div class="ts-val">${stTop.length}</div><div class="ts-lbl">클릭된 충전소</div></div>
-    <div class="today-stat"><div class="ts-val">${todayUV>0?Math.round(stTotal/todayUV*100):0}%</div><div class="ts-lbl">클릭 전환율</div></div>
+    <div class="today-stat"><div class="ts-val" style="color:#03c75a">${todayNaver}</div><div class="ts-lbl">🟢 네이버</div></div>
+    <div class="today-stat"><div class="ts-val" style="color:#f9e000">${todayKakao}</div><div class="ts-lbl">🟡 카카오</div></div>
+    <div class="today-stat"><div class="ts-val">${stTotal}</div><div class="ts-lbl">합계</div></div>
+    <div class="today-stat"><div class="ts-val">${todayUV>0?Math.round(stTotal/todayUV*100):0}%</div><div class="ts-lbl">전환율</div></div>
   `;
 
   const maxC = stTop[0]?.[1] || 1;
