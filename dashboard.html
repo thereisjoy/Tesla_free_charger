@@ -329,7 +329,7 @@
     <div class="kpi-card"><div class="label">평균 체류시간</div><div class="value" id="kDur">—</div><div class="sub">초</div></div>
     <div class="kpi-card"><div class="label">재방문율</div><div class="value" id="kReturn">—</div><div class="sub">%</div></div>
     <div class="kpi-card"><div class="label">모바일 비율</div><div class="value" id="kMobile">—</div><div class="sub">%</div></div>
-    <div class="kpi-card"><div class="label">지도 클릭</div><div class="value" id="kMapClk">—</div><div class="sub">네이버 + 카카오</div></div>
+    <div class="kpi-card"><div class="label">지도 클릭</div><div class="value" id="kMapClk">—</div><div class="sub" id="kMapClkSub">N — / K —</div></div>
     <div class="kpi-card"><div class="label">검색 사용율</div><div class="value" id="kSearch">—</div><div class="sub">%</div></div>
     <div class="kpi-card"><div class="label">평균 인터랙션</div><div class="value" id="kEvt">—</div><div class="sub">회/세션</div></div>
     <div class="kpi-card"><div class="label">이탈률</div><div class="value" id="kBounce">—</div><div class="sub">%</div></div>
@@ -576,7 +576,7 @@ Chart.unregister(ChartDataLabels);
 // CONFIG
 // ═══════════════════════════════════════
 const HARDCODED_DB = 'https://tesla-charger-analytics-default-rtdb.firebaseio.com';
-let DB_URL = localStorage.getItem('tsla_db_url') || '';
+let DB_URL = localStorage.getItem('tsla_db_url') || HARDCODED_DB;
 let allHits = [];
 let demoMode = false;
 
@@ -761,16 +761,18 @@ function renderKPIs(hits) {
   const returnRate = hits.length ? Math.round(hits.filter(h=>h.isReturn).length / hits.length * 100) : 0;
   const mobileRate = hits.length ? Math.round(hits.filter(h=>h.device==='mobile').length / hits.length * 100) : 0;
   const allEvts = hits.flatMap(h => h.events || []);
-  const mapClicks = allEvts.filter(e => e.type?.startsWith('map_')).length;
+  const naverClicks = allEvts.filter(e => e.type === 'map_naver').length;
+  const kakaoClicks = allEvts.filter(e => e.type === 'map_kakao').length;
+  const mapClicks = naverClicks + kakaoClicks;
   const searchSessions = new Set(hits.filter(h => (h.events||[]).some(e => e.type==='search')).map(h=>h.vid)).size;
   const searchRate = uv ? Math.round(searchSessions / uv * 100) : 0;
   const avgEvt = uv ? (allEvts.length / uv).toFixed(1) : 0;
 
-  // 오늘 방문자 (KST 기준)
+  // 오늘 방문자 (KST 기준) — tsUnix 우선 방식으로 통일
   const todayKST = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
   const todayUV = new Set(hits.filter(h => {
-    const d = h.ts ? new Date(new Date(h.ts).getTime() + 9*3600*1000).toISOString().slice(0,10) : '';
-    return d === todayKST;
+    const ts = h.tsUnix || (h.ts ? new Date(h.ts).getTime() : 0);
+    return ts && new Date(ts + 9*3600*1000).toISOString().slice(0,10) === todayKST;
   }).map(h => h.vid)).size;
 
   // geo 데이터 완성도
@@ -785,6 +787,7 @@ function renderKPIs(hits) {
   document.getElementById('kReturn').textContent = returnRate;
   document.getElementById('kMobile').textContent = mobileRate;
   document.getElementById('kMapClk').textContent = mapClicks.toLocaleString();
+  document.getElementById('kMapClkSub').textContent = `N ${naverClicks} / K ${kakaoClicks}`;
   document.getElementById('kSearch').textContent = searchRate;
   document.getElementById('kEvt').textContent = avgEvt;
 
@@ -852,8 +855,8 @@ function renderChannelAnalysis(hits) {
     const avgDur = durs.length ? Math.round(durs.reduce((a,b)=>a+b,0)/durs.length) : 0;
     const evts = d.hits.flatMap(h=>h.events||[]);
     const evtPerS = uv ? (evts.length/uv).toFixed(1) : '0';
-    const mapC = new Set(d.hits.filter(h=>(h.events||[]).some(e=>e.type?.startsWith('map_'))).map(h=>h.vid)).size;
-    const mapRate = uv ? Math.round(mapC/uv*100) : 0;
+    const chNaver = evts.filter(e=>e.type==='map_naver').length;
+    const chKakao = evts.filter(e=>e.type==='map_kakao').length;
     const retC = d.hits.filter(h=>h.isReturn).length;
     const retRate = d.hits.length ? Math.round(retC/d.hits.length*100) : 0;
     return `<tr>
@@ -861,12 +864,13 @@ function renderChannelAnalysis(hits) {
       <td style="color:#e31937;font-weight:700">${uv}</td>
       <td>${avgDur}s</td>
       <td>${evtPerS}</td>
-      <td style="color:${mapRate>=30?'#4caf50':mapRate>=15?'#f59e0b':'#666'};font-weight:700">${mapRate}%</td>
+      <td style="color:#03c75a;font-weight:700">${chNaver}</td>
+      <td style="color:#f9e000;font-weight:700">${chKakao}</td>
       <td>${retRate}%</td>
     </tr>`;
   }).join('');
   el.innerHTML = `<table class="daily-table"><thead><tr>
-    <th style="text-align:left">채널</th><th>UV</th><th>체류</th><th>이벤트/UV</th><th>지도클릭률</th><th>재방문률</th>
+    <th style="text-align:left">채널</th><th>UV</th><th>체류</th><th>이벤트/UV</th><th style="color:#03c75a">N지도</th><th style="color:#f9e000">K지도</th><th>재방문률</th>
   </tr></thead><tbody>${rows}</tbody></table>`;
 }
 
