@@ -381,6 +381,42 @@
 
   </div>
 
+  <!-- ════ 레이어 1+2 기능 사용 분석 ════ -->
+  <div class="biz-section-title">🧩 레이어 1+2 기능 사용 분석 — 즐겨찾기·루트플래너·배너·최근검색</div>
+  <div class="chart-grid" style="margin-bottom:16px" id="layer12Grid">
+
+    <!-- 즐겨찾기 -->
+    <div class="chart-box">
+      <div class="chart-title">⭐ 즐겨찾기 활동</div>
+      <div id="favStats" style="font-size:13px;line-height:2"></div>
+    </div>
+
+    <!-- 루트 플래너 -->
+    <div class="chart-box">
+      <div class="chart-title">🗺️ 루트 플래너 사용</div>
+      <div id="routeStats" style="font-size:13px;line-height:2"></div>
+    </div>
+
+    <!-- 시즌 배너 -->
+    <div class="chart-box">
+      <div class="chart-title">🌸 시즌 배너 효과</div>
+      <div id="bannerStats" style="font-size:13px;line-height:2"></div>
+    </div>
+
+    <!-- 최근 검색·카드뷰 -->
+    <div class="chart-box">
+      <div class="chart-title">🔁 재사용 행동</div>
+      <div id="reuseStats" style="font-size:13px;line-height:2"></div>
+    </div>
+
+  </div>
+
+  <!-- 즐겨찾기 TOP 충전소 -->
+  <div class="chart-box full" style="margin-bottom:16px">
+    <div class="chart-title">⭐ 즐겨찾기 추가 TOP 충전소 <span class="tip">— 사용자 선호도 지표</span></div>
+    <div id="favTopList"></div>
+  </div>
+
   <!-- ══ 유입 채널 분석 ══ -->
   <div class="chart-box full" style="margin-bottom:16px">
     <div class="chart-title">📡 유입 채널별 성과 비교 <span class="tip">— 마케팅 ROI 판단</span></div>
@@ -711,6 +747,7 @@ function renderAll() {
   renderTables(hits);
   renderHeatmap(hits);
   renderBusinessInsights(hits);
+  renderLayer12Analysis(hits);
   renderTodayHighlights(hits);
 }
 
@@ -1364,6 +1401,107 @@ function renderHeatmap(hits) {
   html += `</div>`;
 
   container.innerHTML = html;
+}
+
+// ════════════════════════════════════════
+// 레이어 1+2 기능 사용 분석
+// ════════════════════════════════════════
+function renderLayer12Analysis(hits) {
+  const allEvts = hits.flatMap(h => h.events || []);
+  const uvSet = new Set(hits.map(h => h.vid));
+  const totalUV = uvSet.size || 1;
+
+  // ── 즐겨찾기 ──
+  const favAdd    = allEvts.filter(e => e.type === 'fav_add').length;
+  const favRemove = allEvts.filter(e => e.type === 'fav_remove').length;
+  const favTabView= allEvts.filter(e => e.type === 'fav_tab_view').length;
+  const favUVSet  = new Set(hits.filter(h=>(h.events||[]).some(e=>e.type==='fav_add'||e.type==='fav_remove')).map(h=>h.vid));
+  const favUVRate = totalUV > 0 ? Math.round(favUVSet.size/totalUV*100) : 0;
+
+  const favEl = document.getElementById('favStats');
+  if (favEl) favEl.innerHTML = `
+    <div>⭐ 추가 <b style="color:#e31937">${favAdd}</b>회 &nbsp;|&nbsp; 삭제 <b>${favRemove}</b>회</div>
+    <div>👁️ 즐겨찾기탭 조회 <b>${favTabView}</b>회</div>
+    <div>👤 사용자 <b style="color:#e31937">${favUVSet.size}</b>명 (<b>${favUVRate}%</b>)</div>
+    ${favAdd > 0 ? `<div style="margin-top:6px;font-size:11px;color:#888">즐겨찾기 1회 이상 사용 사용자</div>` : '<div style="color:#555;margin-top:8px">— 데이터 없음 —</div>'}
+  `;
+
+  // ── 루트 플래너 ──
+  const routeEvts = allEvts.filter(e => e.type === 'route_planner_use');
+  const routeUV   = new Set(hits.filter(h=>(h.events||[]).some(e=>e.type==='route_planner_use')).map(h=>h.vid));
+  const routeRate = totalUV > 0 ? Math.round(routeUV.size/totalUV*100) : 0;
+  // 인기 경로 TOP 3
+  const routeMap  = {};
+  routeEvts.forEach(e => { if(e.detail) routeMap[e.detail] = (routeMap[e.detail]||0)+1; });
+  const topRoutes = Object.entries(routeMap).sort((a,b)=>b[1]-a[1]).slice(0,3);
+
+  const routeEl = document.getElementById('routeStats');
+  if (routeEl) routeEl.innerHTML = `
+    <div>🗺️ 사용 횟수 <b style="color:#e31937">${routeEvts.length}</b>회</div>
+    <div>👤 사용자 <b>${routeUV.size}</b>명 (<b>${routeRate}%</b>)</div>
+    ${topRoutes.length ? '<div style="margin-top:6px;font-size:11px;color:#aaa">인기 경로</div>' + topRoutes.map(([r,c])=>`<div style="font-size:11px">🔹 ${r} — ${c}회</div>`).join('') : '<div style="color:#555;margin-top:8px">— 데이터 없음 —</div>'}
+  `;
+
+  // ── 시즌 배너 ──
+  const bannerCTA   = allEvts.filter(e => e.type === 'season_banner_cta').length;
+  const bannerClose = allEvts.filter(e => e.type === 'season_banner_close').length;
+  const bannerSeen  = new Set(hits.filter(h=>(h.events||[]).some(e=>e.type==='season_banner_cta'||e.type==='season_banner_close')).map(h=>h.vid));
+  const ctrBanner   = bannerSeen.size > 0 ? Math.round(bannerCTA/(bannerCTA+bannerClose)*100) : 0;
+
+  const bannerEl = document.getElementById('bannerStats');
+  if (bannerEl) bannerEl.innerHTML = `
+    <div>👆 CTA 클릭 <b style="color:#e31937">${bannerCTA}</b>회</div>
+    <div>✕ 닫기 <b>${bannerClose}</b>회</div>
+    <div>📊 클릭률 <b style="color:${ctrBanner>=30?'#4caf50':'#888'}">${ctrBanner}%</b> <span style="font-size:10px;color:#555">(CTA / 노출)</span></div>
+    ${bannerSeen.size === 0 ? '<div style="color:#555;margin-top:8px">— 데이터 없음 —</div>' : ''}
+  `;
+
+  // ── 재사용 행동 (최근검색·카드뷰) ──
+  const recentEvts  = allEvts.filter(e => e.type === 'recent_search');
+  const cardViewEvts= allEvts.filter(e => e.type === 'view_card');
+  const recentUV    = new Set(hits.filter(h=>(h.events||[]).some(e=>e.type==='recent_search')).map(h=>h.vid));
+  const cardUV      = new Set(hits.filter(h=>(h.events||[]).some(e=>e.type==='view_card')).map(h=>h.vid));
+
+  const reuseEl = document.getElementById('reuseStats');
+  if (reuseEl) reuseEl.innerHTML = `
+    <div>🔁 최근검색 클릭 <b style="color:#e31937">${recentEvts.length}</b>회 (${recentUV.size}명)</div>
+    <div>🃏 카드뷰 전환 <b>${cardViewEvts.length}</b>회 (${cardUV.size}명)</div>
+    <div style="margin-top:6px;font-size:11px;color:#888">재방문 사용자 재사용 지표</div>
+  `;
+
+  // ── 즐겨찾기 TOP 충전소 ──
+  const favTopMap = {};
+  allEvts.filter(e => e.type === 'fav_add').forEach(e => {
+    if (e.detail) favTopMap[e.detail] = (favTopMap[e.detail]||0)+1;
+  });
+  const favTopSorted = Object.entries(favTopMap).sort((a,b)=>b[1]-a[1]).slice(0,10);
+  const favListEl = document.getElementById('favTopList');
+  if (favListEl) {
+    if (!favTopSorted.length) {
+      favListEl.innerHTML = '<div style="color:#555;padding:12px">— 즐겨찾기 추가 데이터 없음 (레이어1 배포 이후 누적) —</div>';
+    } else {
+      const total = favTopSorted.reduce((a,b)=>a+b[1],0)||1;
+      favListEl.innerHTML = '<table style="width:100%;border-collapse:collapse;font-size:12px">'
+        + '<thead><tr style="color:#888;border-bottom:1px solid #222">'
+        + '<th style="padding:6px 8px;text-align:left">#</th>'
+        + '<th style="padding:6px 8px;text-align:left">충전소명</th>'
+        + '<th style="padding:6px 8px;text-align:right">추가</th>'
+        + '<th style="padding:6px 8px;text-align:left;min-width:100px">비율</th>'
+        + '</tr></thead><tbody>'
+        + favTopSorted.map(([name,cnt],i)=>`
+          <tr style="border-bottom:1px solid #1a1a1a">
+            <td style="padding:5px 8px;color:#555">${i+1}</td>
+            <td style="padding:5px 8px;color:#e0e0e0">${name}</td>
+            <td style="padding:5px 8px;text-align:right;color:#e31937;font-weight:700">${cnt}</td>
+            <td style="padding:5px 8px">
+              <div style="background:#1a1a1a;border-radius:3px;height:6px;overflow:hidden">
+                <div style="background:#e31937;height:6px;width:${Math.round(cnt/total*100)}%"></div>
+              </div>
+            </td>
+          </tr>`).join('')
+        + '</tbody></table>';
+    }
+  }
 }
 
 // ════════════════════════════════════════

@@ -1930,10 +1930,14 @@ function renderCards() {
     const addrExtra = isSc ? s.note : s.detail;
     const copyAddr = s.address.replace(/"/g, '&quot;');
 
+    const fk = favKey(s);
     card.innerHTML = `
       <div class="card-top">
         <div class="card-name">${nameHtml} ${typeBadge}</div>
-        <span class="region-badge" data-region="${s.region}" style="cursor:pointer;flex-shrink:0">${s.region}</span>
+        <div style="display:flex;align-items:center;gap:4px;flex-shrink:0">
+          <button class="fav-btn${favs.has(fk)?' active':''}" data-fk="${fk}" data-name="${s.name.replace(/"/g,'&quot;')}" data-type="${s.type}" title="즐겨찾기" style="font-size:14px;padding:2px 4px">⭐</button>
+          <span class="region-badge" data-region="${s.region}" style="cursor:pointer">${s.region}</span>
+        </div>
       </div>
       <div class="card-addr">
         ${highlight(s.address, q)}
@@ -1973,6 +1977,13 @@ function renderCards() {
       e.preventDefault();
       const station = allStations.find(s => s.name === btn.dataset.name && s.type === btn.dataset.type);
       if (station) openKakaoNavi(station);
+    });
+  });
+  // 즐겨찾기 버튼
+  cardWrap.querySelectorAll('.fav-btn[data-fk]').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleFav(btn.dataset.name, btn.dataset.type);
     });
   });
 }
@@ -2237,6 +2248,34 @@ initRoutePlanner();
     // 테이블 헤더 정렬
     const th = e.target.closest('th[data-col]');
     if (th) trackEvt('th_sort', th.dataset.col);
+    // 즐겨찾기 토글
+    const fvb = e.target.closest('.fav-btn[data-fk]');
+    if (fvb) {
+      const wasActive = fvb.classList.contains('active');
+      trackEvt(wasActive ? 'fav_remove' : 'fav_add', fvb.dataset.name || '');
+    }
+    // 즐겨찾기 탭
+    const favTab = e.target.closest('#tabFav');
+    if (favTab) trackEvt('fav_tab_view', '');
+    // 최근 검색어 칩 클릭
+    const rc = e.target.closest('.recent-chip');
+    if (rc) trackEvt('recent_search', rc.textContent.replace('✕','').trim());
+    // 루트 플래너 사용
+    const rg = e.target.closest('.route-go');
+    if (rg) {
+      const from = document.getElementById('routeFrom')?.value || '';
+      const to = document.getElementById('routeTo')?.value || '';
+      trackEvt('route_planner_use', from + '→' + to);
+    }
+    // 시즌 배너 CTA 클릭
+    const sc = e.target.closest('.season-cta, .season-banner a');
+    if (sc) trackEvt('season_banner_cta', sc.textContent.trim());
+    // 시즌 배너 닫기
+    const sx = e.target.closest('.season-close');
+    if (sx) trackEvt('season_banner_close', '');
+    // 카드 뷰 전환
+    const gv = e.target.closest('#viewGridBtn');
+    if (gv) trackEvt('view_card', '');
   });
 
   // 스크롤 깊이 추적
