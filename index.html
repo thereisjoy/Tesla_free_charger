@@ -860,7 +860,7 @@
     <div class="tag-filter">
       <button class="tag-btn" id="hasPhoneBtn" title="전화번호 있는 곳만">📞 전화번호 있음</button>
     </div>
-    <button class="route-toggle" id="routeToggleBtn" onclick="toggleRoutePlanner()" title="루트 플래너">🗺️ 루트 플래너</button>
+    <button class="route-toggle" id="routeToggleBtn" onclick="toggleRoutePlanner()" title="루트 플래너" style="display:none">🗺️ 루트 플래너</button>
     <div class="view-toggle">
       <button class="view-btn active" id="viewTableBtn" title="테이블 보기">
         <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><rect x="3" y="3" width="18" height="3" rx="1"/><rect x="3" y="9" width="18" height="3" rx="1"/><rect x="3" y="15" width="18" height="3" rx="1"/><rect x="3" y="21" width="18" height="3" rx="1" opacity=".5"/></svg>
@@ -900,7 +900,7 @@
 
 <!-- ── 실시간 인기 ── -->
 <div class="top5-section" id="top5Section" style="display:none">
-  <div class="top5-live-bar">
+  <div class="top5-live-bar" style="display:none">
     <span class="top5-live-dot"></span>
     <span class="top5-live-txt">실시간 인기 · KST 기준 · 1분마다 자동 갱신</span>
     <span class="top5-live-time" id="top5UpdatedTime"></span>
