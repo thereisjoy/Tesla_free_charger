@@ -148,7 +148,7 @@
   /* ── TOP 5 인기 충전소 ── */
   .top5-section {
     padding: 20px 40px 0;
-    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+    display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 14px;
   }
   .top5-live-bar {
     grid-column: 1/-1; display: flex; align-items: center; gap: 8px;
@@ -628,6 +628,7 @@
     .view-toggle { display: none; }
     .card-grid-wrap { padding: 10px 12px 40px; grid-template-columns: 1fr; }
     .top5-section { grid-template-columns: 1fr; padding: 12px 16px 0; gap: 10px; }
+    .top5-live-bar { grid-column: 1/-1; }
     .top5-card { padding: 12px 14px; }
     .top5-header { font-size: 12px; }
     .top5-item { padding: 6px 8px; }
@@ -758,7 +759,7 @@
 </div>
 
 
-<!-- ── 실시간 인기 검색어 & 충전소 ── -->
+<!-- ── 실시간 인기 ── -->
 <div class="top5-section" id="top5Section" style="display:none">
   <div class="top5-live-bar">
     <span class="top5-live-dot"></span>
@@ -767,20 +768,16 @@
     <button class="top5-refresh-btn" id="top5RefreshBtn" title="지금 갱신">↺</button>
   </div>
   <div class="top5-card">
-    <div class="top5-header">🔍 실시간 인기 검색어 <span class="top5-badge">TODAY</span><span class="top5-hint">클릭하면 검색됩니다</span></div>
-    <div id="top5SearchToday" class="top5-list"><div class="top5-empty">로딩 중...</div></div>
-  </div>
-  <div class="top5-card">
-    <div class="top5-header">📍 실시간 인기 충전소 <span class="top5-badge">TODAY</span><span class="top5-hint">클릭하면 검색됩니다</span></div>
+    <div class="top5-header">📍 인기 충전소 <span class="top5-badge">TODAY</span><span class="top5-hint">클릭하면 검색됩니다</span></div>
     <div id="top5StationToday" class="top5-list"><div class="top5-empty">로딩 중...</div></div>
   </div>
-  <div class="top5-card weekly-card">
-    <div class="top5-header">📊 이번 주 인기 검색어 <span class="top5-badge weekly">WEEKLY</span></div>
-    <div id="top5SearchWeekly" class="top5-list"><div class="top5-empty">로딩 중...</div></div>
+  <div class="top5-card">
+    <div class="top5-header">📌 인기 지역 <span class="top5-badge">TODAY</span><span class="top5-hint">클릭하면 필터됩니다</span></div>
+    <div id="top5RegionToday" class="top5-list"><div class="top5-empty">로딩 중...</div></div>
   </div>
-  <div class="top5-card weekly-card">
-    <div class="top5-header">🗺️ 이번 주 인기 충전소 <span class="top5-badge weekly">WEEKLY</span></div>
-    <div id="top5StationWeekly" class="top5-list"><div class="top5-empty">로딩 중...</div></div>
+  <div class="top5-card">
+    <div class="top5-header">🔍 인기 검색어 <span class="top5-badge">TODAY</span><span class="top5-hint">클릭하면 검색됩니다</span></div>
+    <div id="top5SearchToday" class="top5-list"><div class="top5-empty">로딩 중...</div></div>
   </div>
 </div>
 
@@ -1776,7 +1773,8 @@ render();
       (h.events || []).forEach(e => {
         const isSearch  = type === 'search'  && e.type === 'search';
         const isStation = type === 'station' && (e.type === 'map_naver' || e.type === 'map_kakao');
-        if ((isSearch || isStation) && e.detail) map[e.detail] = (map[e.detail]||0)+1;
+        const isRegion  = type === 'region'  && (e.type === 'filter' || e.type === 'badge_region');
+        if ((isSearch || isStation || isRegion) && e.detail) map[e.detail] = (map[e.detail]||0)+1;
       });
     });
     return Object.entries(map).sort((a,b)=>b[1]-a[1]).slice(0,5);
@@ -1791,7 +1789,16 @@ render();
     document.querySelector('.controls')?.scrollIntoView({behavior:'smooth', block:'start'});
   }
 
-  function renderList(id, data, clickable) {
+  function fillRegion(region) {
+    // 지역 배지 클릭 시뮬레이션
+    const badges = document.querySelectorAll('#filterGroup .region-badge, #mobRegionGrid .region-badge');
+    for (const b of badges) {
+      if (b.textContent.trim() === region) { b.click(); break; }
+    }
+    document.querySelector('.controls')?.scrollIntoView({behavior:'smooth', block:'start'});
+  }
+
+  function renderList(id, data, onClickFn) {
     const el = document.getElementById(id);
     if (!el) return;
     if (!data || !data.length) {
@@ -1800,25 +1807,24 @@ render();
     }
     const max = data[0][1];
     el.innerHTML = data.map(([name, cnt], i) => `
-      <div class="top5-item${clickable?' clickable':''}" data-kw="${name.replace(/"/g,'&quot;')}">
+      <div class="top5-item${onClickFn?' clickable':''}" data-kw="${name.replace(/"/g,'&quot;')}">
         <div class="top5-rank r${i+1}">${['🥇','🥈','🥉'][i]||i+1}</div>
         <div class="top5-name" title="${name}">${name}</div>
         <div class="top5-bar-wrap"><div class="top5-bar" style="width:${Math.round(cnt/max*100)}%"></div></div>
         <div class="top5-count" style="display:none">${cnt}</div>
       </div>`).join('');
-    if (clickable) {
+    if (onClickFn) {
       el.querySelectorAll('.top5-item.clickable').forEach(item =>
-        item.addEventListener('click', () => fillSearch(item.dataset.kw))
+        item.addEventListener('click', () => onClickFn(item.dataset.kw))
       );
     }
   }
 
   function showData(d) {
     document.getElementById('top5Section').style.display = '';
-    renderList('top5SearchToday',   d.sT,  true);
-    renderList('top5StationToday',  d.stT, true);
-    renderList('top5SearchWeekly',  d.sW,  false);
-    renderList('top5StationWeekly', d.stW, false);
+    renderList('top5StationToday', d.stT, fillSearch);
+    renderList('top5RegionToday',  d.rT,  fillRegion);
+    renderList('top5SearchToday',  d.sT,  fillSearch);
     const el = document.getElementById('top5UpdatedTime');
     if (el) {
       const t = new Date(d.ts + 9*3600*1000);
@@ -1841,16 +1847,13 @@ render();
       const hits = await res.json();
       if (!hits) throw 0;
 
-      const todayKST  = getKSTToday();
-      const weekAgoTs = Date.now() - 7*86400000;
-      const isToday   = h => !!h.tsUnix && new Date(h.tsUnix + 9*3600*1000).toISOString().slice(0,10) === todayKST;
-      const isWeekly  = h => !!h.tsUnix && h.tsUnix >= weekAgoTs;
+      const todayKST = getKSTToday();
+      const isToday  = h => !!h.tsUnix && new Date(h.tsUnix + 9*3600*1000).toISOString().slice(0,10) === todayKST;
 
       const d = {
-        sT:  countEvents(hits,'search',  isToday),
-        stT: countEvents(hits,'station', isToday),
-        sW:  countEvents(hits,'search',  isWeekly),
-        stW: countEvents(hits,'station', isWeekly),
+        stT: countEvents(hits, 'station', isToday),
+        rT:  countEvents(hits, 'region',  isToday),
+        sT:  countEvents(hits, 'search',  isToday),
         ts: Date.now()
       };
       try { sessionStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch(e){}
