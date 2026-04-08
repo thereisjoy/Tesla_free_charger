@@ -702,16 +702,15 @@
   }
   .banner-dot.active { background: #5a8a5a; transform: scale(1.3); }
   .banner-next, .banner-prev {
-    background: none; border: none; color: #3a5a3a; cursor: pointer;
-    font-size: 16px; padding: 0 3px; line-height: 1; transition: color .15s;
+    background: rgba(255,255,255,0.05); border: 1px solid #2a3a2a; color: #6a9a6a;
+    cursor: pointer; font-size: 20px; padding: 2px 10px; line-height: 1.4;
+    border-radius: 6px; transition: all .15s; user-select: none;
   }
-  .banner-next:hover, .banner-prev:hover { color: #7aaa7a; }
+  .banner-next:hover, .banner-prev:hover {
+    background: rgba(255,255,255,0.10); border-color: #4a7a4a; color: #9aca9a;
+  }
+  .banner-next:active, .banner-prev:active { transform: scale(0.93); }
   .banner-count { font-size: 10px; color: #334433; white-space: nowrap; }
-  .season-close {
-    background: none; border: none; color: #334433; cursor: pointer;
-    font-size: 15px; padding: 0 4px 0 0; line-height: 1; transition: color .15s; flex-shrink: 0;
-  }
-  .season-close:hover { color: #7aaa7a; }
 
   /* ── 루트 플래너 ── */
   .route-panel {
@@ -778,7 +777,6 @@
       <button class="banner-next" id="bannerNext" title="다음">›</button>
       <span class="banner-count" id="bannerCount"></span>
     </div>
-    <button class="season-close" id="bannerClose" title="오늘 하루 닫기">✕</button>
   </div>
 </div>
 
@@ -1291,9 +1289,7 @@ function hideRecentBox() {
 // ── 계절 배너 (멀티 슬라이드 순환) ─────────────
 // ══════════════════════════════════════════════
 function initSeasonBanner() {
-  // 오늘 날짜 기준 오늘 닫기 여부 확인 (KST)
   const todayStr = new Date(Date.now()+9*3600*1000).toISOString().slice(0,10);
-  if (localStorage.getItem('tsla_banner_closed') === todayStr) return;
 
   const month = new Date(Date.now()+9*3600*1000).getUTCMonth() + 1;
 
@@ -1410,12 +1406,6 @@ function initSeasonBanner() {
   document.getElementById('bannerNext').addEventListener('click', () => { resetTimer(); nextSlide(); });
   document.getElementById('bannerPrev').addEventListener('click', () => { resetTimer(); prevSlide(); });
 
-  // 닫기 버튼: 오늘 하루 닫기
-  document.getElementById('bannerClose').addEventListener('click', () => {
-    el.style.display = 'none';
-    clearInterval(autoTimer);
-    localStorage.setItem('tsla_banner_closed', todayStr);
-  });
 
   // 초기 렌더 + 자동 순환 시작
   el.style.display = '';
