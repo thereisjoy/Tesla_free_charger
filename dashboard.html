@@ -333,7 +333,7 @@
     <div class="kpi-card"><div class="label">검색 사용율</div><div class="value" id="kSearch">—</div><div class="sub">%</div></div>
     <div class="kpi-card"><div class="label">평균 인터랙션</div><div class="value" id="kEvt">—</div><div class="sub">회/세션</div></div>
     <div class="kpi-card"><div class="label">이탈률</div><div class="value" id="kBounce">—</div><div class="sub">%</div></div>
-    <div class="kpi-card highlight"><div class="label">실시간 접속</div><div class="value" id="kRealtime">—</div><div class="sub">최근 5분</div></div>
+    <div class="kpi-card highlight"><div class="label">오늘의 접속</div><div class="value" id="kRealtime">—</div><div class="sub">오늘 UV (KST)</div></div>
     <div class="kpi-card"><div class="label">첫 인터랙션</div><div class="value" id="kFirstAct">—</div><div class="sub">초</div></div>
   </div>
 
@@ -793,9 +793,13 @@ function renderKPIs(hits) {
   const bounceRate = pv ? Math.round(bounced/pv*100) : 0;
   document.getElementById('kBounce').textContent = bounceRate;
 
-  // 실시간 접속: 최근 5분 내 고유 vid
-  const rt = new Set(allHits.filter(h => h.tsUnix > Date.now()-5*60*1000).map(h=>h.vid)).size;
-  document.getElementById('kRealtime').textContent = rt;
+  // 오늘의 접속: KST 기준 오늘 날짜 고유 UV
+  const todayKST = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
+  const todayUV = new Set(allHits.filter(h => {
+    const ts = h.tsUnix || (h.ts ? new Date(h.ts).getTime() : 0);
+    return ts && new Date(ts + 9*3600*1000).toISOString().slice(0,10) === todayKST;
+  }).map(h => h.vid)).size;
+  document.getElementById('kRealtime').textContent = todayUV;
 
   // 첫 인터랙션까지 시간
   const fam = hits.filter(h => h.firstActMs > 0).map(h => h.firstActMs);
