@@ -793,13 +793,12 @@ function renderKPIs(hits) {
   const bounceRate = pv ? Math.round(bounced/pv*100) : 0;
   document.getElementById('kBounce').textContent = bounceRate;
 
-  // 오늘의 접속: KST 기준 오늘 날짜 고유 UV
-  const todayKST = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
-  const todayUV = new Set(allHits.filter(h => {
+  // 오늘의 접속: KST 기준 오늘 날짜 고유 UV (todayKST는 위에서 이미 선언)
+  const todayUVcnt = new Set(allHits.filter(h => {
     const ts = h.tsUnix || (h.ts ? new Date(h.ts).getTime() : 0);
     return ts && new Date(ts + 9*3600*1000).toISOString().slice(0,10) === todayKST;
   }).map(h => h.vid)).size;
-  document.getElementById('kRealtime').textContent = todayUV;
+  document.getElementById('kRealtime').textContent = todayUVcnt;
 
   // 첫 인터랙션까지 시간
   const fam = hits.filter(h => h.firstActMs > 0).map(h => h.firstActMs);
