@@ -2188,7 +2188,10 @@ initRoutePlanner();
   function fillSearch(kw) {
     const inp = document.getElementById('searchInput');
     if (!inp) return;
-    inp.value = kw;
+    // 기존 Firebase 데이터가 이름+타입배지+스톨정보 전체를 포함할 수 있으므로
+    // allStations에서 kw를 포함하는 정확한 이름 추출
+    const match = (typeof allStations !== 'undefined') && allStations.find(s => kw.includes(s.name));
+    inp.value = match ? match.name : kw;
     inp.dispatchEvent(new Event('input', {bubbles:true}));
     inp.focus();
     document.querySelector('.controls')?.scrollIntoView({behavior:'smooth', block:'start'});
@@ -2370,7 +2373,7 @@ initRoutePlanner();
     if (fb) trackEvt('filter', fb.dataset.region || fb.textContent.trim());
     const mb = e.target.closest('.map-btn');
     if (mb) {
-      const n = mb.closest('tr')?.querySelector('.name')?.textContent || '';
+      const n = mb.closest('tr')?.querySelector('.fav-btn')?.dataset.name || '';
       trackEvt(mb.classList.contains('naver') ? 'map_naver' : 'map_kakao', n);
     }
     const sb = e.target.closest('.sort-btn');
