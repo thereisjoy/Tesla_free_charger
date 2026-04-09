@@ -174,7 +174,7 @@
   .top5-refresh-btn.spinning { animation: spin .8s linear infinite; }
   .top5-card {
     background: #111; border: 1px solid #1e1e1e; border-radius: 12px;
-    padding: 16px 18px; transition: border-color 0.2s;
+    padding: 16px 18px; transition: border-color 0.2s; min-width: 0; overflow: hidden;
   }
   .top5-card:hover { border-color: #333; }
   .top5-header {
@@ -907,15 +907,15 @@
     <button class="top5-refresh-btn" id="top5RefreshBtn" title="지금 갱신">↺</button>
   </div>
   <div class="top5-card">
-    <div class="top5-header">📍 인기 충전소 <span class="top5-badge weekly">WEEKLY</span><span class="top5-hint">클릭하면 검색됩니다</span></div>
+    <div class="top5-header">📍 인기 충전소 <span class="top5-hint">클릭하면 검색됩니다</span></div>
     <div id="top5StationToday" class="top5-list"><div class="top5-empty">로딩 중...</div></div>
   </div>
   <div class="top5-card">
-    <div class="top5-header">📌 인기 지역 <span class="top5-badge weekly">WEEKLY</span><span class="top5-hint">클릭하면 필터됩니다</span></div>
+    <div class="top5-header">📌 인기 지역 <span class="top5-hint">클릭하면 필터됩니다</span></div>
     <div id="top5RegionToday" class="top5-list"><div class="top5-empty">로딩 중...</div></div>
   </div>
   <div class="top5-card">
-    <div class="top5-header">🔍 인기 검색어 <span class="top5-badge weekly">WEEKLY</span><span class="top5-hint">클릭하면 검색됩니다</span></div>
+    <div class="top5-header">🔍 인기 검색어 <span class="top5-hint">클릭하면 검색됩니다</span></div>
     <div id="top5SearchToday" class="top5-list"><div class="top5-empty">로딩 중...</div></div>
   </div>
 </div>
