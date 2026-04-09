@@ -902,20 +902,20 @@
 <div class="top5-section" id="top5Section" style="display:none">
   <div class="top5-live-bar" style="display:none">
     <span class="top5-live-dot"></span>
-    <span class="top5-live-txt">실시간 인기 · KST 기준 · 1분마다 자동 갱신</span>
+    <span class="top5-live-txt">이번 주 인기 · KST 기준 · 매시간 자동 갱신</span>
     <span class="top5-live-time" id="top5UpdatedTime"></span>
     <button class="top5-refresh-btn" id="top5RefreshBtn" title="지금 갱신">↺</button>
   </div>
   <div class="top5-card">
-    <div class="top5-header">📍 인기 충전소 <span class="top5-badge">TODAY</span><span class="top5-hint">클릭하면 검색됩니다</span></div>
+    <div class="top5-header">📍 인기 충전소 <span class="top5-badge weekly">WEEKLY</span><span class="top5-hint">클릭하면 검색됩니다</span></div>
     <div id="top5StationToday" class="top5-list"><div class="top5-empty">로딩 중...</div></div>
   </div>
   <div class="top5-card">
-    <div class="top5-header">📌 인기 지역 <span class="top5-badge">TODAY</span><span class="top5-hint">클릭하면 필터됩니다</span></div>
+    <div class="top5-header">📌 인기 지역 <span class="top5-badge weekly">WEEKLY</span><span class="top5-hint">클릭하면 필터됩니다</span></div>
     <div id="top5RegionToday" class="top5-list"><div class="top5-empty">로딩 중...</div></div>
   </div>
   <div class="top5-card">
-    <div class="top5-header">🔍 인기 검색어 <span class="top5-badge">TODAY</span><span class="top5-hint">클릭하면 검색됩니다</span></div>
+    <div class="top5-header">🔍 인기 검색어 <span class="top5-badge weekly">WEEKLY</span><span class="top5-hint">클릭하면 검색됩니다</span></div>
     <div id="top5SearchToday" class="top5-list"><div class="top5-empty">로딩 중...</div></div>
   </div>
 </div>
@@ -2163,8 +2163,8 @@ initRoutePlanner();
 // ═══════════════════════════════════════════════════
 (function(){
   const TOP5_DB = 'https://tesla-charger-analytics-default-rtdb.firebaseio.com';
-  const CACHE_KEY = 'tsla_top5v2';
-  const CACHE_TTL = 1 * 60 * 1000;
+  const CACHE_KEY = 'tsla_top5v3';
+  const CACHE_TTL = 60 * 60 * 1000;
 
   // KST 기준 오늘 날짜 (UTC+9)
   function getKSTToday() {
@@ -2207,7 +2207,7 @@ initRoutePlanner();
     const el = document.getElementById(id);
     if (!el) return;
     if (!data || !data.length) {
-      el.innerHTML = '<div class="top5-empty">오늘 데이터가 없습니다</div>';
+      el.innerHTML = '<div class="top5-empty">이번 주 데이터가 없습니다</div>';
       return;
     }
     const max = data[0][1];
@@ -2247,18 +2247,18 @@ initRoutePlanner();
     const btn = document.getElementById('top5RefreshBtn');
     if (btn) btn.classList.add('spinning');
     try {
-      const res = await fetch(`${TOP5_DB}/hits.json?orderBy=%22%24key%22&limitToLast=600`);
+      const res = await fetch(`${TOP5_DB}/hits.json?orderBy=%22%24key%22&limitToLast=2000`);
       if (!res.ok) throw 0;
       const hits = await res.json();
       if (!hits) throw 0;
 
-      const todayKST = getKSTToday();
-      const isToday  = h => !!h.tsUnix && new Date(h.tsUnix + 9*3600*1000).toISOString().slice(0,10) === todayKST;
+      const cutoff = Date.now() - 7 * 24 * 3600 * 1000;
+      const isWeek = h => !!h.tsUnix && h.tsUnix > cutoff;
 
       const d = {
-        stT: countEvents(hits, 'station', isToday),
-        rT:  countEvents(hits, 'region',  isToday),
-        sT:  countEvents(hits, 'search',  isToday),
+        stT: countEvents(hits, 'station', isWeek),
+        rT:  countEvents(hits, 'region',  isWeek),
+        sT:  countEvents(hits, 'search',  isWeek),
         ts: Date.now()
       };
       try { sessionStorage.setItem(CACHE_KEY, JSON.stringify(d)); } catch(e){}

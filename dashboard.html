@@ -1004,7 +1004,16 @@ function renderCharts(hits) {
       if (e.type === 'map_kakao') dailyKakaoD[d] = (dailyKakaoD[d]||0) + 1;
     });
   });
-  const days = Object.keys(dailyPV).sort();
+  const rawDays = Object.keys(dailyPV).sort();
+  const days = (() => {
+    if (!rawDays.length) return [];
+    const result = [];
+    const todayStr = new Date(Date.now() + 9*3600*1000).toISOString().slice(0,10);
+    const cur = new Date(rawDays[0] + 'T00:00:00Z');
+    const end = new Date(todayStr + 'T00:00:00Z');
+    while (cur <= end) { result.push(cur.toISOString().slice(0,10)); cur.setUTCDate(cur.getUTCDate()+1); }
+    return result;
+  })();
   const showLabels = days.length <= 20;
 
   charts.daily = new Chart(document.getElementById('chartDaily'), {
